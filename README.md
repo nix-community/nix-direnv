@@ -3,7 +3,7 @@
 A fast, persistent use_nix implementation for direnv.
 Prominent features:
 
-- significantly faster after the first run by caching nix-shell environment
+- significantly faster after the first run by caching the nix-shell environment
 - prevents garbage collection of build dependencies by symlinking the resulting
   shell derivation in the user's `gcroots` (Life is too short to loose your
   build cache of your project if you are in a plane without internet connection)
