@@ -17,9 +17,9 @@ use_nix() {
     [[ shell.nix -nt "$cache" ]];
   then
     [ -d .direnv ] || mkdir .direnv
-    local dump_cmd="echo \<direnv\>; \"$direnv\" dump bash; echo \</direnv\>"
+    local dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
     local tmp=$(nix-shell --show-trace --pure "$@" \
-      --run "$dump_cmd" | grep -oP '(?<=<direnv>).*?(?=</direnv>)')
+      --run "$dump_cmd" | grep -oP '(?<=_____direnv_____).*')
     echo "$tmp" > "$cache"
     update_drv=1
   else
