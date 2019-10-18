@@ -3,7 +3,7 @@ use_nix() {
 
   if [ -f "${path}/.version-suffix" ]; then
     local version="$(< $path/.version-suffix)"
-  elif [ -d "${path}/.git" ]; then
+  elif [ -f "${path}/.git/HEAD" ]; then
     local head=$(< ${path}/.git/HEAD)
     local regex="ref: (.*)"
     if [[ "$head" =~  $regex ]]; then
