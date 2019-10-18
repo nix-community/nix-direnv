@@ -3,8 +3,14 @@ use_nix() {
 
   if [ -f "${path}/.version-suffix" ]; then
     local version="$(< $path/.version-suffix)"
-  elif [ -f "${path}/.git" ]; then
-    local version="$(< $(< ${path}/.git/HEAD))"
+  elif [ -d "${path}/.git" ]; then
+    local head=$(< ${path}/.git/HEAD)
+    local regex="ref: (.*)"
+    if [[ "$head" =~  $regex ]]; then
+      local version=$(< ".git/${BASH_REMATCH[1]}")
+    else
+      local version="$head"
+    fi
   fi
 
   local cache=".direnv/cache-${version:-unknown}"
