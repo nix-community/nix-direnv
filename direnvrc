@@ -1,15 +1,17 @@
 use_nix() {
   local path="$(nix-instantiate --find-file nixpkgs)"
 
-  if [ -f "${path}/.version-suffix" ]; then
-    local version="$(< $path/.version-suffix)"
-  elif [ -f "${path}/.git/HEAD" ]; then
-    local head=$(< ${path}/.git/HEAD)
+  local version
+  if [[ -f "${path}/.version-suffix" ]]; then
+    read version < "${path}/.version-suffix"
+  elif [[ -f "${path}/.git/HEAD" ]]; then
+    local head
+    read head < "${path}/.git/HEAD"
     local regex="ref: (.*)"
     if [[ "$head" =~  $regex ]]; then
-      local version=$(< ".git/${BASH_REMATCH[1]}")
+      read version < ".git/${BASH_REMATCH[1]}"
     else
-      local version="$head"
+      version="$head"
     fi
   fi
 
@@ -22,7 +24,7 @@ use_nix() {
     [[ default.nix -nt "$cache" ]] || \
     [[ shell.nix -nt "$cache" ]];
   then
-    [ -d .direnv ] || mkdir .direnv
+    [[ -d .direnv ]] || mkdir .direnv
     local dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
     local tmp=$(nix-shell --show-trace --pure "$@" \
       --run "$dump_cmd" | grep -oP '(?<=_____direnv_____).*')
@@ -32,12 +34,14 @@ use_nix() {
     log_status using cached derivation
   fi
   local term_backup=$TERM path_backup=$PATH
-  if [ -z ${TMPDIR+x} ]; then
+  if [[ -z ${TMPDIR+x} ]]; then
     local tmp_backup=$TMPDIR
   fi
 
   log_status eval $cache
-  eval "$(< $cache)"
+  local cache_content
+  read cache_content < "$cache"
+  eval "$cache_content"
   export PATH=$PATH:$path_backup TERM=$term_backup TMPDIR=$tmp_backup
   if [ -z ${tmp_backup+x} ]; then
     export TMPDIR=${tmp_backup}
@@ -46,15 +50,15 @@ use_nix() {
   fi
 
   # `nix-shell --pure` sets invalid ssl certificate paths
-  if [ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]; then
+  if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
     unset SSL_CERT_FILE
   fi
-  if [ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]; then
+  if [[ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
     unset NIX_SSL_CERT_FILE
   fi
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
-  if [ "$out" ] && (( $update_drv )); then
+  if [[ "$out" ]] && (( $update_drv )); then
     local drv_link=".direnv/drv"
     local drv="$(nix show-derivation $out | grep -E -o -m1 '/nix/store/.*.drv')"
     local stripped_pwd=${PWD/\//}
