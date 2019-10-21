@@ -1,15 +1,23 @@
+#!/usr/bin/env bash
+
+
 use_nix() {
-  local path="$(nix-instantiate --find-file nixpkgs)"
+  local path
+  path="$(nix-instantiate --find-file nixpkgs)"
+
+  if [[ "${direnv:-}" == "" ]]; then
+    log_status "\$direnv environment variable was not defined. Was this script run inside direnv?"
+  fi
 
   local version
   if [[ -f "${path}/.version-suffix" ]]; then
-    read version < "${path}/.version-suffix"
+    read -r version < "${path}/.version-suffix"
   elif [[ -f "${path}/.git/HEAD" ]]; then
     local head
-    read head < "${path}/.git/HEAD"
+    read -r head < "${path}/.git/HEAD"
     local regex="ref: (.*)"
     if [[ "$head" =~  $regex ]]; then
-      read version < ".git/${BASH_REMATCH[1]}"
+      read -r version < ".git/${BASH_REMATCH[1]}"
     else
       version="$head"
     fi
@@ -25,8 +33,9 @@ use_nix() {
     [[ shell.nix -nt "$cache" ]];
   then
     [[ -d .direnv ]] || mkdir .direnv
-    local dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
-    local tmp=$(nix-shell --show-trace --pure "$@" \
+    local dump_cmd tmp
+    dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
+    tmp=$(nix-shell --show-trace --pure "$@" \
       --run "$dump_cmd" | grep -oP '(?<=_____direnv_____).*')
     echo "$tmp" > "$cache"
     update_drv=1
@@ -56,9 +65,9 @@ use_nix() {
   fi
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
-  if [[ "$out" ]] && (( $update_drv )); then
-    local drv_link=".direnv/drv"
-    local drv="$(nix show-derivation $out | grep -E -o -m1 '/nix/store/.*.drv')"
+  if [[ "${out:-}" != "" ]] && (( update_drv )); then
+    local drv_link=".direnv/drv" drv
+    drv=$(nix show-derivation "$out" | grep -E -o -m1 '/nix/store/.*.drv')
     local stripped_pwd=${PWD/\//}
     local escaped_pwd=${stripped_pwd//-/--}
     local escaped_pwd=${escaped_pwd//\//-}
