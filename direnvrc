@@ -38,10 +38,8 @@ use_nix() {
     local tmp_backup=$TMPDIR
   fi
 
-  log_status eval $cache
-  local cache_content
-  read cache_content < "$cache"
-  eval "$cache_content"
+  log_status eval "$cache"
+  eval < "$cache"
   export PATH=$PATH:$path_backup TERM=$term_backup TMPDIR=$tmp_backup
   if [ -z ${tmp_backup+x} ]; then
     export TMPDIR=${tmp_backup}
