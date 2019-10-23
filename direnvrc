@@ -35,8 +35,8 @@ use_nix() {
     [[ -d .direnv ]] || mkdir .direnv
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
-    tmp=$(nix-shell --show-trace --pure "$@" \
-      --run "$dump_cmd" | grep -oP '(?<=_____direnv_____).*')
+    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd" \
+              | grep -oP '(?<=_____direnv_____).*')
     echo "$tmp" > "$cache"
     update_drv=1
   else
@@ -48,7 +48,8 @@ use_nix() {
   fi
 
   log_status eval "$cache"
-  eval < "$cache"
+  read -r cache_content < "$cache"
+  eval "$cache_content"
   export PATH=$PATH:$path_backup TERM=$term_backup TMPDIR=$tmp_backup
   if [ -z ${tmp_backup+x} ]; then
     export TMPDIR=${tmp_backup}
