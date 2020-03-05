@@ -50,8 +50,8 @@ use_nix() {
   log_status eval "$cache"
   read -r cache_content < "$cache"
   eval "$cache_content"
-  export PATH=$PATH:$path_backup TERM=$term_backup TMPDIR=$tmp_backup
-  if [ ! -z ${tmp_backup+x} ]; then
+  export PATH=$PATH:$path_backup TERM=$term_backup 
+  if [[ ! -z ${tmp_backup+x} ]]; then
     export TMPDIR=${tmp_backup}
   else
     unset TMPDIR
