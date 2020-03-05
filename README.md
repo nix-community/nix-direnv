@@ -20,3 +20,10 @@ Then source the direnvrc from this repository in your own `.direnvrc`
 # put this in ~/.direnvrc
 source $HOME/.nix-direnv/direnvrc
 ```
+
+For derivations to persist garbage collection, set the following in nix.conf:
+
+```
+keep-derivations = true
+keep-outputs = true
+```
