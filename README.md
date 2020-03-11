@@ -27,3 +27,9 @@ For derivations to persist garbage collection, set the following in nix.conf:
 keep-derivations = true
 keep-outputs = true
 ```
+
+## Known Bugs
+
+At the moment nix-direnv depends on gnugrep and a modern bash version.
+This might lead to [problems](https://github.com/nix-community/nix-direnv/issues/3) on macOS.
+As a work-around we suggest to install direnv/grep via nix or homebrew.
