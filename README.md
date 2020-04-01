@@ -1,5 +1,7 @@
 # nix-direnv
 
+![Test](https://github.com/nix-community/nix-direnv/workflows/Test/badge.svg)
+
 A fast, persistent use_nix implementation for direnv.
 Prominent features:
 
