@@ -47,6 +47,9 @@ use_nix() {
     local tmp_backup=$TMPDIR
   fi
 
+  local impure_ssl_cert_file=${SSL_CERT_FILE:-}
+  local impure_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-}
+
   log_status eval "$cache"
   read -r cache_content < "$cache"
   eval "$cache_content"
@@ -59,10 +62,18 @@ use_nix() {
 
   # `nix-shell --pure` sets invalid ssl certificate paths
   if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    unset SSL_CERT_FILE
+    if [[ ! -z ${impure_ssl_cert_file+x} ]]; then
+      export SSL_CERT_FILE=${impure_ssl_cert_file}
+    else
+      unset SSL_CERT_FILE
+    fi
   fi
   if [[ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    unset NIX_SSL_CERT_FILE
+    if [[ ! -z ${impure_nix_ssl_cert_file+x} ]]; then
+      export NIX_SSL_CERT_FILE=${impure_nix_ssl_cert_file}
+    else
+      unset NIX_SSL_CERT_FILE
+    fi
   fi
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
