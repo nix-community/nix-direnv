@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-
+# shellcheck shell=bash
 
 use_nix() {
   local path
@@ -53,7 +52,7 @@ use_nix() {
   log_status eval "$cache"
   read -r cache_content < "$cache"
   eval "$cache_content"
-  export PATH=$PATH:$path_backup TERM=$term_backup 
+  export PATH=$PATH:$path_backup TERM=$term_backup
   if [[ -n ${tmp_backup+x} ]]; then
     export TMPDIR=${tmp_backup}
   else
