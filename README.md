@@ -35,3 +35,15 @@ keep-outputs = true
 At the moment nix-direnv depends on gnugrep and a modern bash version.
 This might lead to [problems](https://github.com/nix-community/nix-direnv/issues/3) on macOS.
 As a work-around we suggest to install direnv/grep via nix or homebrew.
+
+## Why not using lorri instead.
+
+Lorri causes large CPU load when `$NIXPKGS` is pointed to a directory, i.e. a
+git checkout. This is because it tries to watch any referenced nix file and
+re-evaluates if those changes. Nix-direnv comprises between performance and
+correctness and only reevaluate direnv if either the project-specific
+`default.nix` / `shell.nix` changes or if there is a new commit added to
+`nixpkgs`. A re-evaluation can be also triggered by using `touch shell.nix` in
+the same project. Also `nix-direnv` does not require additional software besides
+`direnv` + `nix` i.e. a daemon and the function could be included into the
+project itself.
