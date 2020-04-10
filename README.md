@@ -30,13 +30,29 @@ keep-derivations = true
 keep-outputs = true
 ```
 
+## Storing .direnv outside the project directory
+
+`.direnv` might interact badly with backups (i.e. Dropbox) or IDEs.
+Therefore it's possible to override in `$HOME/.config/direnv/direnvrc` or
+in own project's `.envrc` a variable called `$direnv_layout_dir`.
+The following example will create a unique directory name per project
+in `$HOME/.cache/direnv/layouts/`:
+
+
+```bash
+# $HOME/.config/direnv/direnvrc
+: ${XDG_CACHE_HOME:=$HOME/.cache}
+pwd_hash=$(echo -n $PWD | shasum | cut -d ' ' -f 1)
+direnv_layout_dir=$XDG_CACHE_HOME/direnv/layouts/$pwd_hash
+```
+
 ## Known Bugs
 
 At the moment nix-direnv depends on gnugrep and a modern bash version.
 This might lead to [problems](https://github.com/nix-community/nix-direnv/issues/3) on macOS.
 As a work-around we suggest to install direnv/grep via nix or homebrew.
 
-## Why not using lorri instead.
+## Why not using lorri instead?
 
 Lorri causes large CPU load when `$NIXPKGS` is pointed to a directory, i.e. a
 git checkout. This is because it tries to watch any referenced nix file and
