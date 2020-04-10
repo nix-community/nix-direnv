@@ -1,5 +1,7 @@
 # shellcheck shell=bash
 
+: "${direnv_layout_dir:=.direnv}"
+
 use_nix() {
   local path
   path="$(nix-instantiate --find-file nixpkgs)"
@@ -22,7 +24,7 @@ use_nix() {
     fi
   fi
 
-  local cache=".direnv/cache-${version:-unknown}"
+  local cache="${direnv_layout_dir}/cache-${version:-unknown}"
 
   local update_drv=0
   if [[ ! -e "$cache" ]] || \
@@ -31,7 +33,7 @@ use_nix() {
     [[ default.nix -nt "$cache" ]] || \
     [[ shell.nix -nt "$cache" ]];
   then
-    [[ -d .direnv ]] || mkdir .direnv
+    [[ -d "${direnv_layout_dir}" ]] || mkdir "${direnv_layout_dir}"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
     tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd" \
@@ -77,7 +79,7 @@ use_nix() {
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
-    local drv_link=".direnv/drv" drv
+    local drv_link="${direnv_layout_dir}/drv" drv
     drv=$(nix show-derivation "$out" | grep -E -o -m1 '/nix/store/.*.drv')
     local stripped_pwd=${PWD/\//}
     local escaped_pwd=${stripped_pwd//-/--}
