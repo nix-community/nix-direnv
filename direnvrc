@@ -84,7 +84,7 @@ use_nix() {
     local escaped_pwd=${stripped_pwd//-/--}
     local escaped_pwd=${escaped_pwd//\//-}
     ln -fs "$drv" "$drv_link"
-    ln -fs "$drv_link" "/nix/var/nix/gcroots/per-user/$LOGNAME/$escaped_pwd"
+    ln -fs "$drv_link" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
     log_status renewed cache and derivation link
   fi
 
