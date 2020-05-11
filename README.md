@@ -10,10 +10,26 @@ Prominent features:
   shell derivation in the user's `gcroots` (Life is too short to loose your
   build cache of your project if you are in a plane without internet connection)
 
-## USAGE
+## Installation via nix
 
-```console
-$ git clone https://github.com/nix-community/nix-direnv $HOME/.nix-direnv
+Since 20.03 you can install nix-direnv via nix:
+
+### NixOS
+
+In `/etc/nixos/configuration.nix`:
+
+```
+{ pkgs, ... }: {
+  environment.systemPackages = with pkgs; [ nix-direnv ];
+  # nix options for derivations to persist garbage collection
+  nix.extraOptions = ''
+    keep-outputs = true
+    keep-derivations = true
+  '';
+  environment.pathsToLink = [
+    "/share/nix-direnv"
+  ];
+}
 ```
 
 Then source the direnvrc from this repository in your own `.direnvrc`
@@ -21,13 +37,75 @@ Then source the direnvrc from this repository in your own `.direnvrc`
 ```bash
 # put this in ~/.direnvrc
 source $HOME/.nix-direnv/direnvrc
+
+if [ -f /run/current-system/sw/share/nix-direnv/direnvrc ]; then
+  source /run/current-system/sw/share/nix-direnv/direnvrc
+fi
 ```
 
-For derivations to persist garbage collection, set the following in nix.conf:
+### Home-manager
+
+In `$HOME/.config/nixpkgs/home.nix` add
+
+```
+{ pkgs, ... }:
+
+home.packages = with pkgs; [
+  nix-direnv
+];
+```
+
+Then add the following lines to your direnvrc:
+
+```
+if [ -f ~/.nix-profile/share/nix-direnv/direnvrc ]; then
+  source ~/.nix-profile/share/nix-direnv/direnvrc
+fi
+```
+
+Optional: To protect your nix-shell against garbage collection you also need to add these options to your nix configuration
+
+If you are on NixOS also add the following lines to your `/etc/nixos/configuration.nix`:
+
+```
+{ pkgs, ... }: {
+  nix.extraOptions = ''
+    keep-outputs = true
+    keep-derivations = true
+  '';
+}
+```
+
+On other systems with nix add the following configuration to your `/etc/nix/nix.conf`:
 
 ```
 keep-derivations = true
 keep-outputs = true
+```
+
+## Installation via nix-env
+
+As **non-root** user do the following:
+
+```console
+nix-env -f '<nixpkgs>' -iA nix-direnv
+```
+
+Than follow the home-manager installation except for the `$HOME/.config/nixpkgs/home.nix` changes.
+
+## Installation from source
+
+Clone the repository to some directory
+
+```console
+$ git clone https://github.com/nix-community/nix-direnv $HOME/nix-direnv
+```
+
+Then source the direnvrc from this repository in your own `.direnvrc`
+
+```bash
+# put this in ~/.direnvrc
+source $HOME/nix-direnv/direnvrc
 ```
 
 ## Storing .direnv outside the project directory
