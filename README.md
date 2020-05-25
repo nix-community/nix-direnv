@@ -50,17 +50,14 @@ In `$HOME/.config/nixpkgs/home.nix` add
 ```
 { pkgs, ... }:
 
-home.packages = with pkgs; [
-  nix-direnv
-];
-```
+{
+  # ...other config, other config...
 
-Then add the following lines to your direnvrc:
-
-```
-if [ -f ~/.nix-profile/share/nix-direnv/direnvrc ]; then
-  source ~/.nix-profile/share/nix-direnv/direnvrc
-fi
+  programs.direnv.enable = true;
+  programs.direnv.stdlib = ''
+    source ${pkgs.nix-direnv}/share/nix-direnv/direnvrc
+  '';
+}
 ```
 
 Optional: To protect your nix-shell against garbage collection you also need to add these options to your nix configuration
