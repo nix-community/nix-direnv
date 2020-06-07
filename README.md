@@ -54,9 +54,7 @@ In `$HOME/.config/nixpkgs/home.nix` add
   # ...other config, other config...
 
   programs.direnv.enable = true;
-  programs.direnv.stdlib = ''
-    source ${pkgs.nix-direnv}/share/nix-direnv/direnvrc
-  '';
+  programs.direnv.enableNixDirenvIntegration = true;
 }
 ```
 
