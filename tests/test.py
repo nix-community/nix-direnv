@@ -27,8 +27,7 @@ class IntegrationTest(unittest.TestCase):
         shutil.copytree(TEST_ROOT.joinpath("testenv"), self.testenv)
         direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
         with open(self.testenv.joinpath(".envrc"), "w") as f:
-            f.write(f"source {direnvrc}\n")
-            f.write(f"use nix")
+            f.write(f"source {direnvrc}\n" "use nix")
 
     def test_direnv(self) -> None:
         run(["direnv", "allow"], cwd=str(self.testenv), env=self.env, check=True)
