@@ -11,7 +11,7 @@ use_nix() {
 
   local version
   if [[ -f "${path}/.version-suffix" ]]; then
-    read -r version < "${path}/.version-suffix"
+    version=$(< "${path}/.version-suffix")
   elif [[ -f "${path}/.git/HEAD" ]]; then
     local head
     read -r head < "${path}/.git/HEAD"
