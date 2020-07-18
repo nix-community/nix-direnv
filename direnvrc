@@ -62,7 +62,6 @@ use_nix() {
 
   # `nix-shell --pure` sets IN_NIX_SHELL to pure which is
   # misleading since we are in an impure shell now
-  # https://github.com/nix-community/nix-direnv/issues/28
   export IN_NIX_SHELL=impure
 
   # `nix-shell --pure` sets invalid ssl certificate paths
