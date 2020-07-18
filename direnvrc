@@ -60,6 +60,10 @@ use_nix() {
     unset TMPDIR
   fi
 
+  # `nix-shell --pure` sets IN_NIX_SHELL to pure which is
+  # misleading since we are in an impure shell now
+  export IN_NIX_SHELL=impure
+
   # `nix-shell --pure` sets invalid ssl certificate paths
   if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
     if [[ ${impure_ssl_cert_file} == __UNSET__ ]]; then
