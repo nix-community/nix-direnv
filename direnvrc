@@ -1,5 +1,85 @@
 # shellcheck shell=bash
 
+_nix_import_env() {
+  local env=$1
+
+  local term_backup=$TERM path_backup=$PATH
+  if [[ -n ${TMPDIR+x} ]]; then
+    local tmp_backup=$TMPDIR
+  fi
+  local impure_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
+  local impure_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
+
+  eval "$env"
+
+  # `nix-shell --pure` sets invalid ssl certificate paths
+  if [[ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
+    if [[ $1 == __UNSET__ ]]; then
+      unset NIX_SSL_CERT_FILE
+    else
+      export NIX_SSL_CERT_FILE=${impure_ssl_cert_file}
+    fi
+  fi
+
+  if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
+    if [[ $impure_ssl_cert_file == __UNSET__ ]]; then
+      unset SSL_CERT_FILE
+    else
+      export SSL_CERT_FILE=$impure_nix_ssl_cert_file
+    fi
+  fi
+
+  export PATH=$PATH:$path_backup TERM=$term_backup
+  if [[ -n ${tmp_backup+x} ]]; then
+    export TMPDIR=${tmp_backup}
+  else
+    unset TMPDIR
+  fi
+
+  # misleading since we are in an impure shell now
+  export IN_NIX_SHELL=impure
+}
+
+_nix_add_gcroot() {
+  local storepath=$1
+  local symlink=$2
+
+  local stripped_pwd=${PWD/\//}
+  local escaped_pwd=${stripped_pwd//-/--}
+  local escaped_pwd=${escaped_pwd//\//-}
+  ln -fs "$storepath" "$symlink"
+  ln -fs "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
+}
+
+use_flake() {
+  watch_file flake.nix
+  watch_file flake.lock
+
+  local profile="$(direnv_layout_dir)/flake-profile"
+  local profile_rc="${profile}.rc"
+
+  if [[ ! -e "$profile" ]] || \
+    [[ ! -e "$profile_rc" ]] || \
+    [[ "$HOME/.direnvrc" -nt "$profile_rc" ]] || \
+    [[ .envrc -nt "$profile_rc" ]] || \
+    [[ flake.nix -nt "$profile_rc" ]] || \
+    [[ flake.lock -nt "$profile_rc" ]];
+  then
+    local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
+    [[ -d "$(direnv_layout_dir)" ]] || mkdir "$(direnv_layout_dir)"
+    local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
+    drv=$(realpath "$tmp_profile")
+    echo "$tmp_profile_rc" > "$profile_rc"
+    rm -f "$tmp_profile" "$tmp_profile"*
+    _nix_add_gcroot "$drv" "$profile"
+    log_status renewed cache
+  else
+    log_status using cached dev shell
+  fi
+
+  _nix_import_env "$(< "$profile_rc")"
+}
+
 use_nix() {
   local path direnv_dir
   path=$(nix-instantiate --find-file nixpkgs)
@@ -42,57 +122,20 @@ use_nix() {
   else
     log_status using cached derivation
   fi
-  local term_backup=$TERM path_backup=$PATH
-  if [[ -n ${TMPDIR+x} ]]; then
-    local tmp_backup=$TMPDIR
-  fi
-
-  local impure_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
-  local impure_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
 
   log_status eval "$cache"
   read -r cache_content < "$cache"
-  eval "$cache_content"
-  export PATH=$PATH:$path_backup TERM=$term_backup
-  if [[ -n ${tmp_backup+x} ]]; then
-    export TMPDIR=${tmp_backup}
-  else
-    unset TMPDIR
-  fi
-
-  # `nix-shell --pure` sets IN_NIX_SHELL to pure which is
-  # misleading since we are in an impure shell now
-  export IN_NIX_SHELL=impure
-
-  # `nix-shell --pure` sets invalid ssl certificate paths
-  if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    if [[ ${impure_ssl_cert_file} == __UNSET__ ]]; then
-      unset SSL_CERT_FILE
-    else
-      export SSL_CERT_FILE=${impure_ssl_cert_file}
-    fi
-  fi
-  if [[ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    if [[ ${impure_nix_ssl_cert_file} == __UNSET__ ]]; then
-      unset NIX_SSL_CERT_FILE
-    else
-      export NIX_SSL_CERT_FILE=${impure_nix_ssl_cert_file}
-    fi
-  fi
+  _nix_import_env "$cache_content"
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
     local drv_link="${direnv_dir}/drv" drv
-    drv=$(nix show-derivation "$out" | grep -E -o -m1 '/nix/store/.*.drv')
-    local stripped_pwd=${PWD/\//}
-    local escaped_pwd=${stripped_pwd//-/--}
-    local escaped_pwd=${escaped_pwd//\//-}
-    ln -fs "$drv" "$drv_link"
-    ln -fs "$drv_link" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
+    drv=$(nix show-derivation "$1" | grep -E -o -m1 '/nix/store/.*.drv')
+    _nix_add_gcroot "drv" "$drv_link"
     log_status renewed cache and derivation link
   fi
 
-  if [[ $# = 0 ]]; then
+  if [[ "$#" == 0 ]]; then
     watch_file default.nix
     watch_file shell.nix
   fi
