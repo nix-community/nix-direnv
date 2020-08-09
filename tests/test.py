@@ -25,11 +25,12 @@ class IntegrationTest(unittest.TestCase):
         self.env["HOME"] = str(self.dir.name)
         self.testenv = Path(self.dir.name).joinpath("testenv")
         shutil.copytree(TEST_ROOT.joinpath("testenv"), self.testenv)
-        direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
-        with open(self.testenv.joinpath(".envrc"), "w") as f:
-            f.write(f"source {direnvrc}\n" "use nix")
+        self.direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
 
-    def test_direnv(self) -> None:
+    def test_nix_shell(self) -> None:
+        with open(self.testenv.joinpath(".envrc"), "w") as f:
+            f.write(f"source {self.direnvrc}\n" "use nix")
+
         run(["direnv", "allow"], cwd=str(self.testenv), env=self.env, check=True)
 
         run(["nix-collect-garbage"], check=True)
@@ -45,7 +46,6 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(out1.returncode, 0)
 
         run(["nix-collect-garbage"], check=True)
-        run(["sh", "-c", "realpath /nix/var/nix/gcroots/per-user/$USER/*"], check=True)
 
         out2 = run(
             ["direnv", "exec", str(self.testenv), "hello"],
@@ -55,6 +55,36 @@ class IntegrationTest(unittest.TestCase):
         )
         sys.stderr.write(out2.stderr)
         self.assertIn("using cached derivation", out2.stderr)
+        self.assertEqual(out2.returncode, 0)
+
+    def test_nix_flake(self) -> None:
+        with open(self.testenv.joinpath(".envrc"), "w") as f:
+            f.write(f"source {self.direnvrc}\n" "use flake")
+
+        run(["direnv", "allow"], cwd=str(self.testenv), env=self.env, check=True)
+
+        run(["nix-collect-garbage"], check=True)
+
+        out1 = run(
+            ["direnv", "exec", str(self.testenv), "hello"],
+            env=self.env,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        sys.stderr.write(out1.stderr)
+        self.assertIn("renewed cache", out1.stderr)
+        self.assertEqual(out1.returncode, 0)
+
+        run(["nix-collect-garbage"], check=True)
+
+        out2 = run(
+            ["direnv", "exec", str(self.testenv), "hello"],
+            env=self.env,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        sys.stderr.write(out2.stderr)
+        self.assertIn("using cached dev shell", out2.stderr)
         self.assertEqual(out2.returncode, 0)
 
     def tearDown(self) -> None:
