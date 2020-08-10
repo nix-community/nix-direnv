@@ -18,6 +18,18 @@ def run(cmd: List[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, **kwargs)
 
 
+def support_flakes() -> bool:
+    cmd = [
+        "nix-instantiate",
+        "--json",
+        "--eval",
+        "--expr",
+        '(builtins.compareVersions "2.4" builtins.nixVersion) == 1',
+    ]
+    proc = subprocess.run(cmd, text=True, capture_output=True, check=True)
+    return proc.stdout != "true"
+
+
 class IntegrationTest(unittest.TestCase):
     def setUp(self) -> None:
         self.env = os.environ.copy()
@@ -57,6 +69,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertIn("using cached derivation", out2.stderr)
         self.assertEqual(out2.returncode, 0)
 
+    @unittest.skipUnless(support_flakes(), "requires flakes")
     def test_nix_flake(self) -> None:
         with open(self.testenv.joinpath(".envrc"), "w") as f:
             f.write(f"source {self.direnvrc}\n" "use flake")
