@@ -17,7 +17,7 @@ _nix_import_env() {
     if [[ $impure_ssl_cert_file == __UNSET__ ]]; then
       unset SSL_CERT_FILE
     else
-      export SSL_CERT_FILE=$impure_nix_ssl_cert_file
+      export SSL_CERT_FILE=$impure_ssl_cert_file
     fi
   fi
 
@@ -25,7 +25,7 @@ _nix_import_env() {
     if [[ $impure_nix_ssl_cert_file == __UNSET__ ]]; then
       unset NIX_SSL_CERT_FILE
     else
-      export NIX_SSL_CERT_FILE=${impure_ssl_cert_file}
+      export NIX_SSL_CERT_FILE=${impure_nix_ssl_cert_file}
     fi
   fi
 
