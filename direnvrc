@@ -77,7 +77,44 @@ use_flake() {
     log_status using cached dev shell
   fi
 
-  _nix_import_env "$(< "$profile_rc")"
+  local old_nix_build_top=${NIX_BUILD_TOP:-__UNSET__}
+  local old_tmp=${TMP:-__UNSET__}
+  local old_tmpdir=${TMPDIR:-__UNSET__}
+  local old_temp=${TEMP:-__UNSET__}
+  local old_tempdir=${TEMPDIR:-__UNSET__}
+  eval "$(< "$profile_rc")"
+  # nix print-env-dev will create a temporary directory and use it a TMPDIR,
+  # we cannot rely on this directory beeing not deleted at some point,
+  # hence we are just removing it right away.
+  if [[ "$NIX_BUILD_TOP" == */nix-shell.* && -d "$NIX_BUILD_TOP" ]]; then
+    rmdir "$NIX_BUILD_TOP"
+  fi
+
+  if [[ "$old_nix_build_top" == __UNSET__ ]]; then
+    unset NIX_BUILD_TOP
+  else
+    export NIX_BUILD_TOP=$old_nix_build_top
+  fi
+  if [[ "$old_tmp" == __UNSET__ ]]; then
+    unset TMP
+  else
+    export TMP=$old_temp
+  fi
+  if [[ "$old_tmpdir" == __UNSET__ ]]; then
+    unset TMPDIR
+  else
+    export TMPDIR=$old_tmpdir
+  fi
+  if [[ "$old_temp" == __UNSET__ ]]; then
+    unset TEMP
+  else
+    export TEMP=$old_temp
+  fi
+  if [[ "$old_tempdir" == __UNSET__ ]]; then
+    unset TEMPDIR
+  else
+    export TEMPDIR=$old_tempdir
+  fi
 }
 
 use_nix() {
