@@ -129,6 +129,8 @@ nix-direnv also comes with a flake alternative. The code is tested and works how
 since future nix versions might change their api regarding this feature we cannot
 guarantee stability after an nix upgrade.
 
+Save this file as `flake.nix`:
+
 ``` nix
 {
   description = "A very basic flake";
@@ -143,6 +145,13 @@ guarantee stability after an nix upgrade.
       };
     });
 }
+```
+
+Then add `use flake` to your `.envrc`:
+
+```console
+$ echo "use flake" >> .envrc
+$ direnv allow
 ```
 
 ## Storing .direnv outside the project directory
