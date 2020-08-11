@@ -131,7 +131,7 @@ use_nix() {
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
     local drv_link="${direnv_dir}/drv" drv
     drv=$(nix show-derivation "$1" | grep -E -o -m1 '/nix/store/.*.drv')
-    _nix_add_gcroot "drv" "$drv_link"
+    _nix_add_gcroot "$drv" "$drv_link"
     log_status renewed cache and derivation link
   fi
 
