@@ -104,6 +104,56 @@ Then source the direnvrc from this repository in your own `.direnvrc`
 source $HOME/nix-direnv/direnvrc
 ```
 
+## Usage example
+
+Either add `shell.nix` or a `default.nix` to the same directory:
+
+``` nix
+# save this as shell.nix
+{ pkgs ? with import <nixpkgs> {}}:
+
+pkgs.mkShell {
+  nativeBuildInputs = [ pkgs.hello ];
+}
+```
+
+Then add the line `use nix` to your envrc:
+```console
+$ echo "use nix" >> .envrc
+$ direnv allow
+```
+
+## Experimental flakes support
+
+nix-direnv also comes with a flake alternative. The code is tested and works however
+since future nix versions might change their api regarding this feature we cannot
+guarantee stability after an nix upgrade.
+
+Save this file as `flake.nix`:
+
+``` nix
+{
+  description = "A very basic flake";
+  # Provides abstraction to boiler-code when specifying multi-platform outputs.
+  inputs.flake-utils.url = "github:numtide/flake-utils";
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      devShell = pkgs.mkShell {
+        nativeBuildInputs = [ pkgs.hello ];
+      };
+    });
+}
+```
+
+Then add `use flake` to your `.envrc`:
+
+```console
+$ echo "use flake" >> .envrc
+$ direnv allow
+```
+
 ## Storing .direnv outside the project directory
 
 A `.direnv` directory will be created in each `use_nix` project, which might

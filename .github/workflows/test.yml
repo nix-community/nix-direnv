@@ -2,15 +2,34 @@ name: "Test"
 on:
   pull_request:
   push:
+
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # macOS installer for nixUnstable seems broken atm
+        #os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest ]
+        nix-install-url:
+          - https://nixos.org/nix/install
+          - https://github.com/numtide/nix-flakes-installer/releases/download/nix-2.4pre20200618_377345e/install
+          #- https://github.com/numtide/nix-flakes-installer/releases/download/nix-3.0pre20200804_ed52cf6/install
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - uses: cachix/install-nix-action@v10
+      with:
+        install_url: ${{ matrix.nix-install-url }}
     - name: Prevent garbage collections of gcroots
       run:
-        printf "keep-outputs = true\nkeep-derivations = true\n" | sudo tee -a /etc/nix/nix.conf;
+        printf "keep-outputs = true\nkeep-derivations = true\nexperimental-features = nix-command flakes\n" | sudo tee -a /etc/nix/nix.conf;
+    - name: Restart nix-daemon with systemctl
+      run:
         sudo systemctl restart nix-daemon
+      if: matrix.os == 'ubuntu-latest'
+    - name: Restart nix-daemon with launchctl
+      run:
+        sudo launchctl kickstart -k org.nixos.nix-daemon
+      if: matrix.os == 'macos-latest'
     - run:
         nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/nixpkgs-unstable.tar.gz ci.nix --run 'true'
