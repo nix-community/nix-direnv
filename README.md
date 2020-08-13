@@ -180,7 +180,7 @@ As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or 
 
 ## Why not use `lorri` instead?
 
-Lorri causes large CPU load when `$NIXPKGS` is pointed to a directory, e.g. a
+Lorri causes large CPU load when nixpkgs in `NIX_PATH` is pointed to a directory, e.g. a
 git checkout. This is because it tries to watch all referenced Nix files and
 re-evaluate them when they change. Nix-direnv compromises between performance and
 correctness, and only re-evaluates direnv if either the project-specific
