@@ -172,6 +172,15 @@ pwd_hash=$(echo -n $PWD | shasum | cut -d ' ' -f 1)
 direnv_layout_dir=$XDG_CACHE_HOME/direnv/layouts/$pwd_hash
 ```
 
+## Manually re-triggering evaluation
+
+In some case nix-direnv does not detect if imported file has changed and still provides
+the old cached values. An evaluation can be triggered by updating your `.envrc`:
+
+```console
+$ touch .envrc
+```
+
 ## Known Bugs
 
 At the moment `nix-direnv` depends on GNU Grep and a modern Bash version.
