@@ -189,11 +189,13 @@ As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or 
 
 ## Why not use `lorri` instead?
 
-Lorri causes large CPU load when nixpkgs in `NIX_PATH` is pointed to a directory, e.g. a
-git checkout. This is because it tries to watch all referenced Nix files and
-re-evaluate them when they change. Nix-direnv compromises between performance and
-correctness, and only re-evaluates direnv if either the project-specific
-`default.nix` / `shell.nix` changes, or if there is a new commit added to
-`nixpkgs`. A re-evaluation can be also triggered by using `touch shell.nix` in
-the same project. Also `nix-direnv` does not require an additional daemon, so it can be
-included into the project itself and enabled without further user effort.
+- nix-direnv has flakes support.
+- High CPU load/resource usage in some cases: When nixpkgs in `NIX_PATH` is
+  pointed to a directory, i.e. a git checkout, Lorri will try to evaluate
+  nixpkgs everytime something changes causing high cpu load. Nix-direnv
+  compromises between performance and correctness, and only re-evaluates direnv
+  if either the project-specific `default.nix` / `shell.nix` changes, or if
+  there is a new commit added to `nixpkgs`. A re-evaluation can be also
+  triggered by using `touch .envrc` in the same project.
+- No additional daemon or services required: The codesize is small enough that it can be vendored
+  into a project itself.
