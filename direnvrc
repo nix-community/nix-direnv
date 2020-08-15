@@ -1,40 +1,37 @@
 # shellcheck shell=bash
 
+_nix_export_or_unset() {
+  local key=$1 value=$2
+  if [[ "$value" == __UNSET__ ]]; then
+    unset "$key"
+  else
+    export "$key=$value"
+  fi
+}
+
 _nix_import_env() {
   local env=$1
 
-  local term_backup=$TERM path_backup=$PATH
-  if [[ -n ${TMPDIR+x} ]]; then
-    local tmp_backup=$TMPDIR
-  fi
-  local impure_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
-  local impure_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
+  local old_path=${PATH:-}
+  local old_term=${TERM:-__UNSET__}
+  local old_tmpdir=${TMPDIR:-__UNSET__}
+  local old_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
+  local old_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
 
   eval "$env"
 
   # `nix-shell --pure` sets invalid ssl certificate paths
   if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    if [[ $impure_ssl_cert_file == __UNSET__ ]]; then
-      unset SSL_CERT_FILE
-    else
-      export SSL_CERT_FILE=$impure_ssl_cert_file
-    fi
+    _nix_export_or_unset SSL_CERT_FILE "$old_ssl_cert_file"
   fi
 
   if [[ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    if [[ $impure_nix_ssl_cert_file == __UNSET__ ]]; then
-      unset NIX_SSL_CERT_FILE
-    else
-      export NIX_SSL_CERT_FILE=${impure_nix_ssl_cert_file}
-    fi
+    _nix_export_or_unset NIX_SSL_CERT_FILE "$old_nix_ssl_cert_file"
   fi
 
-  export PATH=$PATH:$path_backup TERM=$term_backup
-  if [[ -n ${tmp_backup+x} ]]; then
-    export TMPDIR=${tmp_backup}
-  else
-    unset TMPDIR
-  fi
+  export PATH=$PATH${old_path:+":"}$old_path
+  _nix_export_or_unset TEMPDIR "$old_tmp"
+  _nix_export_or_unset TERM "$old_term"
 
   # misleading since we are in an impure shell now
   export IN_NIX_SHELL=impure
@@ -58,12 +55,13 @@ use_flake() {
   local profile="$(direnv_layout_dir)/flake-profile"
   local profile_rc="${profile}.rc"
 
-  if [[ ! -e "$profile" ]] || \
-    [[ ! -e "$profile_rc" ]] || \
-    [[ "$HOME/.direnvrc" -nt "$profile_rc" ]] || \
-    [[ .envrc -nt "$profile_rc" ]] || \
-    [[ flake.nix -nt "$profile_rc" ]] || \
-    [[ flake.lock -nt "$profile_rc" ]];
+  if [[ ! -e "$profile" \
+     || ! -e "$profile_rc" \
+     || "$HOME/.direnvrc" -nt "$profile_rc"
+     || .envrc -nt "$profile_rc"
+     || flake.nix -nt "$profile_rc"
+     || flake.lock -nt "$profile_rc"
+     ]];
   then
     local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
     [[ -d "$(direnv_layout_dir)" ]] || mkdir "$(direnv_layout_dir)"
@@ -90,31 +88,11 @@ use_flake() {
     rmdir "$NIX_BUILD_TOP"
   fi
 
-  if [[ "$old_nix_build_top" == __UNSET__ ]]; then
-    unset NIX_BUILD_TOP
-  else
-    export NIX_BUILD_TOP=$old_nix_build_top
-  fi
-  if [[ "$old_tmp" == __UNSET__ ]]; then
-    unset TMP
-  else
-    export TMP=$old_temp
-  fi
-  if [[ "$old_tmpdir" == __UNSET__ ]]; then
-    unset TMPDIR
-  else
-    export TMPDIR=$old_tmpdir
-  fi
-  if [[ "$old_temp" == __UNSET__ ]]; then
-    unset TEMP
-  else
-    export TEMP=$old_temp
-  fi
-  if [[ "$old_tempdir" == __UNSET__ ]]; then
-    unset TEMPDIR
-  else
-    export TEMPDIR=$old_tempdir
-  fi
+  _nix_export_or_unset NIX_BUILD_TOP "$old_nix_build_top"
+  _nix_export_or_unset TMP "$old_tmp"
+  _nix_export_or_unset TMPDIR "$old_tmpdir"
+  _nix_export_or_unset TEMP "$old_temp"
+  _nix_export_or_unset TEMPDIR "$old_tempdir"
 }
 
 use_nix() {
@@ -143,11 +121,12 @@ use_nix() {
   local cache="$direnv_dir/cache-${version:-unknown}"
 
   local update_drv=0
-  if [[ ! -e "$cache" ]] || \
-    [[ "$HOME/.direnvrc" -nt "$cache" ]] || \
-    [[ .envrc -nt "$cache" ]] || \
-    [[ default.nix -nt "$cache" ]] || \
-    [[ shell.nix -nt "$cache" ]];
+  if [[ ! -e "$cache" \
+     || "$HOME/.direnvrc" -nt "$cache" \
+     || .envrc -nt "$cache" \
+     || default.nix -nt "$cache" \
+     || shell.nix -nt "$cache" \
+     ]];
   then
     [[ -d "$direnv_dir" ]] || mkdir "$direnv_dir"
     local dump_cmd tmp
