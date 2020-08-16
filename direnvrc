@@ -55,8 +55,8 @@ use_flake() {
   local profile="$(direnv_layout_dir)/flake-profile"
   local profile_rc="${profile}.rc"
 
-  if [[ ! -e "$profile" \
-     || ! -e "$profile_rc" \
+  if [[ ! -e "$profile"
+     || ! -e "$profile_rc"
      || "$HOME/.direnvrc" -nt "$profile_rc"
      || .envrc -nt "$profile_rc"
      || flake.nix -nt "$profile_rc"
@@ -121,11 +121,11 @@ use_nix() {
   local cache="$direnv_dir/cache-${version:-unknown}"
 
   local update_drv=0
-  if [[ ! -e "$cache" \
-     || "$HOME/.direnvrc" -nt "$cache" \
-     || .envrc -nt "$cache" \
-     || default.nix -nt "$cache" \
-     || shell.nix -nt "$cache" \
+  if [[ ! -e "$cache"
+     || "$HOME/.direnvrc" -nt "$cache"
+     || .envrc -nt "$cache"
+     || default.nix -nt "$cache"
+     || shell.nix -nt "$cache"
      ]];
   then
     [[ -d "$direnv_dir" ]] || mkdir "$direnv_dir"
