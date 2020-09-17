@@ -30,7 +30,7 @@ _nix_import_env() {
   fi
 
   export PATH=$PATH${old_path:+":"}$old_path
-  _nix_export_or_unset TEMPDIR "$old_tmp"
+  _nix_export_or_unset TEMPDIR "$old_tmpdir"
   _nix_export_or_unset TERM "$old_term"
 
   # misleading since we are in an impure shell now
