@@ -87,7 +87,7 @@ As **non-root** user do the following:
 nix-env -f '<nixpkgs>' -iA nix-direnv
 ```
 
-Than follow the home-manager installation except for the `$HOME/.config/nixpkgs/home.nix` changes.
+Then follow the home-manager installation except for the `$HOME/.config/nixpkgs/home.nix` changes.
 
 ## Installation from source
 
