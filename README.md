@@ -11,40 +11,16 @@ Prominent features:
   shell derivation in the user's `gcroots` (Life is too short to lose
   your project's build cache if you are on a flight with no internet connection)
 
-## Installation via Nix
+## Installation
 
-Since 20.03 you can install `nix-direnv` via nix:
+There are different ways to install nix-direnv, pick your favourite:
 
-### NixOS
+- via home-manager (recommended)
+- via configuration.nix in NixOS
+- with nix-env
+- from source
 
-In `/etc/nixos/configuration.nix`:
-
-```
-{ pkgs, ... }: {
-  environment.systemPackages = with pkgs; [ nix-direnv ];
-  # nix options for derivations to persist garbage collection
-  nix.extraOptions = ''
-    keep-outputs = true
-    keep-derivations = true
-  '';
-  environment.pathsToLink = [
-    "/share/nix-direnv"
-  ];
-}
-```
-
-Then source the `direnvrc` from this repository in your own `.direnvrc`
-
-```bash
-# put this in ~/.direnvrc
-source $HOME/.nix-direnv/direnvrc
-
-if [ -f /run/current-system/sw/share/nix-direnv/direnvrc ]; then
-  source /run/current-system/sw/share/nix-direnv/direnvrc
-fi
-```
-
-### Home-manager
+### Via home-manager
 
 In `$HOME/.config/nixpkgs/home.nix` add
 
@@ -79,7 +55,32 @@ keep-derivations = true
 keep-outputs = true
 ```
 
-## Installation via nix-env
+### Via configuration.nix in NixOS
+
+In `/etc/nixos/configuration.nix`:
+
+```
+{ pkgs, ... }: {
+  environment.systemPackages = with pkgs; [ nix-direnv ];
+  # nix options for derivations to persist garbage collection
+  nix.extraOptions = ''
+    keep-outputs = true
+    keep-derivations = true
+  '';
+  environment.pathsToLink = [
+    "/share/nix-direnv"
+  ];
+}
+```
+
+Then source the `direnvrc` from this repository in your own `$HOME/.direnvrc`
+
+```bash
+# put this in ~/.direnvrc
+source /run/current-system/sw/share/nix-direnv/direnvrc
+```
+
+### With nix-env
 
 As **non-root** user do the following:
 
@@ -87,9 +88,16 @@ As **non-root** user do the following:
 nix-env -f '<nixpkgs>' -iA nix-direnv
 ```
 
-Then follow the home-manager installation except for the `$HOME/.config/nixpkgs/home.nix` changes.
+Then add nix-direnv to `$HOME/.direnvrc`:
 
-## Installation from source
+```
+source $HOME/.nix-profile/share/nix-direnv/direnvrc
+```
+
+You also need to set `keep-outputs` and `keep-derivations` to nix.conf as described in the installation
+via home-manager section.
+
+### From source
 
 Clone the repository to some directory
 
@@ -103,6 +111,9 @@ Then source the direnvrc from this repository in your own `.direnvrc`
 # put this in ~/.direnvrc
 source $HOME/nix-direnv/direnvrc
 ```
+
+You also need to set `keep-outputs` and `keep-derivations` to nix.conf as described in the installation
+via home-manager section.
 
 ## Usage example
 
