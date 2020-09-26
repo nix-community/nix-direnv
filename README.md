@@ -61,7 +61,7 @@ In `/etc/nixos/configuration.nix`:
 
 ```
 { pkgs, ... }: {
-  environment.systemPackages = with pkgs; [ nix-direnv ];
+  environment.systemPackages = with pkgs; [ direnv nix-direnv ];
   # nix options for derivations to persist garbage collection
   nix.extraOptions = ''
     keep-outputs = true
