@@ -20,6 +20,7 @@ jobs:
     - uses: cachix/install-nix-action@v11
       with:
         install_url: ${{ matrix.nix-install-url }}
+        nix_path: nixpkgs=channel:nixpkgs-unstable
     - name: Prevent garbage collections of gcroots
       run:
         printf "keep-outputs = true\nkeep-derivations = true\nexperimental-features = nix-command flakes\n" | sudo tee -a /etc/nix/nix.conf;
