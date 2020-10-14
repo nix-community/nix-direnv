@@ -133,9 +133,10 @@ use_nix() {
     [[ -d "$direnv_dir" ]] || mkdir "$direnv_dir"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
-    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd" \
-              | grep -oP '(?<=_____direnv_____).*')
-    echo "$tmp" > "$cache"
+    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd")
+    # show original shell hook output
+    echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
+    echo "$tmp" | grep -oP '(?<=_____direnv_____).*' > "$cache"
     update_drv=1
   else
     log_status using cached derivation
