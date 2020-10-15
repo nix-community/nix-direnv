@@ -14,6 +14,7 @@ _nix_import_env() {
 
   local old_path=${PATH:-}
   local old_term=${TERM:-__UNSET__}
+  local old_shell=${SHELL:-__UNSET__}
   local old_tmpdir=${TMPDIR:-__UNSET__}
   local old_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
   local old_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
@@ -30,8 +31,9 @@ _nix_import_env() {
   fi
 
   export PATH=$PATH${old_path:+":"}$old_path
-  _nix_export_or_unset TEMPDIR "$old_tmpdir"
   _nix_export_or_unset TERM "$old_term"
+  _nix_export_or_unset SHELL "$old_shell"
+  _nix_export_or_unset TEMPDIR "$old_tmpdir"
 
   # misleading since we are in an impure shell now
   export IN_NIX_SHELL=impure
@@ -131,9 +133,10 @@ use_nix() {
     [[ -d "$direnv_dir" ]] || mkdir "$direnv_dir"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
-    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd" \
-              | grep -oP '(?<=_____direnv_____).*')
-    echo "$tmp" > "$cache"
+    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd")
+    # show original shell hook output
+    echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
+    echo "$tmp" | grep -oP '(?<=_____direnv_____).*' > "$cache"
     update_drv=1
   else
     log_status using cached derivation
