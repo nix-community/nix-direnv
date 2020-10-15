@@ -66,7 +66,7 @@ use_flake() {
      ]];
   then
     local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
-    [[ -d "$(direnv_layout_dir)" ]] || mkdir "$(direnv_layout_dir)"
+    [[ -d "$(direnv_layout_dir)" ]] || mkdir -p "$(direnv_layout_dir)"
     local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
     drv=$(realpath "$tmp_profile")
     echo "$tmp_profile_rc" > "$profile_rc"
@@ -130,7 +130,7 @@ use_nix() {
      || shell.nix -nt "$cache"
      ]];
   then
-    [[ -d "$direnv_dir" ]] || mkdir "$direnv_dir"
+    [[ -d "$direnv_dir" ]] || mkdir -p "$direnv_dir"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
     tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd")
