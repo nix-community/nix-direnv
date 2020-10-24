@@ -170,7 +170,7 @@ $ direnv allow
 A `.direnv` directory will be created in each `use_nix` project, which might
 interact badly with backups (e.g. Dropbox) or IDEs.
 
-Therefore it's possible to override a variable called `$direnv_layout_dir` in
+Therefore it's possible to override a function called `direnv_layout_dir` in
 `$HOME/.config/direnv/direnvrc` or in each project's `.envrc`.
 
 The following example will create a unique directory name per project
@@ -179,9 +179,16 @@ in `$HOME/.cache/direnv/layouts/`:
 ```bash
 # $HOME/.config/direnv/direnvrc
 : ${XDG_CACHE_HOME:=$HOME/.cache}
-pwd_hash=$(echo -n $PWD | shasum | cut -d ' ' -f 1)
-direnv_layout_dir=$XDG_CACHE_HOME/direnv/layouts/$pwd_hash
+declare -A direnv_layout_dirs
+direnv_layout_dir() {
+    echo "${direnv_layout_dirs[$PWD]:=$(
+        echo -n "$XDG_CACHE_HOME"/direnv/layouts/;
+        echo -n "$PWD" | shasum | cut -d ' ' -f 1
+    )}"
+}
 ```
+During direnv setup `direnv_layout_dir` can be called multiple times and with different values of `$PWD`
+(when including other `.envrc` files). Therefore cache its results in dictionary `direnv_layout_dirs`.
 
 ## Manually re-triggering evaluation
 
