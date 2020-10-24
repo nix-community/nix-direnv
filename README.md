@@ -182,13 +182,13 @@ in `$HOME/.cache/direnv/layouts/`:
 declare -A direnv_layout_dirs
 direnv_layout_dir() {
     echo "${direnv_layout_dirs[$PWD]:=$(
-        echo -n "$XDG_CACHE_HOME"/direnv/layouts/;
+        echo -n "$XDG_CACHE_HOME"/direnv/layouts/
         echo -n "$PWD" | shasum | cut -d ' ' -f 1
     )}"
 }
 ```
 During direnv setup `direnv_layout_dir` can be called multiple times and with different values of `$PWD`
-(when including other `.envrc` files). Therefore cache its results in dictionary `direnv_layout_dirs`.
+(when other `.envrc` files are included). Therefore cache its results in dictionary `direnv_layout_dirs`.
 
 ## Manually re-triggering evaluation
 
