@@ -121,7 +121,7 @@ Either add `shell.nix` or a `default.nix` to the same directory:
 
 ``` nix
 # save this as shell.nix
-{ pkgs ? with import <nixpkgs> {}}:
+{ pkgs ? import <nixpkgs> {}}:
 
 pkgs.mkShell {
   nativeBuildInputs = [ pkgs.hello ];
