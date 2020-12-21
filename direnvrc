@@ -114,7 +114,7 @@ use_nix() {
     read -r head < "${path}/.git/HEAD"
     local regex="ref: (.*)"
     if [[ "$head" =~  $regex ]]; then
-      read -r version < ".git/${BASH_REMATCH[1]}"
+      read -r version < "${path}/.git/${BASH_REMATCH[1]}"
     else
       version="$head"
     fi
