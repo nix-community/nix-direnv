@@ -43,7 +43,7 @@ _nix_add_gcroot() {
   local storepath=$1
   local symlink=$2
 
-  local stripped_pwd=${PWD/\//}
+  local stripped_pwd=${2/\//}
   local escaped_pwd=${stripped_pwd//-/--}
   local escaped_pwd=${escaped_pwd//\//-}
   ln -fsn "$storepath" "$symlink"
