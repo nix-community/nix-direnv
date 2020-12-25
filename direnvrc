@@ -69,7 +69,12 @@ use_flake() {
     local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
     [[ -d "$(direnv_layout_dir)" ]] || mkdir -p "$(direnv_layout_dir)"
     local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
-    drv=$(readlink "$tmp_profile")
+    # macos does not have realpath
+    if command -v realpath >/dev/null; then
+      drv=$(realpath "$tmp_profile")
+    else
+      drv=$(perl -e 'use Cwd "abs_path";print abs_path(shift)' "$tmp_profile")
+    fi
     echo "$tmp_profile_rc" > "$profile_rc"
     rm -f "$tmp_profile" "$tmp_profile"*
     _nix_add_gcroot "$drv" "$profile"
