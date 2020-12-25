@@ -55,6 +55,7 @@ use_flake() {
   watch_file flake.lock
 
   local profile="$(direnv_layout_dir)/flake-profile"
+  local flake="$(direnv_layout_dir)/flake"
   local profile_rc="${profile}.rc"
 
   if [[ ! -e "$profile"
@@ -72,6 +73,11 @@ use_flake() {
     echo "$tmp_profile_rc" > "$profile_rc"
     rm -f "$tmp_profile" "$tmp_profile"*
     _nix_add_gcroot "$drv" "$profile"
+
+    # also add garbage collection root for source
+    local flake_source=$(nix eval --impure --raw --expr 'builtins.getFlake (toString ./.)')
+    _nix_add_gcroot "$flake_source" "$flake"
+
     log_status renewed cache
   else
     log_status using cached dev shell
