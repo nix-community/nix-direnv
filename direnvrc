@@ -43,11 +43,11 @@ _nix_add_gcroot() {
   local storepath=$1
   local symlink=$2
 
-  local stripped_pwd=${PWD/\//}
+  local stripped_pwd=${2/\//}
   local escaped_pwd=${stripped_pwd//-/--}
   local escaped_pwd=${escaped_pwd//\//-}
-  ln -fs "$storepath" "$symlink"
-  ln -fs "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
+  ln -fsn "$storepath" "$symlink"
+  ln -fsn "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
 }
 
 use_flake() {
@@ -55,6 +55,7 @@ use_flake() {
   watch_file flake.lock
 
   local profile="$(direnv_layout_dir)/flake-profile"
+  local flake="$(direnv_layout_dir)/flake"
   local profile_rc="${profile}.rc"
 
   if [[ ! -e "$profile"
@@ -68,10 +69,20 @@ use_flake() {
     local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
     [[ -d "$(direnv_layout_dir)" ]] || mkdir -p "$(direnv_layout_dir)"
     local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
-    drv=$(readlink "$tmp_profile")
+    # macos does not have realpath
+    if command -v realpath >/dev/null; then
+      drv=$(realpath "$tmp_profile")
+    else
+      drv=$(perl -e 'use Cwd "abs_path";print abs_path(shift)' "$tmp_profile")
+    fi
     echo "$tmp_profile_rc" > "$profile_rc"
     rm -f "$tmp_profile" "$tmp_profile"*
     _nix_add_gcroot "$drv" "$profile"
+
+    # also add garbage collection root for source
+    local flake_source=$(nix eval --impure --raw --expr 'builtins.getFlake (toString ./.)')
+    _nix_add_gcroot "$flake_source" "$flake"
+
     log_status renewed cache
   else
     log_status using cached dev shell

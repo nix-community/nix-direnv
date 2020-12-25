@@ -24,10 +24,10 @@ def support_flakes() -> bool:
         "--json",
         "--eval",
         "--expr",
-        '(builtins.compareVersions "2.4" builtins.nixVersion) == 1',
+        "builtins ? getFlake",
     ]
     proc = subprocess.run(cmd, text=True, capture_output=True, check=True)
-    return proc.stdout != "true"
+    return proc.stdout == "true"
 
 
 class IntegrationTest(unittest.TestCase):
@@ -97,7 +97,10 @@ class IntegrationTest(unittest.TestCase):
             text=True,
         )
         sys.stderr.write(out2.stderr)
+        # check if gcroot symlink has been created and is still valid
+        self.assertTrue(self.testenv.joinpath(".direnv/flake").is_dir())
         self.assertIn("using cached dev shell", out2.stderr)
+
         self.assertEqual(out2.returncode, 0)
 
     def tearDown(self) -> None:

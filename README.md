@@ -134,11 +134,13 @@ $ echo "use nix" >> .envrc
 $ direnv allow
 ```
 
-## Experimental flakes support
+## Flakes support
 
 nix-direnv also comes with a flake alternative. The code is tested and works however
 since future nix versions might change their api regarding this feature we cannot
 guarantee stability after an nix upgrade.
+Likewise `use_nix` the `use_flake` implementation will prevent garbage
+collection of downloaded packages and also for flake inputs.
 
 Save this file as `flake.nix`:
 
