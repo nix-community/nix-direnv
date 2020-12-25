@@ -46,8 +46,8 @@ _nix_add_gcroot() {
   local stripped_pwd=${PWD/\//}
   local escaped_pwd=${stripped_pwd//-/--}
   local escaped_pwd=${escaped_pwd//\//-}
-  ln -fs "$storepath" "$symlink"
-  ln -fs "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
+  ln -fsn "$storepath" "$symlink"
+  ln -fsn "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
 }
 
 use_flake() {
