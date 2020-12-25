@@ -24,10 +24,10 @@ def support_flakes() -> bool:
         "--json",
         "--eval",
         "--expr",
-        '(builtins.compareVersions "2.4" builtins.nixVersion) == 1',
+        "builtins ? getFlake",
     ]
     proc = subprocess.run(cmd, text=True, capture_output=True, check=True)
-    return proc.stdout != "true"
+    return proc.stdout == "true"
 
 
 class IntegrationTest(unittest.TestCase):
