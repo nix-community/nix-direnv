@@ -19,6 +19,7 @@ There are different ways to install nix-direnv, pick your favourite:
 - via configuration.nix in NixOS
 - with nix-env
 - from source
+- with direnv source_url
 
 ### Via home-manager
 
@@ -114,6 +115,14 @@ source $HOME/nix-direnv/direnvrc
 
 You also need to set `keep-outputs` and `keep-derivations` to nix.conf as described in the installation
 via home-manager section.
+
+### Direnv source_url
+
+Put the following line in your .envrc
+
+```bash
+source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.2/direnvrc" "sha256-2SLi51C+LR48zKe7jzvz9ftETwWZcQVUR1oSYJslCZ0="
+```
 
 ## Usage example
 
