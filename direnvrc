@@ -122,6 +122,10 @@ use_nix() {
   local path layout_dir
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
   layout_dir=$(direnv_layout_dir)
+  local experimental_flags=()
+  if nix-shell --experimental-features '' --version 2>/dev/null; then
+    experimental_flags+=('--experimental-features' 'nix-command flakes')
+  fi
 
   if [[ "${direnv:-}" == "" ]]; then
     log_status "\$direnv environment variable was not defined. Was this script run inside direnv?"
@@ -155,7 +159,7 @@ use_nix() {
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
     tmp=$("${NIX_BIN_PREFIX}nix-shell" \
-      --experimental-features "nix-command flakes" \
+      "${experimental_flags[@]}" \
       --show-trace --pure "$@" --run "$dump_cmd")
     # show original shell hook output
     echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
@@ -173,7 +177,7 @@ use_nix() {
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
     local drv_link="${layout_dir}/drv" drv
     drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
-      --experimental-features "nix-command flakes" \
+      "${experimental_flags[@]}" \
       | grep -E -o -m1 '/nix/store/.*.drv')
     _nix_add_gcroot "$drv" "$drv_link"
     log_status renewed cache and derivation link
