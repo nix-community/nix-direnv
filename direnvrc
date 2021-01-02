@@ -123,7 +123,7 @@ use_nix() {
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
   layout_dir=$(direnv_layout_dir)
   local experimental_flags=()
-  if nix-shell --experimental-features '' --version 2>/dev/null; then
+  if nix-shell --experimental-features '' --version 2>/dev/null >&2; then
     experimental_flags+=('--experimental-features' 'nix-command flakes')
   fi
 
