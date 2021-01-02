@@ -56,8 +56,10 @@ use_flake() {
   watch_file flake.nix
   watch_file flake.lock
 
-  local profile="$(direnv_layout_dir)/flake-profile"
-  local flake="$(direnv_layout_dir)/flake"
+  local layout_dir
+  layout_dir=$(direnv_layout_dir)
+  local profile="${layout_dir}/flake-profile"
+  local flake="${layout_dir}/flake"
   local profile_rc="${profile}.rc"
 
   if [[ ! -e "$profile"
@@ -68,9 +70,8 @@ use_flake() {
      || flake.lock -nt "$profile_rc"
      ]];
   then
-    local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
-    [[ -d "$(direnv_layout_dir)" ]] || mkdir -p "$(direnv_layout_dir)"
-    local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
+    local tmp_profile="${layout_dir}/flake-profile.$$"
+    [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local tmp_profile_rc
     tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
       --experimental-features "nix-command flakes" \
@@ -118,10 +119,9 @@ use_flake() {
 }
 
 use_nix() {
-  local path direnv_dir
-  path=$(nix-instantiate --find-file nixpkgs)
-  direnv_dir=$(direnv_layout_dir)
+  local path layout_dir
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
+  layout_dir=$(direnv_layout_dir)
 
   if [[ "${direnv:-}" == "" ]]; then
     log_status "\$direnv environment variable was not defined. Was this script run inside direnv?"
@@ -141,7 +141,7 @@ use_nix() {
     fi
   fi
 
-  local cache="$direnv_dir/cache-${version:-unknown}"
+  local cache="${layout_dir}/cache-${version:-unknown}"
 
   local update_drv=0
   if [[ ! -e "$cache"
@@ -151,7 +151,7 @@ use_nix() {
      || shell.nix -nt "$cache"
      ]];
   then
-    [[ -d "$direnv_dir" ]] || mkdir -p "$direnv_dir"
+    [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
     tmp=$("${NIX_BIN_PREFIX}nix-shell" \
@@ -171,8 +171,7 @@ use_nix() {
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
-    local drv_link="${direnv_dir}/drv" drv
-    drv=$(nix show-derivation "$out" | grep -E -o -m1 '/nix/store/.*.drv')
+    local drv_link="${layout_dir}/drv" drv
     drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
       --experimental-features "nix-command flakes" \
       | grep -E -o -m1 '/nix/store/.*.drv')
