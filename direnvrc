@@ -1,5 +1,7 @@
 # shellcheck shell=bash
 
+NIX_BIN_PREFIX=${NIX_BIN_PREFIX:-}
+
 _nix_export_or_unset() {
   local key=$1 value=$2
   if [[ "$value" == __UNSET__ ]]; then
@@ -54,8 +56,10 @@ use_flake() {
   watch_file flake.nix
   watch_file flake.lock
 
-  local profile="$(direnv_layout_dir)/flake-profile"
-  local flake="$(direnv_layout_dir)/flake"
+  local layout_dir
+  layout_dir=$(direnv_layout_dir)
+  local profile="${layout_dir}/flake-profile"
+  local flake="${layout_dir}/flake"
   local profile_rc="${profile}.rc"
 
   if [[ ! -e "$profile"
@@ -66,9 +70,12 @@ use_flake() {
      || flake.lock -nt "$profile_rc"
      ]];
   then
-    local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
-    [[ -d "$(direnv_layout_dir)" ]] || mkdir -p "$(direnv_layout_dir)"
-    local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
+    local tmp_profile="${layout_dir}/flake-profile.$$"
+    [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
+    local tmp_profile_rc
+    tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
+      --experimental-features "nix-command flakes" \
+      --profile "$tmp_profile")
     # macos does not have realpath
     if command -v realpath >/dev/null; then
       drv=$(realpath "$tmp_profile")
@@ -80,7 +87,10 @@ use_flake() {
     _nix_add_gcroot "$drv" "$profile"
 
     # also add garbage collection root for source
-    local flake_source=$(nix eval --impure --raw --expr 'builtins.getFlake (toString ./.)')
+    local flake_source
+    flake_source=$("${NIX_BIN_PREFIX}nix" eval \
+      --experimental-features "nix-command flakes" \
+      --impure --raw --expr 'builtins.getFlake (toString ./.)')
     _nix_add_gcroot "$flake_source" "$flake"
 
     log_status renewed cache
@@ -109,9 +119,13 @@ use_flake() {
 }
 
 use_nix() {
-  local path direnv_dir
-  path=$(nix-instantiate --find-file nixpkgs)
-  direnv_dir=$(direnv_layout_dir)
+  local path layout_dir
+  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
+  layout_dir=$(direnv_layout_dir)
+  local experimental_flags=()
+  if nix-shell --experimental-features '' --version 2>/dev/null; then
+    experimental_flags+=('--experimental-features' 'nix-command flakes')
+  fi
 
   if [[ "${direnv:-}" == "" ]]; then
     log_status "\$direnv environment variable was not defined. Was this script run inside direnv?"
@@ -131,7 +145,7 @@ use_nix() {
     fi
   fi
 
-  local cache="$direnv_dir/cache-${version:-unknown}"
+  local cache="${layout_dir}/cache-${version:-unknown}"
 
   local update_drv=0
   if [[ ! -e "$cache"
@@ -141,10 +155,12 @@ use_nix() {
      || shell.nix -nt "$cache"
      ]];
   then
-    [[ -d "$direnv_dir" ]] || mkdir -p "$direnv_dir"
+    [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
-    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd")
+    tmp=$("${NIX_BIN_PREFIX}nix-shell" \
+      "${experimental_flags[@]}" \
+      --show-trace --pure "$@" --run "$dump_cmd")
     # show original shell hook output
     echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
     echo "$tmp" | grep -oP '(?<=_____direnv_____).*' > "$cache"
@@ -159,8 +175,10 @@ use_nix() {
 
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
-    local drv_link="${direnv_dir}/drv" drv
-    drv=$(nix show-derivation "$out" | grep -E -o -m1 '/nix/store/.*.drv')
+    local drv_link="${layout_dir}/drv" drv
+    drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
+      "${experimental_flags[@]}" \
+      | grep -E -o -m1 '/nix/store/.*.drv')
     _nix_add_gcroot "$drv" "$drv_link"
     log_status renewed cache and derivation link
   fi
