@@ -1,5 +1,7 @@
 # shellcheck shell=bash
 
+NIX_BIN_PREFIX=${NIX_BIN_PREFIX:-}
+
 _nix_export_or_unset() {
   local key=$1 value=$2
   if [[ "$value" == __UNSET__ ]]; then
@@ -69,6 +71,10 @@ use_flake() {
     local tmp_profile="$(direnv_layout_dir)/flake-profile.$$"
     [[ -d "$(direnv_layout_dir)" ]] || mkdir -p "$(direnv_layout_dir)"
     local tmp_profile_rc=$(nix print-dev-env --profile "$tmp_profile")
+    local tmp_profile_rc
+    tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
+      --experimental-features "nix-command flakes" \
+      --profile "$tmp_profile")
     # macos does not have realpath
     if command -v realpath >/dev/null; then
       drv=$(realpath "$tmp_profile")
@@ -80,7 +86,10 @@ use_flake() {
     _nix_add_gcroot "$drv" "$profile"
 
     # also add garbage collection root for source
-    local flake_source=$(nix eval --impure --raw --expr 'builtins.getFlake (toString ./.)')
+    local flake_source
+    flake_source=$("${NIX_BIN_PREFIX}nix" eval \
+      --experimental-features "nix-command flakes" \
+      --impure --raw --expr 'builtins.getFlake (toString ./.)')
     _nix_add_gcroot "$flake_source" "$flake"
 
     log_status renewed cache
@@ -112,6 +121,7 @@ use_nix() {
   local path direnv_dir
   path=$(nix-instantiate --find-file nixpkgs)
   direnv_dir=$(direnv_layout_dir)
+  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
 
   if [[ "${direnv:-}" == "" ]]; then
     log_status "\$direnv environment variable was not defined. Was this script run inside direnv?"
@@ -144,7 +154,9 @@ use_nix() {
     [[ -d "$direnv_dir" ]] || mkdir -p "$direnv_dir"
     local dump_cmd tmp
     dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
-    tmp=$(nix-shell --show-trace --pure "$@" --run "$dump_cmd")
+    tmp=$("${NIX_BIN_PREFIX}nix-shell" \
+      --experimental-features "nix-command flakes" \
+      --show-trace --pure "$@" --run "$dump_cmd")
     # show original shell hook output
     echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
     echo "$tmp" | grep -oP '(?<=_____direnv_____).*' > "$cache"
@@ -161,6 +173,9 @@ use_nix() {
   if [[ "${out:-}" != "" ]] && (( update_drv )); then
     local drv_link="${direnv_dir}/drv" drv
     drv=$(nix show-derivation "$out" | grep -E -o -m1 '/nix/store/.*.drv')
+    drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
+      --experimental-features "nix-command flakes" \
+      | grep -E -o -m1 '/nix/store/.*.drv')
     _nix_add_gcroot "$drv" "$drv_link"
     log_status renewed cache and derivation link
   fi
