@@ -203,11 +203,15 @@ During direnv setup `direnv_layout_dir` can be called multiple times and with di
 
 ## Manually re-triggering evaluation
 
-In some case nix-direnv does not detect if imported file has changed and still provides
-the old cached values. An evaluation can be triggered by updating your `.envrc`:
+In some case nix-direnv does not detect if imported file has changed and still
+provides the old cached values. An evaluation can be triggered by updating your
+`default.nix`, `shell.nix` or `flake.nix`, depending on what is used:
 
 ```console
-$ touch .envrc
+# choose one
+$ touch default.nix
+$ touch shell.nix
+$ touch flake.nix
 ```
 
 ## Known Bugs
@@ -228,3 +232,10 @@ As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or 
   triggered by using `touch .envrc` in the same project.
 - No additional daemon or services required: The codesize is small enough that it can be vendored
   into a project itself.
+
+## Other projects in the field
+
+- [lorri](https://github.com/target/lorri)
+- [sorri](https://github.com/nmattia/sorri)
+- [nixify](https://github.com/kalbasit/nur-packages/blob/master/pkgs/nixify/envrc)
+- [direnv-nix-lorelei](https://github.com/shajra/direnv-nix-lorelei)
