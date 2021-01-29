@@ -119,8 +119,9 @@ use_flake() {
 }
 
 use_nix() {
-  local path layout_dir
+  local path layout_dir grep
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
+  grep=$(nix run nixpkgs.gnugrep -c which grep)
   layout_dir=$(direnv_layout_dir)
   local experimental_flags=()
   if nix-shell --experimental-features '' --version 2>/dev/null >&2; then
@@ -162,8 +163,8 @@ use_nix() {
       "${experimental_flags[@]}" \
       --show-trace --pure "$@" --run "$dump_cmd")
     # show original shell hook output
-    echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
-    echo "$tmp" | grep -oP '(?<=_____direnv_____).*' > "$cache"
+    echo "$tmp" | $grep -vP '(?<=_____direnv_____).*'
+    echo "$tmp" | $grep -oP '(?<=_____direnv_____).*' > "$cache"
     update_drv=1
   else
     log_status using cached derivation
@@ -178,7 +179,7 @@ use_nix() {
     local drv_link="${layout_dir}/drv" drv
     drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
       "${experimental_flags[@]}" \
-      | grep -E -o -m1 '/nix/store/.*.drv')
+      | $grep -E -o -m1 '/nix/store/.*.drv')
     _nix_add_gcroot "$drv" "$drv_link"
     log_status renewed cache and derivation link
   fi
