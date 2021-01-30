@@ -121,7 +121,7 @@ via home-manager section.
 Put the following line in your .envrc
 
 ```bash
-source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.2.1/direnvrc" "sha256-2SLi51C+LR48zKe7jzvz9ftETwWZcQVUR1oSYJslCZ0="
+source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.2.2/direnvrc" "sha256-phL9Ogixr0gH/KP4IvhUmebLtA/liGrmRoxYrVJnaU0="
 ```
 
 ## Usage example
