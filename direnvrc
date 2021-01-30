@@ -118,6 +118,21 @@ use_flake() {
   _nix_export_or_unset TEMPDIR "$old_tempdir"
 }
 
+_nix_extract_direnv() {
+  local found_direnv
+  found_direnv=0
+  while read -r line; do
+    if [[ "$found_direnv" == "1" ]]; then
+      echo "$line"
+      break
+    elif [[ "$line" == "_____direnv_____" ]]; then
+      found_direnv=1
+    else
+      echo "$line" >&2
+    fi
+  done
+}
+
 use_nix() {
   local path layout_dir
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
@@ -157,13 +172,12 @@ use_nix() {
   then
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local dump_cmd tmp
-    dump_cmd="echo -n _____direnv_____; \"$direnv\" dump bash"
+    dump_cmd="echo _____direnv_____; \"$direnv\" dump bash"
     tmp=$("${NIX_BIN_PREFIX}nix-shell" \
       "${experimental_flags[@]}" \
       --show-trace --pure "$@" --run "$dump_cmd")
     # show original shell hook output
-    echo "$tmp" | grep -vP '(?<=_____direnv_____).*'
-    echo "$tmp" | grep -oP '(?<=_____direnv_____).*' > "$cache"
+    echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
     update_drv=1
   else
     log_status using cached derivation
