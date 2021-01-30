@@ -1,6 +1,9 @@
 # shellcheck shell=bash
 
-NIX_BIN_PREFIX=${NIX_BIN_PREFIX:-}
+if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
+  NIX_BIN_PREFIX=$(command -v nix-shell)
+  NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
+fi
 
 _nix_export_or_unset() {
   local key=$1 value=$2
@@ -138,7 +141,7 @@ use_nix() {
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
   layout_dir=$(direnv_layout_dir)
   local experimental_flags=()
-  if nix-shell --experimental-features '' --version 2>/dev/null >&2; then
+  if "${NIX_BIN_PREFIX}nix-shell" --experimental-features '' --version 2>/dev/null >&2; then
     experimental_flags+=('--experimental-features' 'nix-command flakes')
   fi
 

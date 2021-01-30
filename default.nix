@@ -7,8 +7,8 @@ stdenv.mkDerivation {
   src = ./.;
 
   postPatch = ''
+    sed -i "2iNIX_BIN_PREFIX=${nixFlakes}/bin/" direnvrc
     substituteInPlace direnvrc \
-      --replace "\''${NIX_BIN_PREFIX:-}" "\''${NIX_BIN_PREFIX:-${nixFlakes}/bin/}" \
       --replace "grep" "${gnugrep}/bin/grep"
   '';
 
