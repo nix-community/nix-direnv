@@ -121,7 +121,7 @@ use_flake() {
 use_nix() {
   local path layout_dir grep
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
-  grep=$("${NIX_BIN_PREFIX}nix-instantiate" -E 'with import <nixpkgs> {}; gnugrep')/bin/grep
+  grep=$("${NIX_BIN_PREFIX}nix-build" -E 'with import <nixpkgs> {}; gnugrep')/bin/grep
   layout_dir=$(direnv_layout_dir)
   local experimental_flags=()
   if nix-shell --experimental-features '' --version 2>/dev/null >&2; then
