@@ -161,6 +161,11 @@ use_nix() {
     else
       version="$head"
     fi
+  elif [[ -f "${path}/.version" && "${path}" == "/nix/store/"* ]]; then
+    # borrow some bits from the store path
+    local version_prefix
+    read -r version_prefix < "${path}/.version"
+    version="${version_prefix}-${path:11:16}"
   fi
 
   local cache="${layout_dir}/cache-${version:-unknown}"
