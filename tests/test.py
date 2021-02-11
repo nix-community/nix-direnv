@@ -98,7 +98,14 @@ class IntegrationTest(unittest.TestCase):
         )
         sys.stderr.write(out2.stderr)
         # check if gcroot symlink has been created and is still valid
-        self.assertTrue(self.testenv.joinpath(".direnv/flake").is_dir())
+        inputs = list(self.testenv.joinpath(".direnv/flake-inputs").iterdir())
+        # should only contain our flake-utils flake
+        if len(inputs) != 3:
+            subprocess.run(["nix", "flake", "archive", "--json"], cwd=self.testenv)
+            print(inputs)
+        self.assertEqual(len(inputs), 3)
+        for symlink in inputs:
+            self.assertTrue(symlink.is_dir())
         self.assertIn("using cached dev shell", out2.stderr)
 
         self.assertEqual(out2.returncode, 0)
