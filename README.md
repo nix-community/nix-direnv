@@ -230,6 +230,8 @@ As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or 
   if either the project-specific `default.nix` / `shell.nix` changes, or if
   there is a new commit added to `nixpkgs`. A re-evaluation can be also
   triggered by using `touch .envrc` in the same project.
+  A different problem is that it might trigger mass-rebuilds when the same nixpkgs
+  checkout is pointed to something like staging.
 - No additional daemon or services required: The codesize is small enough that it can be vendored
   into a project itself.
 
