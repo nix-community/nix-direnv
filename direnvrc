@@ -62,7 +62,7 @@ use_flake() {
   local layout_dir
   layout_dir=$(direnv_layout_dir)
   local profile="${layout_dir}/flake-profile"
-  local flake="${layout_dir}/flake"
+  local flake_inputs="${layout_dir}/flake-inputs/"
   local profile_rc="${profile}.rc"
 
   if [[ ! -e "$profile"
@@ -90,11 +90,15 @@ use_flake() {
     _nix_add_gcroot "$drv" "$profile"
 
     # also add garbage collection root for source
-    local flake_source
-    flake_source=$("${NIX_BIN_PREFIX}nix" eval \
+    local flake_input_paths
+    rm -rf "$flake_inputs"
+    mkdir "$flake_inputs"
+    flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive --json \
       --experimental-features "nix-command flakes" \
-      --impure --raw --expr 'builtins.getFlake (toString ./.)')
-    _nix_add_gcroot "$flake_source" "$flake"
+      | grep -E -o '/nix/store/[^"]+')
+    for path in $flake_input_paths; do
+      _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
+    done
 
     log_status renewed cache
   else
