@@ -23,6 +23,7 @@ _nix_import_env() {
   local old_tmpdir=${TMPDIR:-__UNSET__}
   local old_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
   local old_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
+  local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
 
   eval "$env"
 
@@ -39,6 +40,7 @@ _nix_import_env() {
   _nix_export_or_unset TERM "$old_term"
   _nix_export_or_unset SHELL "$old_shell"
   _nix_export_or_unset TEMPDIR "$old_tmpdir"
+  export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
 
   # misleading since we are in an impure shell now
   export IN_NIX_SHELL=impure
