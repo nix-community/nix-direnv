@@ -33,6 +33,11 @@ In `$HOME/.config/nixpkgs/home.nix` add
 
   programs.direnv.enable = true;
   programs.direnv.enableNixDirenvIntegration = true;
+  
+  programs.bash.enable = true;
+  # OR
+  programs.zsh.enable = true;
+  # Or any other shell you're using.
 }
 ```
 
