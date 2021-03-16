@@ -130,21 +130,6 @@ use_flake() {
   export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
 }
 
-_nix_extract_direnv() {
-  local found_direnv
-  found_direnv=0
-  while read -r line; do
-    if [[ "$found_direnv" == "1" ]]; then
-      echo "$line"
-      break
-    elif [[ "$line" == "_____direnv_____" ]]; then
-      found_direnv=1
-    else
-      echo "$line" >&2
-    fi
-  done
-}
-
 use_nix() {
   local path layout_dir
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
@@ -179,7 +164,6 @@ use_nix() {
 
   local cache="${layout_dir}/cache-${version:-unknown}"
 
-  local update_drv=0
   if [[ ! -e "$cache"
      || "$HOME/.direnvrc" -nt "$cache"
      || .envrc -nt "$cache"
@@ -188,30 +172,49 @@ use_nix() {
      ]];
   then
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
-    local dump_cmd tmp
-    dump_cmd="echo _____direnv_____; \"$direnv\" dump bash"
-    tmp=$("${NIX_BIN_PREFIX}nix-shell" \
-      "${experimental_flags[@]}" \
-      --show-trace --pure "$@" --run "$dump_cmd")
-    # show original shell hook output
-    echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
-    update_drv=1
+    bash -c '
+      cache=$1
+      shift
+      direnv=$1
+      shift
+      _nix_extract_direnv() {
+        local found_direnv
+        found_direnv=0
+        while read -r line; do
+          if [[ "$found_direnv" == "1" ]]; then
+            echo "$line"
+            break
+          elif [[ "$line" == "_____direnv_____" ]]; then
+            found_direnv=1
+          else
+            echo "$line" >&2
+          fi
+        done
+      }
+      dump_cmd="echo _____direnv_____; $direnv dump bash"
+      tmp=$("${NIX_BIN_PREFIX}nix-shell" \
+          "${experimental_flags[@]}" \
+          --show-trace --pure "$@" --run "$dump_cmd")
+      # show original shell hook output
+      echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
+      # retrigger direnv
+      [[ -f .envrc ]] && touch .envrc
+    ' -- "$cache" "$direnv" "$@" 3>- &
+    echo "renew cache in background"
   else
-    log_status using cached derivation
-  fi
+    log_status eval "$cache"
+    read -r cache_content < "$cache"
+    _nix_import_env "$cache_content"
 
-  log_status eval "$cache"
-  read -r cache_content < "$cache"
-  _nix_import_env "$cache_content"
-
-  # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
-  if [[ "${out:-}" != "" ]] && (( update_drv )); then
-    local drv_link="${layout_dir}/drv" drv
-    drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
-      "${experimental_flags[@]}" \
-      | grep -E -o -m1 '/nix/store/.*.drv')
-    _nix_add_gcroot "$drv" "$drv_link"
-    log_status renewed cache and derivation link
+    # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
+    if [[ "${out:-}" != "" ]]; then
+      local drv_link="${layout_dir}/drv" drv
+      drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
+        "${experimental_flags[@]}" \
+        | grep -E -o -m1 '/nix/store/.*.drv')
+      _nix_add_gcroot "$drv" "$drv_link"
+      log_status update derivation link
+    fi
   fi
 
   if [[ "$#" == 0 ]]; then
