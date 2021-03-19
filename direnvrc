@@ -113,6 +113,7 @@ use_flake() {
   local old_temp=${TEMP:-__UNSET__}
   local old_tempdir=${TEMPDIR:-__UNSET__}
   local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
+  # TODO: maybe use `_nix_import_env()` here: https://github.com/nix-community/nix-direnv/pull/75#issuecomment-803139886
   eval "$(< "$profile_rc")"
   # nix print-env-dev will create a temporary directory and use it a TMPDIR,
   # we cannot rely on this directory beeing not deleted at some point,
