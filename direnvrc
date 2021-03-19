@@ -112,6 +112,7 @@ use_flake() {
   local old_tmpdir=${TMPDIR:-__UNSET__}
   local old_temp=${TEMP:-__UNSET__}
   local old_tempdir=${TEMPDIR:-__UNSET__}
+  local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
   eval "$(< "$profile_rc")"
   # nix print-env-dev will create a temporary directory and use it a TMPDIR,
   # we cannot rely on this directory beeing not deleted at some point,
@@ -125,6 +126,7 @@ use_flake() {
   _nix_export_or_unset TMPDIR "$old_tmpdir"
   _nix_export_or_unset TEMP "$old_temp"
   _nix_export_or_unset TEMPDIR "$old_tempdir"
+  export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
 }
 
 _nix_extract_direnv() {
