@@ -25,7 +25,7 @@ There are different ways to install nix-direnv, pick your favourite:
 
 In `$HOME/.config/nixpkgs/home.nix` add
 
-```
+```Nix
 { pkgs, ... }:
 
 {
@@ -45,7 +45,7 @@ Optional: To protect your nix-shell against garbage collection you also need to 
 
 If you are on NixOS also add the following lines to your `/etc/nixos/configuration.nix`:
 
-```
+```Nix
 { pkgs, ... }: {
   nix.extraOptions = ''
     keep-outputs = true
@@ -65,7 +65,7 @@ keep-outputs = true
 
 In `/etc/nixos/configuration.nix`:
 
-```
+```Nix
 { pkgs, ... }: {
   environment.systemPackages = with pkgs; [ direnv nix-direnv ];
   # nix options for derivations to persist garbage collection
@@ -96,7 +96,7 @@ nix-env -f '<nixpkgs>' -iA nix-direnv
 
 Then add nix-direnv to `$HOME/.direnvrc`:
 
-```
+```bash
 source $HOME/.nix-profile/share/nix-direnv/direnvrc
 ```
 
