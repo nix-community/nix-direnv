@@ -148,6 +148,8 @@ $ echo "use nix" >> .envrc
 $ direnv allow
 ```
 
+If you haven't used direnv before, make sure to [hook it into your shell](https://direnv.net/docs/hook.html) first.
+
 ## Flakes support
 
 nix-direnv also comes with a flake alternative. The code is tested and works however
