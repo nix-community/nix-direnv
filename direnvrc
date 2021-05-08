@@ -79,7 +79,7 @@ use_flake() {
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local tmp_profile_rc
     tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
-      --experimental-features "nix-command flakes" \
+      --extra-experimental-features "nix-command flakes" \
       --profile "$tmp_profile")
     # macos does not have realpath
     if command -v realpath >/dev/null; then
@@ -96,7 +96,7 @@ use_flake() {
     rm -rf "$flake_inputs"
     mkdir "$flake_inputs"
     flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive --json \
-      --experimental-features "nix-command flakes" \
+      --extra-experimental-features "nix-command flakes" \
       | grep -E -o '/nix/store/[^"]+')
     for path in $flake_input_paths; do
       _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
@@ -150,8 +150,8 @@ use_nix() {
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
   layout_dir=$(direnv_layout_dir)
   local experimental_flags=()
-  if "${NIX_BIN_PREFIX}nix-shell" --experimental-features '' --version 2>/dev/null >&2; then
-    experimental_flags+=('--experimental-features' 'nix-command flakes')
+  if "${NIX_BIN_PREFIX}nix-shell" --extra-experimental-features '' --version 2>/dev/null >&2; then
+    experimental_flags+=('--extra-experimental-features' 'nix-command flakes')
   fi
 
   if [[ "${direnv:-}" == "" ]]; then
