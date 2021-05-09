@@ -192,9 +192,7 @@ use_nix() {
         done
       }
       dump_cmd="echo _____direnv_____; $direnv dump bash"
-      tmp=$("${NIX_BIN_PREFIX}nix-shell" \
-          "${experimental_flags[@]}" \
-          --show-trace --pure "$@" --run "$dump_cmd")
+      tmp=$("${NIX_BIN_PREFIX}nix-shell" "${experimental_flags[@]}" --show-trace --pure "$@" --run "$dump_cmd")
       # show original shell hook output
       echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
       # retrigger direnv
