@@ -1,5 +1,34 @@
 # shellcheck shell=bash
 
+# Usage: nix_direnv_version <version_at_least>
+#
+# Checks that the nix-direnv version is at least as old as <version_at_least>.
+nix_direnv_version() {
+  declare major='1' minor='2' patch='6' # UPDATE(nix-direnv version)
+
+  [[ $1 =~ ^([^+-.]*)(\.?)([^+-.]*)(\.?)([^+-]*)(-?)([^+]*)(\+?)(.*)$ ]]
+  declare -a ver; ver=("${BASH_REMATCH[@]:1}")
+
+  if [[ ( ${ver[0]} != +([0-9]) ) \
+    || ( ${ver[1]} == '.' && ${ver[2]} != +([0-9]) ) \
+    || ( ${ver[3]} == '.' && ${ver[4]} != +([0-9]) ) \
+    || ( ${ver[5]} == '-' && ${ver[6]} != +([0-9A-Za-z-])*(.+([0-9A-Za-z-])) ) \
+    || ( ${ver[7]} == '+' && ${ver[8]} != +([0-9A-Za-z-])*(.+([0-9A-Za-z-])) ) \
+    || ( ( -n ${ver[5]} || -n ${ver[7]} ) && ( -z ${ver[2]} || -z ${ver[4]} ) ) \
+  ]]; then
+    printf '%s\n' "nix-direnv: error v$1 is not a valid semver version" >&2
+    return 1
+  fi
+
+  if [[ ( ${ver[0]} -gt $major ) \
+    || ( ${ver[2]:=0} -gt $minor ) \
+    || ( ${ver[4]:=0} -gt $patch ) \
+  ]]; then
+    printf '%s\n' "nix-direnv: error current version v$major.$minor.$patch is older than the desired version v$1" >&2
+    return 1
+  fi
+}
+
 if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
   NIX_BIN_PREFIX=$(command -v nix-shell)
   NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
