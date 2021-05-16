@@ -123,10 +123,12 @@ via home-manager section.
 
 ### Direnv source_url
 
-Put the following line in your .envrc
+Put the following lines in your `.envrc`:
 
 ```bash
-source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.2.6/direnvrc" "sha256-jidqAtTK64MJxz1fd394P1RNUZW5Jd8OFgO2nNg2gJU="
+if ! has nix_direnv_version || ! nix_direnv_version 1.2.6; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.2.6/direnvrc" "sha256-jidqAtTK64MJxz1fd394P1RNUZW5Jd8OFgO2nNg2gJU="
+fi
 ```
 
 ## Usage example
