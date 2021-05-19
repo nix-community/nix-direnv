@@ -21,14 +21,11 @@ fi
 sed -i direnvrc \
     -e 's!\(declare major=\).*\( # UPDATE(nix-direnv version)\)!\1'"${ver[0]@Q} minor=${ver[1]@Q} patch=${ver[2]@Q}"'\2!'
 
-sha256=$(openssl dgst -sha256 -binary < direnvrc | openssl base64 -A)
-
 sed -i README.md \
     -e 's!\(nix-direnv/\).*\(/direnvrc\)!\1'"${version}"'\2!' \
-    -e 's?\( ! nix_direnv_version \)[0-9.]\+\(; \)?\1'"${version}"'\2?' \
-    -e "s!sha256-[^\"]+!sha256-${sha256}!"
+    -e 's?\( ! nix_direnv_version \)[0-9.]\+\(; \)?\1'"${version}"'\2?'
 git add README.md direnvrc
 git commit -m "bump version ${version}"
 git tag -e "${version}"
 
-echo "now run 'git push --tags origin master'"
+echo "now run 'git push --tags origin master && scripts/update-checksum.sh'"
