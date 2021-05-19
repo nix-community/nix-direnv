@@ -126,8 +126,8 @@ via home-manager section.
 Put the following lines in your `.envrc`:
 
 ```bash
-if ! has nix_direnv_version || ! nix_direnv_version 1.2.6; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.2.6/direnvrc" "sha256-jidqAtTK64MJxz1fd394P1RNUZW5Jd8OFgO2nNg2gJU="
+if ! has nix_direnv_version || ! nix_direnv_version 1.3.0; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.3.0/direnvrc" "sha256-cVSyO0/m0hbePv+plzua014InR0lNXa+0LTn0yEW0xc="
 fi
 ```
 
