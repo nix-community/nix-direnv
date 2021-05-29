@@ -160,30 +160,15 @@ guarantee stability after an nix upgrade.
 Likewise `use_nix` the `use_flake` implementation will prevent garbage
 collection of downloaded packages and also for flake inputs.
 
-Save this file as `flake.nix`:
+You can run `nix flake new -t github:nix-community/nix-direnv` to get [this](https://github.com/nix-community/nix-direnv/tree/master/template) project template.
+or just add:
 
-``` nix
-{
-  description = "A very basic flake";
-  # Provides abstraction to boiler-code when specifying multi-platform outputs.
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      devShell = pkgs.mkShell {
-        nativeBuildInputs = [ pkgs.hello ];
-      };
-    });
-}
 ```
-
-Then add `use flake` to your `.envrc`:
-
-```console
 $ echo "use flake" >> .envrc
 $ direnv allow
 ```
+
+in case the project already comes with a `flake.nix`
 
 ## Storing .direnv outside the project directory
 
