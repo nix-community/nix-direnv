@@ -87,8 +87,10 @@ _nix_add_gcroot() {
 }
 
 use_flake() {
-  watch_file flake.nix
-  watch_file flake.lock
+  flake_expr="${1:-.}"
+  flake_dir="${flake_expr%#*}"
+  watch_file "$flake_dir/"flake.nix
+  watch_file "$flake_dir/"flake.lock
 
   local layout_dir
   layout_dir=$(direnv_layout_dir)
@@ -100,8 +102,8 @@ use_flake() {
      || ! -e "$profile_rc"
      || "$HOME/.direnvrc" -nt "$profile_rc"
      || .envrc -nt "$profile_rc"
-     || flake.nix -nt "$profile_rc"
-     || flake.lock -nt "$profile_rc"
+     || "$flake_dir/"flake.nix -nt "$profile_rc"
+     || "$flake_dir/"flake.lock -nt "$profile_rc"
      ]];
   then
     local tmp_profile="${layout_dir}/flake-profile.$$"
@@ -109,7 +111,7 @@ use_flake() {
     local tmp_profile_rc
     tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
       --extra-experimental-features "nix-command flakes" \
-      --profile "$tmp_profile")
+      --profile "$tmp_profile" "$flake_expr")
     # macos does not have realpath
     if command -v realpath >/dev/null; then
       drv=$(realpath "$tmp_profile")
@@ -126,7 +128,7 @@ use_flake() {
     mkdir "$flake_inputs"
     flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive --json \
       --extra-experimental-features "nix-command flakes" \
-      | grep -E -o '/nix/store/[^"]+')
+      "$flake_dir" | grep -E -o '/nix/store/[^"]+')
     for path in $flake_input_paths; do
       _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
     done

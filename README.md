@@ -168,7 +168,13 @@ $ echo "use flake" >> .envrc
 $ direnv allow
 ```
 
-in case the project already comes with a `flake.nix`
+in case the project already comes with a `flake.nix`.
+Optionally if you do not want flake.nix to be part of the current directory repo,
+you can specify an arbitrary flake expression as parameter such as:
+
+```console
+use flake ~/myflakes#project
+```
 
 ## Storing .direnv outside the project directory
 
