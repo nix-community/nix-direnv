@@ -55,6 +55,7 @@ class IntegrationTest(unittest.TestCase):
         )
         sys.stderr.write(out1.stderr)
         self.assertIn("renewed cache and derivation link", out1.stderr)
+        self.assertIn("Executing shellHook.", out1.stderr)
         self.assertEqual(out1.returncode, 0)
 
         run(["nix-collect-garbage"], check=True)
@@ -67,6 +68,7 @@ class IntegrationTest(unittest.TestCase):
         )
         sys.stderr.write(out2.stderr)
         self.assertIn("using cached derivation", out2.stderr)
+        self.assertNotIn("Executing shellHook.", out2.stderr)
         self.assertEqual(out2.returncode, 0)
 
     @unittest.skipUnless(support_flakes(), "requires flakes")
@@ -86,6 +88,7 @@ class IntegrationTest(unittest.TestCase):
         )
         sys.stderr.write(out1.stderr)
         self.assertIn("renewed cache", out1.stderr)
+        self.assertIn("Executing shellHook.", out1.stderr)
         self.assertEqual(out1.returncode, 0)
 
         run(["nix-collect-garbage"], check=True)
@@ -107,6 +110,7 @@ class IntegrationTest(unittest.TestCase):
         for symlink in inputs:
             self.assertTrue(symlink.is_dir())
         self.assertIn("using cached dev shell", out2.stderr)
+        self.assertNotIn("Executing shellHook.", out2.stderr)
 
         self.assertEqual(out2.returncode, 0)
 
