@@ -30,77 +30,90 @@ def support_flakes() -> bool:
     return proc.stdout == "true"
 
 
-class IntegrationTest(unittest.TestCase):
-    def setUp(self) -> None:
-        self.env = os.environ.copy()
-        self.dir = TemporaryDirectory()
-        self.env["HOME"] = str(self.dir.name)
-        self.testenv = Path(self.dir.name).joinpath("testenv")
-        shutil.copytree(TEST_ROOT.joinpath("testenv"), self.testenv)
-        self.direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
+class TestBaseNamespace:
+    """Nested so test discovery doesn't run the base class tests directly."""
 
-    def test_nix_shell(self) -> None:
-        with open(self.testenv.joinpath(".envrc"), "w") as f:
-            f.write(f"source {self.direnvrc}\n" "use nix")
+    class TestBase(unittest.TestCase):
+        env: dict
+        dir: TemporaryDirectory
+        testenv: Path
+        direnvrc: str
+        direnvrc_command: str
+        out1: subprocess.CompletedProcess
+        out2: subprocess.CompletedProcess
+        renewed_message: str
+        cached_message: str
 
-        run(["direnv", "allow"], cwd=str(self.testenv), env=self.env, check=True)
+        @classmethod
+        def setUpClass(cls) -> None:
+            cls.env = os.environ.copy()
+            cls.dir = TemporaryDirectory()
+            cls.env["HOME"] = str(cls.dir.name)
+            cls.testenv = Path(cls.dir.name).joinpath("testenv")
+            shutil.copytree(TEST_ROOT.joinpath("testenv"), cls.testenv)
+            cls.direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
 
-        run(["nix-collect-garbage"], check=True)
+            with open(cls.testenv.joinpath(".envrc"), "w") as f:
+                f.write(f"source {cls.direnvrc}\n{cls.direnvrc_command}")
 
-        out1 = run(
-            ["direnv", "exec", str(self.testenv), "hello"],
-            env=self.env,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        sys.stderr.write(out1.stderr)
-        self.assertIn("renewed cache and derivation link", out1.stderr)
-        self.assertIn("Executing shellHook.", out1.stderr)
-        self.assertEqual(out1.returncode, 0)
+            run(["direnv", "allow"], cwd=str(cls.testenv), env=cls.env, check=True)
 
-        run(["nix-collect-garbage"], check=True)
+            run(["nix-collect-garbage"], check=True)
 
-        out2 = run(
-            ["direnv", "exec", str(self.testenv), "hello"],
-            env=self.env,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        sys.stderr.write(out2.stderr)
-        self.assertIn("using cached derivation", out2.stderr)
-        self.assertNotIn("Executing shellHook.", out2.stderr)
-        self.assertEqual(out2.returncode, 0)
+            cls.out1 = run(
+                ["direnv", "exec", str(cls.testenv), "hello"],
+                env=cls.env,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            sys.stderr.write(cls.out1.stderr)
 
-    @unittest.skipUnless(support_flakes(), "requires flakes")
-    def test_nix_flake(self) -> None:
-        with open(self.testenv.joinpath(".envrc"), "w") as f:
-            f.write(f"source {self.direnvrc}\n" "use flake")
+            run(["nix-collect-garbage"], check=True)
 
-        run(["direnv", "allow"], cwd=str(self.testenv), env=self.env, check=True)
+            cls.out2 = run(
+                ["direnv", "exec", str(cls.testenv), "hello"],
+                env=cls.env,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            sys.stderr.write(cls.out2.stderr)
 
-        run(["nix-collect-garbage"], check=True)
+        @classmethod
+        def tearDownClass(cls) -> None:
+            cls.dir.cleanup()
 
-        out1 = run(
-            ["direnv", "exec", str(self.testenv), "hello"],
-            env=self.env,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        sys.stderr.write(out1.stderr)
-        self.assertIn("renewed cache", out1.stderr)
-        self.assertIn("Executing shellHook.", out1.stderr)
-        self.assertEqual(out1.returncode, 0)
+        def test_fresh_shell_message(self) -> None:
+            self.assertIn(self.renewed_message, self.out1.stderr)
 
-        run(["nix-collect-garbage"], check=True)
+        def test_fresh_shell_shellHook(self) -> None:
+            self.assertIn("Executing shellHook.", self.out1.stderr)
 
-        out2 = run(
-            ["direnv", "exec", str(self.testenv), "hello"],
-            env=self.env,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        sys.stderr.write(out2.stderr)
-        # check if gcroot symlink has been created and is still valid
+        def test_fresh_shell_returncode(self) -> None:
+            self.assertEqual(self.out1.returncode, 0)
+
+        def test_cached_shell_message(self) -> None:
+            self.assertIn(self.cached_message, self.out2.stderr)
+
+        def test_cached_shell_shellHook(self) -> None:
+            self.assertNotIn("Executing shellHook.", self.out2.stderr)
+
+        def test_cached_shell_returncode(self) -> None:
+            self.assertEqual(self.out2.returncode, 0)
+
+
+class NixShellTest(TestBaseNamespace.TestBase):
+    direnvrc_command = "use nix"
+    renewed_message = "renewed cache and derivation link"
+    cached_message = "using cached derivation"
+
+
+@unittest.skipUnless(support_flakes(), "requires flakes")
+class FlakeTest(TestBaseNamespace.TestBase):
+    direnvrc_command = "use flake"
+    renewed_message = "renewed cache"
+    cached_message = "using cached dev shell"
+
+    def test_gcroot_symlink_created_and_valid(self) -> None:
         inputs = list(self.testenv.joinpath(".direnv/flake-inputs").iterdir())
         # should only contain our flake-utils flake
         if len(inputs) != 3:
@@ -109,13 +122,6 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(len(inputs), 3)
         for symlink in inputs:
             self.assertTrue(symlink.is_dir())
-        self.assertIn("using cached dev shell", out2.stderr)
-        self.assertNotIn("Executing shellHook.", out2.stderr)
-
-        self.assertEqual(out2.returncode, 0)
-
-    def tearDown(self) -> None:
-        self.dir.cleanup()
 
 
 if __name__ == "__main__":
