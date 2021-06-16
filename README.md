@@ -32,8 +32,8 @@ In `$HOME/.config/nixpkgs/home.nix` add
   # ...other config, other config...
 
   programs.direnv.enable = true;
-  programs.direnv.enableNixDirenvIntegration = true;
-  
+  programs.direnv.nix-direnv.enable = true;
+
   programs.bash.enable = true;
   # OR
   programs.zsh.enable = true;
