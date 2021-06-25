@@ -5,10 +5,16 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ self.overlay ];
+      };
     in {
       defaultPackage = pkgs.callPackage ./default.nix {};
     }) // {
+      overlay = final: prev: {
+        nix-direnv = final.callPackage ./default.nix { };
+      };
       defaultTemplate = {
         path = ./template;
         description = "nix flake new -t github:Mic92/nix-direnv .";
