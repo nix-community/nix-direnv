@@ -5,10 +5,7 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ self.overlay ];
-      };
+      pkgs = nixpkgs.legacyPackages.${system};
     in {
       defaultPackage = pkgs.callPackage ./default.nix {};
     }) // {
