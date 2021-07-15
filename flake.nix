@@ -9,6 +9,9 @@
     in {
       defaultPackage = pkgs.callPackage ./default.nix {};
     }) // {
+      overlay = final: prev: {
+        nix-direnv = final.callPackage ./default.nix { };
+      };
       defaultTemplate = {
         path = ./template;
         description = "nix flake new -t github:Mic92/nix-direnv .";
