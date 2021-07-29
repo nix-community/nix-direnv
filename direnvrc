@@ -86,11 +86,34 @@ _nix_add_gcroot() {
   ln -fsn "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
 }
 
+# -n $(_nix_newer_than /path/to/cache /watched1 /watched2 /watched3)
+_nix_newer_than() {
+  local cache=$1
+  shift
+  local watched=("$@")
+  for f in "${watched[@]}"; do
+    if [[ "$f" -nt "$cache" ]]; then
+      echo "1"
+    fi
+  done
+}
+
+# _nix_add_watched /path/to/file
+declare -a _NIX_DIRENV_WATCHED=()
+_nix_add_watched() {
+  watch_file $1
+  _NIX_DIRENV_WATCHED+=($1)
+}
+
+_nix_newer_than_watched() {
+  _nix_newer_than $1 "${_NIX_DIRENV_WATCHED[@]}"
+}
+
 use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
-  watch_file "$flake_dir/"flake.nix
-  watch_file "$flake_dir/"flake.lock
+  _nix_add_watched "$flake_dir/"flake.nix
+  _nix_add_watched "$flake_dir/"flake.lock
 
   local layout_dir
   layout_dir=$(direnv_layout_dir)
@@ -102,8 +125,7 @@ use_flake() {
      || ! -e "$profile_rc"
      || "$HOME/.direnvrc" -nt "$profile_rc"
      || .envrc -nt "$profile_rc"
-     || "$flake_dir/"flake.nix -nt "$profile_rc"
-     || "$flake_dir/"flake.lock -nt "$profile_rc"
+     || -n $(_nix_newer_than_watched "$profile_rc")
      ]];
   then
     local tmp_profile="${layout_dir}/flake-profile.$$"
@@ -211,12 +233,16 @@ use_nix() {
 
   local cache="${layout_dir}/cache-${version:-unknown}"
 
+  if [[ "$#" == 0 ]]; then
+    _nix_add_watched default.nix
+    _nix_add_watched shell.nix
+  fi
+
   local update_drv=0
   if [[ ! -e "$cache"
      || "$HOME/.direnvrc" -nt "$cache"
      || .envrc -nt "$cache"
-     || default.nix -nt "$cache"
-     || shell.nix -nt "$cache"
+     || -n $(_nix_newer_than_watched "$cache")
      ]];
   then
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
@@ -244,10 +270,5 @@ use_nix() {
       | grep -E -o -m1 '/nix/store/.*.drv')
     _nix_add_gcroot "$drv" "$drv_link"
     log_status renewed cache and derivation link
-  fi
-
-  if [[ "$#" == 0 ]]; then
-    watch_file default.nix
-    watch_file shell.nix
   fi
 }
