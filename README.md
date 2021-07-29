@@ -183,6 +183,13 @@ you can specify an arbitrary flake expression as parameter such as:
 use flake ~/myflakes#project
 ```
 
+### Backwards compatibility
+
+If you also provide a `shell.nix` for non-Flakes enabled versions of Nix, you may
+use `use_flake_if_supported` which will automatically fall back to `use_nix` if the
+current Nix version does not support Flakes. In this situation, changes to
+`flake.nix` and `flake.lock` will still automatically trigger a reload.
+
 ## Storing .direnv outside the project directory
 
 A `.direnv` directory will be created in each `use_nix` project, which might
