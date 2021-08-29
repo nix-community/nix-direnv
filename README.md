@@ -279,7 +279,7 @@ As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or 
 
 ## Other projects in the field
 
-- [lorri](https://github.com/target/lorri)
+- [lorri](https://github.com/nix-community/lorri)
 - [sorri](https://github.com/nmattia/sorri)
 - [nixify](https://github.com/kalbasit/nur-packages/blob/master/pkgs/nixify/envrc)
 - [direnv-nix-lorelei](https://github.com/shajra/direnv-nix-lorelei)
