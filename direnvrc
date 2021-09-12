@@ -98,7 +98,7 @@ _nix_argsum_suffix() {
       # degrate gracefully both tools are not present
       return
     fi
-    read checksum _ <<< "$out"
+    read -r checksum _ <<< "$out"
     echo "-$checksum"
   fi
 }
@@ -109,9 +109,9 @@ use_flake() {
   watch_file "$flake_dir/"flake.nix
   watch_file "$flake_dir/"flake.lock
 
-  local layout_dir
+  local layout_dir profile
   layout_dir=$(direnv_layout_dir)
-  local profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
+  profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
   local flake_inputs="${layout_dir}/flake-inputs/"
   local profile_rc="${profile}.rc"
 
@@ -226,7 +226,8 @@ use_nix() {
     version="${version_prefix}-${path:11:16}"
   fi
 
-  local cache="${layout_dir}/cache-${version:-unknown}$(_nix_argsum_suffix "$*")"
+  local cache
+  cache="${layout_dir}/cache-${version:-unknown}$(_nix_argsum_suffix "$*")"
 
   local update_drv=0
   if [[ ! -e "$cache"
