@@ -68,7 +68,7 @@ _nix_import_env() {
   export PATH=$PATH${old_path:+":"}$old_path
   _nix_export_or_unset TERM "$old_term"
   _nix_export_or_unset SHELL "$old_shell"
-  _nix_export_or_unset TEMPDIR "$old_tmpdir"
+  _nix_export_or_unset TMPDIR "$old_tmpdir"
   export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
 
   # misleading since we are in an impure shell now
