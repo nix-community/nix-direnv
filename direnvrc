@@ -86,10 +86,20 @@ _nix_add_gcroot() {
   ln -fsn "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_pwd"
 }
 
-_argsum_suffix() {
+_nix_argsum_suffix() {
+  local out checksum
   if [ -n "$1" ]; then
-    echo -n "-"
-    echo "$1" | shasum | cut -d' ' -f1
+
+    if has shasum; then
+      out=$(shasum <<< "$1")
+    elif has sha1sum; then
+      out=$(sha1sum <<< "$1")
+    else
+      # degrate gracefully both tools are not present
+      return
+    fi
+    read checksum _ <<< "$out"
+    echo "-$checksum"
   fi
 }
 
@@ -101,7 +111,7 @@ use_flake() {
 
   local layout_dir
   layout_dir=$(direnv_layout_dir)
-  local profile="${layout_dir}/flake-profile$(_argsum_suffix "$flake_expr")"
+  local profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
   local flake_inputs="${layout_dir}/flake-inputs/"
   local profile_rc="${profile}.rc"
 
@@ -216,7 +226,7 @@ use_nix() {
     version="${version_prefix}-${path:11:16}"
   fi
 
-  local cache="${layout_dir}/cache-${version:-unknown}$(_argsum_suffix "$*")"
+  local cache="${layout_dir}/cache-${version:-unknown}$(_nix_argsum_suffix "$*")"
 
   local update_drv=0
   if [[ ! -e "$cache"
