@@ -90,10 +90,10 @@ _nix_argsum_suffix() {
   local out checksum
   if [ -n "$1" ]; then
 
-    if has shasum; then
-      out=$(shasum <<< "$1")
-    elif has sha1sum; then
+    if has sha1sum; then
       out=$(sha1sum <<< "$1")
+    elif has shasum; then
+      out=$(shasum <<< "$1")
     else
       # degrate gracefully both tools are not present
       return
