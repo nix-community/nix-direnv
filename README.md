@@ -159,6 +159,12 @@ $ direnv allow
 
 If you haven't used direnv before, make sure to [hook it into your shell](https://direnv.net/docs/hook.html) first.
 
+### Using a non-standard file name
+You may use a different file name than `shell.nix` or `default.nix` by passing the file name in `.envrc`, e.g.:
+```console
+$ echo "use nix foo.nix" >> .envrc
+```
+
 ## Flakes support
 
 nix-direnv also comes with a flake alternative. The code is tested and works however
