@@ -13,7 +13,7 @@ stdenv.mkDerivation {
   '';
 
   installPhase = ''
-    install -m500 -D direnvrc $out/share/nix-direnv/direnvrc
+    install -m400 -D direnvrc $out/share/nix-direnv/direnvrc
   '';
 
   meta = with lib; {
