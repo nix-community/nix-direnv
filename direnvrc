@@ -152,7 +152,8 @@ use_flake() {
 
     log_status renewed cache
   else
-    sed -i "/eval \"\$shellHook\"/d" "$profile_rc"
+    sed "/eval \"\$shellHook\"/d" "$profile_rc" > "${profile_rc}.tmp"
+    mv "${profile_rc}.tmp" "${profile_rc}"
     log_status using cached dev shell
   fi
 
