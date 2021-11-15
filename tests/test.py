@@ -18,18 +18,6 @@ def run(cmd: List[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, **kwargs)
 
 
-def support_flakes() -> bool:
-    cmd = [
-        "nix-instantiate",
-        "--json",
-        "--eval",
-        "--expr",
-        "builtins ? getFlake",
-    ]
-    proc = subprocess.run(cmd, text=True, capture_output=True, check=True)
-    return proc.stdout == "true"
-
-
 class TestBaseNamespace:
     """Nested so test discovery doesn't run the base class tests directly."""
 
@@ -107,7 +95,6 @@ class NixShellTest(TestBaseNamespace.TestBase):
     cached_message = "using cached derivation"
 
 
-@unittest.skipUnless(support_flakes(), "requires flakes")
 class FlakeTest(TestBaseNamespace.TestBase):
     direnvrc_command = "use flake"
     renewed_message = "renewed cache"
