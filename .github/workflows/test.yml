@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-    - uses: cachix/install-nix-action@v14
+    - uses: cachix/install-nix-action@v15
       with:
         install_url: ${{ matrix.nix-install-url }}
         nix_path: nixpkgs=channel:nixpkgs-unstable
