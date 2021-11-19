@@ -141,32 +141,11 @@ use_flake() {
 
     log_status renewed cache
   else
-    sed "/eval \"\$shellHook\"/d" "$profile_rc" > "${profile_rc}.tmp"
-    mv "${profile_rc}.tmp" "${profile_rc}"
     log_status using cached dev shell
   fi
 
-  local old_nix_build_top=${NIX_BUILD_TOP:-__UNSET__}
-  local old_tmp=${TMP:-__UNSET__}
-  local old_tmpdir=${TMPDIR:-__UNSET__}
-  local old_temp=${TEMP:-__UNSET__}
-  local old_tempdir=${TEMPDIR:-__UNSET__}
-  local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
-  # TODO: maybe use `_nix_import_env()` here: https://github.com/nix-community/nix-direnv/pull/75#issuecomment-803139886
-  eval "$(< "$profile_rc")"
-  # nix print-env-dev will create a temporary directory and use it a TMPDIR,
-  # we cannot rely on this directory beeing not deleted at some point,
-  # hence we are just removing it right away.
-  if [[ "$NIX_BUILD_TOP" == */nix-shell.* && -d "$NIX_BUILD_TOP" ]]; then
-    rmdir "$NIX_BUILD_TOP"
-  fi
+  _nix_import_env "$profile_rc"
 
-  _nix_export_or_unset NIX_BUILD_TOP "$old_nix_build_top"
-  _nix_export_or_unset TMP "$old_tmp"
-  _nix_export_or_unset TMPDIR "$old_tmpdir"
-  _nix_export_or_unset TEMP "$old_temp"
-  _nix_export_or_unset TEMPDIR "$old_tempdir"
-  export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
 }
 
 use_nix() {
