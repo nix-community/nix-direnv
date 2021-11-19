@@ -44,35 +44,28 @@ _nix_export_or_unset() {
 }
 
 _nix_import_env() {
-  local env=$1
+  local profile_rc=$1
 
-  local old_path=${PATH:-}
-  local old_term=${TERM:-__UNSET__}
-  local old_shell=${SHELL:-__UNSET__}
+  local old_nix_build_top=${NIX_BUILD_TOP:-__UNSET__}
+  local old_tmp=${TMP:-__UNSET__}
   local old_tmpdir=${TMPDIR:-__UNSET__}
-  local old_ssl_cert_file=${SSL_CERT_FILE:-__UNSET__}
-  local old_nix_ssl_cert_file=${NIX_SSL_CERT_FILE:-__UNSET__}
+  local old_temp=${TEMP:-__UNSET__}
+  local old_tempdir=${TEMPDIR:-__UNSET__}
   local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
-
-  eval "$env"
-
-  # `nix-shell --pure` sets invalid ssl certificate paths
-  if [[ "${SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    _nix_export_or_unset SSL_CERT_FILE "$old_ssl_cert_file"
+  eval "$(< "$profile_rc")"
+  # nix print-env-dev will create a temporary directory and use it a TMPDIR,
+  # we cannot rely on this directory beeing not deleted at some point,
+  # hence we are just removing it right away.
+  if [[ "$NIX_BUILD_TOP" == */nix-shell.* && -d "$NIX_BUILD_TOP" ]]; then
+    rmdir "$NIX_BUILD_TOP"
   fi
 
-  if [[ "${NIX_SSL_CERT_FILE:-}" = /no-cert-file.crt ]]; then
-    _nix_export_or_unset NIX_SSL_CERT_FILE "$old_nix_ssl_cert_file"
-  fi
-
-  export PATH=$PATH${old_path:+":"}$old_path
-  _nix_export_or_unset TERM "$old_term"
-  _nix_export_or_unset SHELL "$old_shell"
+  _nix_export_or_unset NIX_BUILD_TOP "$old_nix_build_top"
+  _nix_export_or_unset TMP "$old_tmp"
   _nix_export_or_unset TMPDIR "$old_tmpdir"
+  _nix_export_or_unset TEMP "$old_temp"
+  _nix_export_or_unset TEMPDIR "$old_tempdir"
   export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
-
-  # misleading since we are in an impure shell now
-  export IN_NIX_SHELL=impure
 }
 
 _nix_add_gcroot() {
@@ -176,28 +169,13 @@ use_flake() {
   export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
 }
 
-_nix_extract_direnv() {
-  local found_direnv
-  found_direnv=0
-  while read -r line; do
-    if [[ "$found_direnv" == "1" ]]; then
-      echo "$line"
-      break
-    elif [[ "$line" == "_____direnv_____" ]]; then
-      found_direnv=1
-    else
-      echo "$line" >&2
-    fi
-  done
-}
-
 use_nix() {
   local path layout_dir
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
   layout_dir=$(direnv_layout_dir)
-  local experimental_flags=()
-  if "${NIX_BIN_PREFIX}nix-shell" --extra-experimental-features '' --version 2>/dev/null >&2; then
-    experimental_flags+=('--extra-experimental-features' 'nix-command flakes')
+  if ! "${NIX_BIN_PREFIX}nix-shell" --extra-experimental-features '' --version 2>/dev/null >&2; then
+    log_status "Your nix is too old for nix-direnv. At least nix 2.4 is required"
+    return
   fi
 
   if [[ "${direnv:-}" == "" ]]; then
@@ -223,43 +201,98 @@ use_nix() {
     version="${version_prefix}-${path:11:16}"
   fi
 
-  local cache
-  cache="${layout_dir}/cache-${version:-unknown}$(_nix_argsum_suffix "$*")"
+  local profile
 
-  local update_drv=0
-  if [[ ! -e "$cache"
-     || "$HOME/.direnvrc" -nt "$cache"
-     || .envrc -nt "$cache"
-     || default.nix -nt "$cache"
-     || shell.nix -nt "$cache"
+  profile="${layout_dir}/nix-profile-${version:-unknown}$(_nix_argsum_suffix "$*")"
+  local profile_rc="${profile}.rc"
+
+  local in_packages=0
+  local attribute=
+  local packages=""
+  local extra_args=()
+  local file=
+  while [ "$#" -gt 0 ]; do
+    i="$1"; shift
+    case $i in
+      -p|--packages)
+        in_packages=1
+        ;;
+      # ignore unsupported arguments
+      --command|--run|--exclude)
+        shift
+        ;;
+      # ignore unsupported arguments
+      --pure|-i|--keep)
+        ;;
+      -I)
+        extra_args+=("$i" "$1")
+        shift
+        ;;
+      --attr|-A)
+        attribute=$1
+        shift
+        ;;
+      --option|-o|--arg|--argstr)
+        extra_args+=("$i" "$1" "$2")
+        shift
+        shift
+        ;;
+      -*)
+        echo "unknown argument $i"
+        return
+        ;;
+      *)
+        if [[ $in_packages == 1 ]]; then
+          packages+=" $i"
+        else
+          file=$i
+        fi
+        ;;
+    esac
+  done
+
+  if [[ ! -e "$profile"
+     || ! -e "$profile_rc"
+     || "$HOME/.direnvrc" -nt "$profile_rc"
+     || .envrc -nt "$profile_rc"
+     || default.nix -nt "$profile_rc"
+     || shell.nix -nt "$profile_rc"
      ]];
   then
+    local tmp_profile="${layout_dir}/flake-profile.$$"
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
-    local dump_cmd tmp
-    dump_cmd="echo _____direnv_____; \"$direnv\" dump bash"
-    tmp=$("${NIX_BIN_PREFIX}nix-shell" \
-      "${experimental_flags[@]}" \
-      --show-trace --pure "$@" --run "$dump_cmd")
-    # show original shell hook output
-    echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
-    update_drv=1
+    local tmp_profile_rc
+    local extra_args=()
+    if [[ $packages != "" ]]; then
+      extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
+    else
+      if [[ $file == "" ]]; then
+        if [[ -e "shell.nix" ]]; then
+          file=./shell.nix
+        elif [[ -e "default.nix" ]]; then
+          file=./default.nix
+        fi
+      fi
+      if [[ $attribute == "" ]]; then
+        extra_args+=(--file "$file")
+      else
+        extra_args+=(--expr "(import $file).${attribute}")
+      fi
+    fi
+    tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
+      --extra-experimental-features "nix-command flakes" \
+      --profile "$tmp_profile" --impure "${extra_args[@]}")
+    drv=$(ls -dl "$tmp_profile")
+    drv=${drv#*-> }
+    echo "$tmp_profile_rc" > "$profile_rc"
+    rm -f "$tmp_profile" "$tmp_profile"*
+    _nix_add_gcroot "$drv" "$profile"
+    log_status renewed cache
   else
     log_status using cached derivation
   fi
 
-  log_status eval "$cache"
-  read -r cache_content < "$cache"
-  _nix_import_env "$cache_content"
-
-  # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
-  if [[ "${out:-}" != "" ]] && (( update_drv )); then
-    local drv_link="${layout_dir}/drv" drv
-    drv=$("${NIX_BIN_PREFIX}nix" show-derivation "$out" \
-      "${experimental_flags[@]}" \
-      | grep -E -o -m1 '/nix/store/.*.drv')
-    _nix_add_gcroot "$drv" "$drv_link"
-    log_status renewed cache and derivation link
-  fi
+  _nix_import_env "$profile_rc"
 
   if [[ "$#" == 0 ]]; then
     watch_file default.nix
