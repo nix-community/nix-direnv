@@ -35,7 +35,7 @@ In `$HOME/.config/nixpkgs/home.nix` add
   programs.direnv.nix-direnv.enable = true;
   # optional for nix flakes support
   programs.direnv.nix-direnv.enableFlakes = true;
-  
+
   programs.bash.enable = true;
   # OR
   programs.zsh.enable = true;
@@ -182,7 +182,7 @@ $ direnv allow
 ```
 
 in case the project already comes with a `flake.nix`.
-Optionally if you do not want flake.nix to be part of the current directory repo,
+Optionally if you do not want `flake.nix` to be part of the current directory repo,
 you can specify an arbitrary flake expression as parameter such as:
 
 ```console
@@ -229,7 +229,7 @@ $ touch flake.nix
 
 ## Shell integration
 
-To quickly add a default.nix/flake.nix to a project you can put the following snippets in your bashrc/zshrc
+To quickly add a `default.nix`/`flake.nix` to a project you can put the following snippets in your `.bashrc`/`.zshrc`:
 
 ```bash
 nixify() {
@@ -250,7 +250,7 @@ EOF
   fi
 }
 
-flakifiy() {
+flakify() {
   if [ ! -e flake.nix ]; then
     nix flake new -t github:nix-community/nix-direnv .
   elif [ ! -e .envrc ]; then
