@@ -7,7 +7,8 @@
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
     in {
-      defaultPackage = pkgs.callPackage ./default.nix {};
+      defaultPackage = pkgs.callPackage ./default.nix { };
+      devShell = pkgs.callPackage ./shell.nix { };
     }) // {
       overlay = final: prev: {
         nix-direnv = final.callPackage ./default.nix { };
