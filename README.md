@@ -133,8 +133,8 @@ via home-manager section.
 Put the following lines in your `.envrc`:
 
 ```bash
-if ! has nix_direnv_version || ! nix_direnv_version 1.5.0; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.5.0/direnvrc" "sha256-carKk9aUFHMuHt+IWh74hFj58nY4K3uywpZbwXX0BTI="
+if ! has nix_direnv_version || ! nix_direnv_version 1.5.1; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.5.1/direnvrc" "sha256-carKk9aUFHMuHt+IWh74hFj58nY4K3uywpZbwXX0BTI="
 fi
 ```
 
