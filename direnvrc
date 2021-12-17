@@ -119,6 +119,7 @@ use_flake() {
      || ! -e "$profile_rc"
      || "$HOME/.direnvrc" -nt "$profile_rc"
      || .envrc -nt "$profile_rc"
+     || "$flake_dir/"devshell.toml -nt "$profile_rc"
      || "$flake_dir/"flake.nix -nt "$profile_rc"
      || "$flake_dir/"flake.lock -nt "$profile_rc"
      ]];
