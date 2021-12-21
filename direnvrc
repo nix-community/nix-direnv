@@ -129,7 +129,7 @@ use_flake() {
     local tmp_profile_rc
     tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
       --extra-experimental-features "nix-command flakes" \
-      --profile "$tmp_profile" "$flake_expr")
+      --profile "$tmp_profile" $@)
     # macos does not have realpath
     if command -v realpath >/dev/null; then
       drv=$(realpath "$tmp_profile")
