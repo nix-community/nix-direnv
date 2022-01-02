@@ -189,6 +189,24 @@ you can specify an arbitrary flake expression as parameter such as:
 use flake ~/myflakes#project
 ```
 
+### Advanced usage
+
+Under the covers, `use_flake` calls `nix print-dev-env`.
+The first argument to the `use_flake` function is the flake expression to use,
+and all other arguments are proxied along to the call to `print-dev-env`.
+You may make use of this fact for some more arcane invocations.
+
+For instance, if you have a flake that needs to be called impurely under some conditions,
+you may wish to pass `--impure` to the `print-dev-env` invocation
+so that the environment of the calling shell is passed in.
+
+You can do that as follows:
+
+```
+$ echo "use flake . --impure" > .envrc
+$ direnv allow
+```
+
 ## Storing .direnv outside the project directory
 
 A `.direnv` directory will be created in each `use_nix` project, which might
