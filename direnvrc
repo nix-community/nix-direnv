@@ -103,11 +103,24 @@ _nix_argsum_suffix() {
   fi
 }
 
+_any_file_in_dir_newer_than(){
+    local dir="$1"
+    local than="$2"
+    [[ ! -d "$dir" ]] && return 1
+    for f in "$dir/"*.nix ; do
+        [[ "$f" -nt "$than" ]] && return 0
+    done
+    return 1
+}
+
+
 use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
   watch_file "$flake_dir/"flake.nix
   watch_file "$flake_dir/"flake.lock
+  nix_util_dir="$flake_dir/"nix
+  [[ -d "$nix_util_dir" ]] && watch_dir "$nix_util_dir"
 
   local layout_dir profile
   layout_dir=$(direnv_layout_dir)
@@ -122,7 +135,7 @@ use_flake() {
      || "$flake_dir/"devshell.toml -nt "$profile_rc"
      || "$flake_dir/"flake.nix -nt "$profile_rc"
      || "$flake_dir/"flake.lock -nt "$profile_rc"
-     ]];
+     ]]  || _any_file_in_dir_newer_than "$nix_util_dir" "$profile_rc"
   then
     local tmp_profile="${layout_dir}/flake-profile.$$"
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
