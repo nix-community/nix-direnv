@@ -3,6 +3,11 @@
 # Usage: nix_direnv_version <version_at_least>
 #
 # Checks that the nix-direnv version is at least as old as <version_at_least>.
+
+if ! has direnv_version || ! direnv_version 2.21.3; then
+  exit
+fi
+
 nix_direnv_version() {
   declare major='1' minor='5' patch='1' # UPDATE(nix-direnv version)
 
