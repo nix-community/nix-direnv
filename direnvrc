@@ -5,7 +5,7 @@
 # Checks that the nix-direnv version is at least as old as <version_at_least>.
 
 if ! has direnv_version || ! direnv_version 2.21.3; then
-  exit
+  exit 1
 fi
 
 nix_direnv_version() {
