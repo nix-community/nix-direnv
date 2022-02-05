@@ -1,5 +1,13 @@
 # shellcheck shell=bash
 
+REQUIRED_DIRENV_VERSION="2.21.3"
+
+
+if ! has direnv_version || ! direnv_version "$REQUIRED_DIRENV_VERSION" 2>/dev/null; then
+  printf '%s\n' "nix-direnv: base direnv version is older than the required v$REQUIRED_DIRENV_VERSION." >&2
+  exit 1
+fi
+
 # Usage: nix_direnv_version <version_at_least>
 #
 # Checks that the nix-direnv version is at least as old as <version_at_least>.
