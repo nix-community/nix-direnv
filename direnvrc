@@ -12,7 +12,7 @@ fi
 #
 # Checks that the nix-direnv version is at least as old as <version_at_least>.
 nix_direnv_version() {
-  declare major='1' minor='5' patch='1' # UPDATE(nix-direnv version)
+  declare major='1' minor='6' patch='0' # UPDATE(nix-direnv version)
 
   [[ $1 =~ ^([^+-.]*)(\.?)([^+-.]*)(\.?)([^+-]*)(-?)([^+]*)(\+?)(.*)$ ]]
   declare -a ver; ver=("${BASH_REMATCH[@]:1}")
