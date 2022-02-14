@@ -111,6 +111,24 @@ _nix_argsum_suffix() {
   fi
 }
 
+_cache_is_valid() {
+  if [ $(type -t nix_direnv_cache_is_valid)  == "function" ]; then
+    nix_direnv_cache_is_valid || return 1;
+  fi
+
+  if [[ ! -e "$profile"
+     || ! -e "$profile_rc"
+     || "$HOME/.direnvrc" -nt "$profile_rc"
+     || .envrc -nt "$profile_rc"
+     || "$flake_dir/"devshell.toml -nt "$profile_rc"
+     || "$flake_dir/"flake.nix -nt "$profile_rc"
+     || "$flake_dir/"flake.lock -nt "$profile_rc"
+     ]];
+  then return 1;
+  else return 0;
+  fi
+}
+
 use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
@@ -122,16 +140,7 @@ use_flake() {
   profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
   local flake_inputs="${layout_dir}/flake-inputs/"
   local profile_rc="${profile}.rc"
-
-  if [[ ! -e "$profile"
-     || ! -e "$profile_rc"
-     || "$HOME/.direnvrc" -nt "$profile_rc"
-     || .envrc -nt "$profile_rc"
-     || "$flake_dir/"devshell.toml -nt "$profile_rc"
-     || "$flake_dir/"flake.nix -nt "$profile_rc"
-     || "$flake_dir/"flake.lock -nt "$profile_rc"
-     ]];
-  then
+  if _cache_is_valid; then
     local tmp_profile="${layout_dir}/flake-profile.$$"
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local tmp_profile_rc
