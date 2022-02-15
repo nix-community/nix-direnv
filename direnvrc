@@ -160,7 +160,11 @@ use_flake() {
   profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
   local flake_inputs="${layout_dir}/flake-inputs/"
   local profile_rc="${profile}.rc"
-  if _cache_is_valid; then
+  if _flake_cache_is_valid "$profile" "$profile_rc"; then
+    sed "/eval \"\$shellHook\"/d" "$profile_rc" > "${profile_rc}.tmp"
+    mv "${profile_rc}.tmp" "${profile_rc}"
+    log_status using cached dev shell
+  else
     local tmp_profile="${layout_dir}/flake-profile.$$"
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local tmp_profile_rc
@@ -189,10 +193,6 @@ use_flake() {
     done
 
     log_status renewed cache
-  else
-    sed "/eval \"\$shellHook\"/d" "$profile_rc" > "${profile_rc}.tmp"
-    mv "${profile_rc}.tmp" "${profile_rc}"
-    log_status using cached dev shell
   fi
 
   local old_nix_build_top=${NIX_BUILD_TOP:-__UNSET__}
@@ -269,13 +269,9 @@ use_nix() {
   cache="${layout_dir}/cache-${version:-unknown}$(_nix_argsum_suffix "$*")"
 
   local update_drv=0
-  if [[ ! -e "$cache"
-     || "$HOME/.direnvrc" -nt "$cache"
-     || .envrc -nt "$cache"
-     || default.nix -nt "$cache"
-     || shell.nix -nt "$cache"
-     ]];
-  then
+  if _nix_cache_is_valid "$cache"; then
+    log_status using cached derivation
+  else
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
     local dump_cmd tmp
     dump_cmd="echo _____direnv_____; \"$direnv\" dump bash"
@@ -285,8 +281,6 @@ use_nix() {
     # show original shell hook output
     echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
     update_drv=1
-  else
-    log_status using cached derivation
   fi
 
   log_status eval "$cache"
