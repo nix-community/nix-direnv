@@ -165,6 +165,51 @@ You may use a different file name than `shell.nix` or `default.nix` by passing t
 $ echo "use nix foo.nix" >> .envrc
 ```
 
+### Overriding nix-direnv's caching
+
+nix-direnv adds an additional layer of caching on top of direnv,
+whereby the created `devShell` environment itself is cached.
+
+This environment can become invalidated in a number of ways.
+nix-direnv makes an attempt at telling if the `devShell` must be recreated,
+but cannot always keep up due to the generality of how nix may be spread over a repository.
+
+To assist in invaliding the cache when necessary,
+users can add a function to specify when to invalidate the cache.
+
+**Before invoking either `use flake` or `use nix` in your `.env` or `.envrc`**,
+you can define a function called `nix_direnv_cache_is_valid`.
+
+`nix_direnv_cache_is_valid` takes one argument,
+the path to a cache file,
+and should return non-zero if the `devShell` is to be considered invalid.
+
+The cache file's mtime can be compared against
+to determine if any watched file is newer than the cache.
+
+Note that this function is not an override.
+The default tracking that nix-direnv provides is kept when defining `nix_direnv_cache_is_valid`.
+
+#### Examples
+
+In `.envrc`:
+
+```sh
+function nix_direnv_cache_is_valid() {
+  # exit non-zero if any nix file in the project is newer than the cache
+  find . -name "*.nix" -newer "$1" -exec false {} .
+}
+```
+
+of if you want to track a single additional file:
+
+```sh
+function nix_direnv_cache_is_valid() {
+  test "./nix/default.nix" -nt "$1"
+}
+```
+
+
 ## Flakes support
 
 nix-direnv also comes with a flake alternative. The code is tested and works however
