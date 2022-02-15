@@ -14,7 +14,7 @@ TEST_ROOT = Path(__file__).resolve().parent
 
 
 def run(cmd: List[str], **kwargs) -> subprocess.CompletedProcess:
-    print("$ " + " ".join(cmd))
+    print("running $ " + " ".join(cmd))
     return subprocess.run(cmd, **kwargs)
 
 
@@ -42,7 +42,7 @@ class TestBaseNamespace:
             cls.direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
 
             with open(cls.testenv.joinpath(".envrc"), "w") as f:
-                f.write(f"source {cls.direnvrc}\n{cls.direnvrc_command}")
+                f.write(f"source {cls.direnvrc}\n{cls.direnvrc_command}\n")
 
             run(["direnv", "allow"], cwd=str(cls.testenv), env=cls.env, check=True)
 
@@ -54,7 +54,7 @@ class TestBaseNamespace:
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            sys.stderr.write(cls.out1.stderr)
+            print(cls.out1.stderr, file=sys.stderr)
 
             run(["nix-collect-garbage"], check=True)
 
@@ -64,7 +64,7 @@ class TestBaseNamespace:
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            sys.stderr.write(cls.out2.stderr)
+            print(cls.out2.stderr, file=sys.stderr)
 
         @classmethod
         def tearDownClass(cls) -> None:
