@@ -113,7 +113,7 @@ _nix_argsum_suffix() {
 
 _cache_is_valid() {
   if [ "$(type -t nix_direnv_cache_is_valid)"  == "function" ]; then
-    nix_direnv_cache_is_valid || return 1;
+    nix_direnv_cache_is_valid "$profile_rc" || return 1;
   fi
 
   if [[ ! -e "$profile"
