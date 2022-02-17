@@ -127,8 +127,8 @@ _flake_cache_is_valid() {
      || "$flake_dir/"flake.nix -nt "$profile_rc"
      || "$flake_dir/"flake.lock -nt "$profile_rc"
      ]];
-  then return 0;
-  else return 1;
+  then return 1;
+  else return 0;
   fi
 }
 
@@ -144,8 +144,8 @@ _nix_cache_is_valid() {
      || default.nix -nt "$cache"
      || shell.nix -nt "$cache"
      ]];
-  then return 0;
-  else return 1;
+  then return 1;
+  else return 0;
   fi
 }
 
