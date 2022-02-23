@@ -111,6 +111,11 @@ _nix_argsum_suffix() {
   fi
 }
 
+nix_direnv_watch_file() {
+  watch_file "$@"
+  nix_watches+=("$@")
+}
+
 use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
@@ -123,13 +128,25 @@ use_flake() {
   local flake_inputs="${layout_dir}/flake-inputs/"
   local profile_rc="${profile}.rc"
 
+  nix_watches+=(
+      "$HOME/".direnvrc
+      .envrc
+      "$flake_dir/"devshell.toml
+      "$flake_dir/"flake.nix
+      "$flake_dir/"flake.lock
+  )
+
+  need_update=0
+  for file in "${nix_watches[@]}"; do
+    if [[ "$file" -nt "$profile_rc" ]]; then
+      need_update=1
+      break
+    fi
+  done
+
   if [[ ! -e "$profile"
      || ! -e "$profile_rc"
-     || "$HOME/.direnvrc" -nt "$profile_rc"
-     || .envrc -nt "$profile_rc"
-     || "$flake_dir/"devshell.toml -nt "$profile_rc"
-     || "$flake_dir/"flake.nix -nt "$profile_rc"
-     || "$flake_dir/"flake.lock -nt "$profile_rc"
+     || "$need_update" -eq "1"
      ]];
   then
     local tmp_profile="${layout_dir}/flake-profile.$$"
@@ -239,12 +256,24 @@ use_nix() {
   local cache
   cache="${layout_dir}/cache-${version:-unknown}$(_nix_argsum_suffix "$*")"
 
+  nix_watches+=(
+      "$HOME/".direnvrc
+      .envrc
+      default.nix
+      shell.nix
+  )
+
+  need_update=0
+  for file in "${nix_watches[@]}"; do
+    if [[ "$file" -nt "$cache" ]]; then
+      need_update=1
+      break
+    fi
+  done
+
   local update_drv=0
   if [[ ! -e "$cache"
-     || "$HOME/.direnvrc" -nt "$cache"
-     || .envrc -nt "$cache"
-     || default.nix -nt "$cache"
-     || shell.nix -nt "$cache"
+     || "$need_update" -eq "1"
      ]];
   then
     [[ -d "$layout_dir" ]] || mkdir -p "$layout_dir"
