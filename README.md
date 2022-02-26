@@ -232,17 +232,30 @@ direnv_layout_dir() {
 During direnv setup `direnv_layout_dir` can be called multiple times and with different values of `$PWD`
 (when other `.envrc` files are included). Therefore cache its results in dictionary `direnv_layout_dirs`.
 
-## Manually re-triggering evaluation
+## Watching additional files
 
-In some case nix-direnv does not detect if imported file has changed and still
-provides the old cached values. An evaluation can be triggered by updating your
-`default.nix`, `shell.nix` or `flake.nix`, depending on what is used:
+To minimize the number of evaluations, nix-direnv maintains a list of files to check
+for changes when deciding if an update of the cached environment is required. By default, `use_flake` watches
 
-```console
-# choose one
-$ touch default.nix
-$ touch shell.nix
-$ touch flake.nix
+```
+flake.nix
+flake.lock
+devshell.toml
+```
+
+`use_nix` watches
+
+```
+default.nix
+shell.nix
+```
+
+To trigger an evaluation when other nix files change, register them by calling `nix_direnv_watch_file PATH [PATH...]` from `.envrc`.
+
+```bash
+nix_direnv_watch_file module.nix
+nix_direnv_watch_file mod1.nix mod2.nix
+use flake
 ```
 
 ## Shell integration
