@@ -119,8 +119,16 @@ nix_direnv_watch_file() {
 use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
-  watch_file "$flake_dir/"flake.nix
-  watch_file "$flake_dir/"flake.lock
+
+  nix_direnv_watch_file .envrc
+  if [[ -d "$flake_dir" ]]; then
+    nix_direnv_watch_file "$flake_dir/"flake.nix
+    nix_direnv_watch_file "$flake_dir/"flake.lock
+
+    if [[ -e "$flake_dir/"devshell.toml ]]; then
+      nix_direnv_watch_file "$flake_dir/"devshell.toml
+    fi
+  fi
 
   local layout_dir profile
   layout_dir=$(direnv_layout_dir)
@@ -130,10 +138,6 @@ use_flake() {
 
   nix_watches+=(
       "$HOME/".direnvrc
-      .envrc
-      "$flake_dir/"devshell.toml
-      "$flake_dir/"flake.nix
-      "$flake_dir/"flake.lock
   )
 
   need_update=0
