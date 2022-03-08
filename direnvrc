@@ -159,12 +159,10 @@ use_flake() {
     tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
       --extra-experimental-features "nix-command flakes" \
       --profile "$tmp_profile" "$@")
-    # macos does not have realpath
-    if command -v realpath >/dev/null; then
-      drv=$(realpath "$tmp_profile")
-    else
-      drv=$(perl -e 'use Cwd "abs_path";print abs_path(shift)' "$tmp_profile")
-    fi
+
+    drv=$(ls -dl "$tmp_profile")
+    drv=${tmp_profile#*-> }
+
     echo "$tmp_profile_rc" > "$profile_rc"
     rm -f "$tmp_profile" "$tmp_profile"*
     _nix_add_gcroot "$drv" "$profile"
