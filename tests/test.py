@@ -92,7 +92,7 @@ class TestBaseNamespace:
 class NixShellTest(TestBaseNamespace.TestBase):
     direnvrc_command = "use nix"
     renewed_message = "renewed cache and derivation link"
-    cached_message = "using cached derivation"
+    cached_message = "using cached dev shell"
 
 
 class FlakeTest(TestBaseNamespace.TestBase):
