@@ -134,7 +134,7 @@ Put the following lines in your `.envrc`:
 
 ```bash
 if ! has nix_direnv_version || ! nix_direnv_version 1.6.1; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.6.1/direnvrc" "sha256-P2S98+KgnN3WN+MPDY5wpg5Cqu3VYhxiCZH09cD88z8="
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/1.6.1/direnvrc" "sha256-aFwy76WtzXD7SVXWetpg+welXMZI/VcEUPQ2WUMXYSY="
 fi
 ```
 
