@@ -40,6 +40,8 @@ class TestBaseNamespace:
             cls.testenv = Path(cls.dir.name).joinpath("testenv")
             shutil.copytree(TEST_ROOT.joinpath("testenv"), cls.testenv)
             cls.direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
+            cls.renewed_message = "renewed cache"
+            cls.cached_message = "using cached dev shell"
 
             with open(cls.testenv.joinpath(".envrc"), "w") as f:
                 f.write(f"source {cls.direnvrc}\n{cls.direnvrc_command}")
@@ -73,7 +75,7 @@ class TestBaseNamespace:
         def test_fresh_shell_message(self) -> None:
             self.assertIn(self.renewed_message, self.out1.stderr)
 
-        def test_fresh_shell_shellHook(self) -> None:
+        def test_fresh_shell_shellHook_gets_executed(self) -> None:
             self.assertIn("Executing shellHook.", self.out1.stderr)
 
         def test_fresh_shell_returncode(self) -> None:
@@ -82,8 +84,8 @@ class TestBaseNamespace:
         def test_cached_shell_message(self) -> None:
             self.assertIn(self.cached_message, self.out2.stderr)
 
-        def test_cached_shell_shellHook(self) -> None:
-            self.assertNotIn("Executing shellHook.", self.out2.stderr)
+        def test_cached_shell_shellHook_gets_executed(self) -> None:
+            self.assertIn("Executing shellHook.", self.out2.stderr)
 
         def test_cached_shell_returncode(self) -> None:
             self.assertEqual(self.out2.returncode, 0)
@@ -91,14 +93,10 @@ class TestBaseNamespace:
 
 class NixShellTest(TestBaseNamespace.TestBase):
     direnvrc_command = "use nix"
-    renewed_message = "renewed cache and derivation link"
-    cached_message = "using cached derivation"
 
 
 class FlakeTest(TestBaseNamespace.TestBase):
     direnvrc_command = "use flake"
-    renewed_message = "renewed cache"
-    cached_message = "using cached dev shell"
 
     def test_gcroot_symlink_created_and_valid(self) -> None:
         inputs = list(self.testenv.joinpath(".direnv/flake-inputs").iterdir())
