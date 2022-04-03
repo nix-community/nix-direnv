@@ -21,4 +21,4 @@ jobs:
           keep-derivations = true
           experimental-features = nix-command flakes
     - run:
-        nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz ci.nix --run 'true'
+        "nix run .#test-runner"
