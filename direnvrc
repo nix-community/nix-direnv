@@ -166,7 +166,8 @@ use_flake() {
       "$HOME/".direnvrc
   )
 
-  need_update=0
+  local need_update=0
+  local file=
   for file in "${nix_watches[@]}"; do
     if [[ "$file" -nt "$profile_rc" ]]; then
       need_update=1
@@ -248,7 +249,7 @@ use_nix() {
   local attribute=
   local packages=""
   local extra_args=()
-  local file=
+  local nixfile=
   while [[ "$#" -gt 0 ]]; do
     i="$1"
     shift
@@ -283,7 +284,7 @@ use_nix() {
         if [[ $in_packages == 1 ]]; then
           packages+=" $i"
         else
-          file=$i
+          nixfile=$i
         fi
         ;;
     esac
@@ -298,6 +299,7 @@ use_nix() {
   )
 
   local need_update=0
+  local file=
   for file in "${nix_watches[@]}"; do
     if [[ "$file" -nt "$profile_rc" ]]; then
       need_update=1
@@ -318,19 +320,19 @@ use_nix() {
       extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
     else
       # figure out what file we should use
-      if [[ "$file" == "" ]]; then
+      if [[ "$nixfile" == "" ]]; then
         if [[ -e "shell.nix" ]]; then
-          file="./shell.nix"
+          nixfile="./shell.nix"
         elif [[ -e "default.nix" ]]; then
-          file="./default.nix"
+          nixfile="./default.nix"
         fi
       fi
 
       # figure out what attribute we should build
       if [[ "$attribute" == "" ]]; then
-        extra_args+=("--file" "$file")
+        extra_args+=("--file" "$nixfile")
       else
-        extra_args+=("--expr" "(import ${file}).$}attribute}")
+        extra_args+=("--expr" "(import ${nixfile}).$}attribute}")
       fi
     fi
 
