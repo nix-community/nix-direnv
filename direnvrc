@@ -220,7 +220,7 @@ use_nix() {
   _nix_direnv_preflight
 
   local layout_dir path
-  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
+  path=$(_nix_direnv_realpath "$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)")
   layout_dir=$(direnv_layout_dir)
 
   local version
