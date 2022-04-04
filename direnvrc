@@ -2,11 +2,38 @@
 
 REQUIRED_DIRENV_VERSION="2.21.3"
 
+_nix_direnv_preflight () {
+  if [[ -z "$direnv" ]]; then
+    printf '%s\n' "\$direnv environment variable was not defined. Was this script run inside direnv?"
+    exit 1
+  fi
 
-if ! has direnv_version || ! direnv_version "$REQUIRED_DIRENV_VERSION" 2>/dev/null; then
-  printf '%s\n' "nix-direnv: base direnv version is older than the required v$REQUIRED_DIRENV_VERSION." >&2
-  exit 1
-fi
+
+  if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
+    NIX_BIN_PREFIX=$(command -v nix-shell)
+    NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
+  fi
+
+
+  if ! has direnv_version || ! direnv_version "$REQUIRED_DIRENV_VERSION" 2>/dev/null; then
+    log_status "nix-direnv: base direnv version is older than the required v$REQUIRED_DIRENV_VERSION."
+    exit 1
+  fi
+
+  if ! "${NIX_BIN_PREFIX}nix-shell" --extra-experimental-features '' --version 2>/dev/null >&2; then
+    log_status "nix-direnv: nix version is older than the required 2.4."
+    exit 1
+  fi
+
+  local layout_dir
+  layout_dir=$(direnv_layout_dir)
+
+  if [[ ! -d "$layout_dir" ]]; then
+    mkdir -p "$layout_dir"
+  fi
+
+
+}
 
 # Usage: nix_direnv_version <version_at_least>
 #
@@ -117,6 +144,8 @@ nix_direnv_watch_file() {
 }
 
 use_flake() {
+  _nix_direnv_preflight
+
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
 
@@ -225,6 +254,8 @@ _nix_extract_direnv() {
 
 use_nix() {
   local path layout_dir
+  _nix_direnv_preflight
+
   path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)
   layout_dir=$(direnv_layout_dir)
   local experimental_flags=()
