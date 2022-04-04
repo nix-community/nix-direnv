@@ -11,6 +11,8 @@ from typing import List
 
 
 TEST_ROOT = Path(__file__).resolve().parent
+RENEWED_MESSAGE = "renewed cache"
+CACHED_MESSAGE = "using cached dev shell"
 
 
 def run(cmd: List[str], **kwargs) -> subprocess.CompletedProcess:
@@ -29,8 +31,6 @@ class TestBaseNamespace:
         direnvrc_command: str
         out1: subprocess.CompletedProcess
         out2: subprocess.CompletedProcess
-        renewed_message: str
-        cached_message: str
 
         @classmethod
         def setUpClass(cls) -> None:
@@ -40,8 +40,6 @@ class TestBaseNamespace:
             cls.testenv = Path(cls.dir.name).joinpath("testenv")
             shutil.copytree(TEST_ROOT.joinpath("testenv"), cls.testenv)
             cls.direnvrc = str(TEST_ROOT.parent.joinpath("direnvrc"))
-            cls.renewed_message = "renewed cache"
-            cls.cached_message = "using cached dev shell"
 
             with open(cls.testenv.joinpath(".envrc"), "w") as f:
                 f.write(f"source {cls.direnvrc}\n{cls.direnvrc_command}")
@@ -73,7 +71,7 @@ class TestBaseNamespace:
             cls.dir.cleanup()
 
         def test_fresh_shell_message(self) -> None:
-            self.assertIn(self.renewed_message, self.out1.stderr)
+            self.assertIn(RENEWED_MESSAGE, self.out1.stderr)
 
         def test_fresh_shell_shellHook_gets_executed(self) -> None:
             self.assertIn("Executing shellHook.", self.out1.stderr)
@@ -82,7 +80,7 @@ class TestBaseNamespace:
             self.assertEqual(self.out1.returncode, 0)
 
         def test_cached_shell_message(self) -> None:
-            self.assertIn(self.cached_message, self.out2.stderr)
+            self.assertIn(CACHED_MESSAGE, self.out2.stderr)
 
         def test_cached_shell_shellHook_gets_executed(self) -> None:
             self.assertIn("Executing shellHook.", self.out2.stderr)
