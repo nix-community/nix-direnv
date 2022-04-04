@@ -68,6 +68,13 @@ if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
   NIX_BIN_PREFIX=$(command -v nix-shell)
   NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
 fi
+_nix_direnv_realpath () {
+    if has realpath; then
+      realpath "$1"
+    else
+      perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"
+    fi
+}
 
 _nix_export_or_unset() {
   local key=$1 value=$2
@@ -191,6 +198,8 @@ use_flake() {
 
     drv=$(ls -dl "$tmp_profile")
     drv=${tmp_profile#*-> }
+    local drv
+    drv=$(_nix_direnv_realpath "$tmp_profile")
 
     echo "$tmp_profile_rc" > "$profile_rc"
     rm -f "$tmp_profile" "$tmp_profile"*
@@ -318,6 +327,8 @@ use_nix() {
     # show original shell hook output
     echo "$tmp" | _nix_extract_direnv >&2 > "$cache"
     update_drv=1
+    local drv
+    drv=$(_nix_direnv_realpath "$tmp_profile")
   else
     log_status using cached derivation
   fi
