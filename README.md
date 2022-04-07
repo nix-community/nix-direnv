@@ -167,25 +167,36 @@ $ echo "use nix foo.nix" >> .envrc
 
 ## Flakes support
 
-nix-direnv also comes with a flake alternative. The code is tested and works however
-since future nix versions might change their api regarding this feature we cannot
-guarantee stability after an nix upgrade.
-Likewise `use_nix` the `use_flake` implementation will prevent garbage
-collection of downloaded packages and also for flake inputs.
+nix-direnv also comes with an alternative `use_flake` implementation.
+The code is tested and does work but the upstream flake api is not finalized,
+so we we cannot guarantee stability after an nix upgrade.
 
-You can run `nix flake new -t github:nix-community/nix-direnv` to get [this](https://github.com/nix-community/nix-direnv/tree/master/template) project template.
-or just add:
+Like `use_nix`, our `use_flake` will prevent garbage collection of downloaded packages, including flake inputs.
 
+### Creating a new flake-native project
+
+This repository ships with a flake template
+which provides a basic flake with devShell integration and a basic `.envrc`.
+
+To make use of this template, you may issue the following command:
+
+```console
+$ nix flake new -t github:nix-community/nix-direnv <desired output path>
 ```
-$ echo "use flake" >> .envrc
+
+You can view the template [here](https://github.com/nix-community/nix-direnv/tree/master/template).
+
+### Integrating with a existing flake
+
+```console
+$ echo "use flake" >> .direnvrc
 $ direnv allow
 ```
 
-in case the project already comes with a `flake.nix`.
-Optionally if you do not want `flake.nix` to be part of the current directory repo,
-you can specify an arbitrary flake expression as parameter such as:
+The `use flake` line also takes an additional arbitrary flake parameter,
+so you can point at external flakes as follows:
 
-```console
+```bash
 use flake ~/myflakes#project
 ```
 
