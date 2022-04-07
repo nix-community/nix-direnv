@@ -219,7 +219,13 @@ The following example will create a unique directory name per project
 in `$HOME/.cache/direnv/layouts/`:
 
 ```bash
-# $HOME/.config/direnv/direnvrc
+# Place in "$HOME"/.config/direnv/direnvrc
+
+# Two things to know:
+# * `direnv_layour_dir` is called once for every {.direnvrc,.envrc} sourced
+# * The indicator for a different direnv file being sourced is a different `$PWD` value
+# This means we can hash `$PWD` to get a fully unique cache path for any given environment
+
 : ${XDG_CACHE_HOME:=$HOME/.cache}
 declare -A direnv_layout_dirs
 direnv_layout_dir() {
@@ -229,8 +235,6 @@ direnv_layout_dir() {
     )}"
 }
 ```
-During direnv setup `direnv_layout_dir` can be called multiple times and with different values of `$PWD`
-(when other `.envrc` files are included). Therefore cache its results in dictionary `direnv_layout_dirs`.
 
 ## Watching additional files
 
