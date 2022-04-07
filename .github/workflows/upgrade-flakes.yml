@@ -1,0 +1,20 @@
+name: "Update flakes"
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  # monthly updates
+  schedule:
+    - cron:  '0 10 1 * 0'
+jobs:
+  createPullRequest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: cachix/install-nix-action@v16
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: Update flake.lock
+        uses: DeterminateSystems/update-flake-lock@v8
