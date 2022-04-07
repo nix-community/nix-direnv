@@ -209,14 +209,16 @@ $ direnv allow
 
 ## Storing .direnv outside the project directory
 
-A `.direnv` directory will be created in each `use_nix` project, which might
-interact badly with backups (e.g. Dropbox) or IDEs.
+By default, every direnv-enabled directory will contain a `.direnv` directory.
+`.direnv` acts as a pure cache and is fully reproducible.
+To that end, we do not recommend tracking this directory or its contents,
+even in the scenario that the project tracks the a `.direnvrc`.
 
-Therefore it's possible to override a function called `direnv_layout_dir` in
-`$HOME/.config/direnv/direnvrc` or in each project's `.envrc`.
+It is possible to override a function called `direnv_layout_dir`
+in `~/.config/direnv/direnvrc` (or in each project's `.direnvrc` or `.envrc`).
 
 The following example will create a unique directory name per project
-in `$HOME/.cache/direnv/layouts/`:
+in `~/.cache/direnv/layouts/`:
 
 ```bash
 # Place in "$HOME"/.config/direnv/direnvrc
