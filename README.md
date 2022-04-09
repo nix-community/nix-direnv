@@ -275,6 +275,9 @@ nix_direnv_watch_file mod1.nix mod2.nix
 use flake
 ```
 
+## Shell integration
+
+See the [wiki](https://github.com/nix-community/nix-direnv/wiki/Shell-integration) for helpers to quickly setup a direnv setup in a new project.
 ## Known Bugs
 
 At the moment `nix-direnv` depends on GNU Grep and a modern Bash version.
