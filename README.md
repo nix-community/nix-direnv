@@ -167,25 +167,36 @@ $ echo "use nix foo.nix" >> .envrc
 
 ## Flakes support
 
-nix-direnv also comes with a flake alternative. The code is tested and works however
-since future nix versions might change their api regarding this feature we cannot
-guarantee stability after an nix upgrade.
-Likewise `use_nix` the `use_flake` implementation will prevent garbage
-collection of downloaded packages and also for flake inputs.
+nix-direnv also comes with an alternative `use_flake` implementation.
+The code is tested and does work but the upstream flake api is not finalized,
+so we we cannot guarantee stability after an nix upgrade.
 
-You can run `nix flake new -t github:nix-community/nix-direnv` to get [this](https://github.com/nix-community/nix-direnv/tree/master/template) project template.
-or just add:
+Like `use_nix`, our `use_flake` will prevent garbage collection of downloaded packages, including flake inputs.
 
+### Creating a new flake-native project
+
+This repository ships with a flake template
+which provides a basic flake with devShell integration and a basic `.envrc`.
+
+To make use of this template, you may issue the following command:
+
+```console
+$ nix flake new -t github:nix-community/nix-direnv <desired output path>
 ```
-$ echo "use flake" >> .envrc
+
+You can view the template [here](https://github.com/nix-community/nix-direnv/tree/master/template).
+
+### Integrating with a existing flake
+
+```console
+$ echo "use flake" >> .direnvrc
 $ direnv allow
 ```
 
-in case the project already comes with a `flake.nix`.
-Optionally if you do not want `flake.nix` to be part of the current directory repo,
-you can specify an arbitrary flake expression as parameter such as:
+The `use flake` line also takes an additional arbitrary flake parameter,
+so you can point at external flakes as follows:
 
-```console
+```bash
 use flake ~/myflakes#project
 ```
 
@@ -209,17 +220,25 @@ $ direnv allow
 
 ## Storing .direnv outside the project directory
 
-A `.direnv` directory will be created in each `use_nix` project, which might
-interact badly with backups (e.g. Dropbox) or IDEs.
+By default, every direnv-enabled directory will contain a `.direnv` directory.
+`.direnv` acts as a pure cache and is fully reproducible.
+To that end, we do not recommend tracking this directory or its contents,
+even in the scenario that the project tracks the a `.direnvrc`.
 
-Therefore it's possible to override a function called `direnv_layout_dir` in
-`$HOME/.config/direnv/direnvrc` or in each project's `.envrc`.
+It is possible to override a function called `direnv_layout_dir`
+in `~/.config/direnv/direnvrc` (or in each project's `.direnvrc` or `.envrc`).
 
 The following example will create a unique directory name per project
-in `$HOME/.cache/direnv/layouts/`:
+in `~/.cache/direnv/layouts/`:
 
 ```bash
-# $HOME/.config/direnv/direnvrc
+# Place in "$HOME"/.config/direnv/direnvrc
+
+# Two things to know:
+# * `direnv_layour_dir` is called once for every {.direnvrc,.envrc} sourced
+# * The indicator for a different direnv file being sourced is a different `$PWD` value
+# This means we can hash `$PWD` to get a fully unique cache path for any given environment
+
 : ${XDG_CACHE_HOME:=$HOME/.cache}
 declare -A direnv_layout_dirs
 direnv_layout_dir() {
@@ -229,8 +248,6 @@ direnv_layout_dir() {
     )}"
 }
 ```
-During direnv setup `direnv_layout_dir` can be called multiple times and with different values of `$PWD`
-(when other `.envrc` files are included). Therefore cache its results in dictionary `direnv_layout_dirs`.
 
 ## Watching additional files
 
@@ -260,39 +277,7 @@ use flake
 
 ## Shell integration
 
-To quickly add a `default.nix`/`flake.nix` to a project you can put the following snippets in your `.bashrc`/`.zshrc`:
-
-```bash
-nixify() {
-  if [ ! -e ./.envrc ]; then
-    echo "use nix" > .envrc
-    direnv allow
-  fi
-  if [[ ! -e shell.nix ]] && [[ ! -e default.nix ]]; then
-    cat > default.nix <<'EOF'
-with import <nixpkgs> {};
-mkShell {
-  nativeBuildInputs = [
-    bashInteractive
-  ];
-}
-EOF
-    ${EDITOR:-vim} default.nix
-  fi
-}
-
-flakify() {
-  if [ ! -e flake.nix ]; then
-    nix flake new -t github:nix-community/nix-direnv .
-  elif [ ! -e .envrc ]; then
-    echo "use flake" > .envrc
-    direnv allow
-  fi
-  ${EDITOR:-vim} flake.nix
-}
-
-```
-
+See the [wiki](https://github.com/nix-community/nix-direnv/wiki/Shell-integration) for helpers to quickly setup a direnv setup in a new project.
 ## Known Bugs
 
 At the moment `nix-direnv` depends on GNU Grep and a modern Bash version.
