@@ -44,6 +44,10 @@ nix_direnv_version() {
   [[ $1 =~ ^([^+-.]*)(\.?)([^+-.]*)(\.?)([^+-]*)(-?)([^+]*)(\+?)(.*)$ ]]
   declare -a ver; ver=("${BASH_REMATCH[@]:1}")
 
+  req_major=${ver[0]}
+  req_minor=${ver[2]:=0}
+  req_patch=${ver[4]:=0}
+
   if [[ ( ${ver[0]} != +([0-9]) ) \
     || ( ${ver[1]} == '.' && ${ver[2]} != +([0-9]) ) \
     || ( ${ver[3]} == '.' && ${ver[4]} != +([0-9]) ) \
@@ -55,9 +59,9 @@ nix_direnv_version() {
     return 1
   fi
 
-  if [[ ( ${ver[0]} -gt $major ) \
-    || ( ${ver[2]:=0} -gt $minor ) \
-    || ( ${ver[4]:=0} -gt $patch ) \
+  if [[ ($req_major -gt $major) \
+     || ($req_major -eq $major && $req_minor -gt $minor) \
+     || ($req_major -eq $major && $req_minor -eq $minor && $req_patch -gt $patch)
   ]]; then
     printf '%s\n' "nix-direnv: error current version v$major.$minor.$patch is older than the desired version v$1" >&2
     return 1
