@@ -284,7 +284,7 @@ use_nix() {
         shift
         shift
         ;;
-      -*)
+      *)
         if [[ $in_packages == 1 ]]; then
           packages+=" $i"
         else
