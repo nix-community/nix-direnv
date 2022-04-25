@@ -336,7 +336,7 @@ use_nix() {
       if [[ "$attribute" == "" ]]; then
         extra_args+=("--file" "$nixfile")
       else
-        extra_args+=("--expr" "(import ${nixfile}).$}attribute}")
+        extra_args+=("--expr" "(import ${nixfile}).${attribute}")
       fi
     fi
 
