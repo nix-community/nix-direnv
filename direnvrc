@@ -284,6 +284,11 @@ use_nix() {
         shift
         shift
         ;;
+      -*)
+        # Other arguments are assumed to be of a single arg form
+        # (--foo=bar or -j4)
+        extra_args+=("$i")
+        ;;
       *)
         if [[ $in_packages == 1 ]]; then
           packages+=" $i"
