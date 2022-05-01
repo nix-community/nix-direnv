@@ -88,8 +88,8 @@ keep-outputs = true
 Put the following lines in your `.envrc`:
 
 ```bash
-if ! has nix_direnv_version || ! nix_direnv_version 2.0.1; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.0.1/direnvrc" "sha256-5tSiHl8q9TnqoJ7Wizgal7sOUcKxiBR+7YSSqOmt7hg="
+if ! has nix_direnv_version || ! nix_direnv_version 2.1.0; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.1.0/direnvrc" "sha256-5tSiHl8q9TnqoJ7Wizgal7sOUcKxiBR+7YSSqOmt7hg="
 fi
 ```
 
