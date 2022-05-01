@@ -271,7 +271,7 @@ use_nix() {
         # These commands are unsupported (but take no argument)
         # ignore them
         ;;
-      -I)
+      --include|-I)
         extra_args+=("$i" "$1")
         shift
         ;;

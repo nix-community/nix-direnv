@@ -2,7 +2,8 @@
 
 ![Test](https://github.com/nix-community/nix-direnv/workflows/Test/badge.svg)
 
-A faster, persistent implementation of `direnv`'s `use_nix`, to replace the built-in one.
+A faster, persistent implementation of `direnv`'s `use_nix`,
+to replace the built-in one.
 
 Prominent features:
 
@@ -11,17 +12,31 @@ Prominent features:
   shell derivation in the user's `gcroots` (Life is too short to lose
   your project's build cache if you are on a flight with no internet connection)
 
+## Why not use `lorri` instead?
+
+Compared to [lorri](https://github.com/nix-community/lorri),
+nix-direnv is simpler (and requires no external daemon) and supports flakes.
+Additionally, lorri can sometimes re-evaluate the entirety of nixpkgs on every change
+(leading to perpetual high CPU load).
+
 ## Installation
+
+> **Heads up**: nix-direnv requires a modern Bash and GNU Grep.
+> MacOS ships with outdated or non-GNU versions of these tools,
+> As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or Homebrew.
+> Discussion of these problems can be found
+> [here](https://github.com/nix-community/nix-direnv/issues/3).
 
 There are different ways to install nix-direnv, pick your favourite:
 
-- via home-manager (recommended)
-- via configuration.nix in NixOS
-- with nix-env
-- from source
-- with direnv source_url
-
+<details>
+  <summary> Via home-manager (Recommended)</summary>
 ### Via home-manager
+
+Note that while the home-manager integration is recommended,
+some use cases require the use of features only present in some versions of nix-direnv.
+It is much harder to control the version of nix-direnv installedwith this method.
+If you require such specific control, please use another method of installing nix-direnv.
 
 In `$HOME/.config/nixpkgs/home.nix` add
 
@@ -43,7 +58,8 @@ In `$HOME/.config/nixpkgs/home.nix` add
 }
 ```
 
-Optional: To protect your nix-shell against garbage collection you also need to add these options to your Nix configuration.
+**Optional**: To protect your nix-shell against garbage collection
+you also need to add these options to your Nix configuration.
 
 If you are on NixOS also add the following lines to your `/etc/nixos/configuration.nix`:
 
@@ -58,10 +74,29 @@ If you are on NixOS also add the following lines to your `/etc/nixos/configurati
 
 On other systems with Nix add the following configuration to your `/etc/nix/nix.conf`:
 
-```
+```Nix
 keep-derivations = true
 keep-outputs = true
 ```
+
+</details>
+<details>
+  <summary>Direnv's source_url</summary>
+
+### Direnv source_url
+
+Put the following lines in your `.envrc`:
+
+```bash
+if ! has nix_direnv_version || ! nix_direnv_version 2.0.1; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.0.1/direnvrc" "sha256-5tSiHl8q9TnqoJ7Wizgal7sOUcKxiBR+7YSSqOmt7hg="
+fi
+```
+
+</details>
+
+<details>
+  <summary>Via configuration.nix in NixOS</summary>
 
 ### Via configuration.nix in NixOS
 
@@ -78,8 +113,7 @@ In `/etc/nixos/configuration.nix`:
   environment.pathsToLink = [
     "/share/nix-direnv"
   ];
-  # if you also want support for flakes (this makes nix-direnv use the
-  # unstable version of nix):
+  # if you also want support for flakes 
   nixpkgs.overlays = [
     (self: super: { nix-direnv = super.nix-direnv.override { enableFlakes = true; }; } )
   ];
@@ -93,6 +127,10 @@ Then source the `direnvrc` from this repository in your own `$HOME/.direnvrc`
 source /run/current-system/sw/share/nix-direnv/direnvrc
 ```
 
+</details>
+
+<details>
+<summary>With nix-env</summary
 ### With nix-env
 
 As **non-root** user do the following:
@@ -107,36 +145,28 @@ Then add nix-direnv to `$HOME/.direnvrc`:
 source $HOME/.nix-profile/share/nix-direnv/direnvrc
 ```
 
-You also need to set `keep-outputs` and `keep-derivations` to nix.conf as described in the installation
-via home-manager section.
+You also need to set `keep-outputs` and `keep-derivations` to nix.conf
+as described in the installation via home-manager section.
 
+</details>
+
+<details>
+  <summary>From source</summary>
 ### From source
 
 Clone the repository to some directory
-
-```console
-$ git clone https://github.com/nix-community/nix-direnv $HOME/nix-direnv
-```
-
-Then source the direnvrc from this repository in your own `.direnvrc`
+and then source the direnvrc from this repository in your own `~/.direnvrc`
+or `~/.config/direnv/direnvrc`:
 
 ```bash
-# put this in ~/.direnvrc
+# put this in ~/.direnvrc or ~/.config/direnv/direnvrc
 source $HOME/nix-direnv/direnvrc
 ```
 
-You also need to set `keep-outputs` and `keep-derivations` to nix.conf as described in the installation
-via home-manager section.
+You also need to set `keep-outputs` and `keep-derivations` to nix.conf 
+as described in the installation via home-manager section.
 
-### Direnv source_url
-
-Put the following lines in your `.envrc`:
-
-```bash
-if ! has nix_direnv_version || ! nix_direnv_version 2.0.1; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.0.1/direnvrc" "sha256-5tSiHl8q9TnqoJ7Wizgal7sOUcKxiBR+7YSSqOmt7hg="
-fi
-```
+</details>
 
 ## Usage example
 
@@ -152,15 +182,20 @@ pkgs.mkShell {
 ```
 
 Then add the line `use nix` to your envrc:
+
 ```console
 $ echo "use nix" >> .envrc
 $ direnv allow
 ```
 
-If you haven't used direnv before, make sure to [hook it into your shell](https://direnv.net/docs/hook.html) first.
+If you haven't used direnv before,
+make sure to [hook it into your shell](https://direnv.net/docs/hook.html) first.
 
 ### Using a non-standard file name
-You may use a different file name than `shell.nix` or `default.nix` by passing the file name in `.envrc`, e.g.:
+
+You may use a different file name than `shell.nix` or `default.nix`
+by passing the file name in `.envrc`, e.g.:
+
 ```console
 $ echo "use nix foo.nix" >> .envrc
 ```
@@ -171,26 +206,27 @@ nix-direnv also comes with an alternative `use_flake` implementation.
 The code is tested and does work but the upstream flake api is not finalized,
 so we we cannot guarantee stability after an nix upgrade.
 
-Like `use_nix`, our `use_flake` will prevent garbage collection of downloaded packages, including flake inputs.
+Like `use_nix`,
+our `use_flake` will prevent garbage collection of downloaded packages, 
+including flake inputs.
 
 ### Creating a new flake-native project
 
-This repository ships with a flake template
+This repository ships with a [flake template](https://github.com/nix-community/nix-direnv/tree/master/template).
 which provides a basic flake with devShell integration and a basic `.envrc`.
 
 To make use of this template, you may issue the following command:
 
 ```console
 $ nix flake new -t github:nix-community/nix-direnv <desired output path>
-```
 
-You can view the template [here](https://github.com/nix-community/nix-direnv/tree/master/template).
+```
 
 ### Integrating with a existing flake
 
 ```console
-$ echo "use flake" >> .direnvrc
-$ direnv allow
+$ echo "use flake" >> .envrc && direnv allow
+
 ```
 
 The `use flake` line also takes an additional arbitrary flake parameter,
@@ -201,6 +237,8 @@ use flake ~/myflakes#project
 ```
 
 ### Advanced usage
+
+#### use flake
 
 Under the covers, `use_flake` calls `nix print-dev-env`.
 The first argument to the `use_flake` function is the flake expression to use,
@@ -213,95 +251,40 @@ so that the environment of the calling shell is passed in.
 
 You can do that as follows:
 
-```
+```console
 $ echo "use flake . --impure" > .envrc
 $ direnv allow
 ```
 
-## Storing .direnv outside the project directory
+#### use nix
 
-By default, every direnv-enabled directory will contain a `.direnv` directory.
-`.direnv` acts as a pure cache and is fully reproducible.
-To that end, we do not recommend tracking this directory or its contents,
-even in the scenario that the project tracks the a `.direnvrc`.
+Like `use flake`, `use nix` now uses `nix print-dev-env`.
+Due to historical reasons, the argument parsing emulates `nix shell`.
 
-It is possible to override a function called `direnv_layout_dir`
-in `~/.config/direnv/direnvrc` (or in each project's `.direnvrc` or `.envrc`).
+This leads to some limitations in what we can reasonably parse.
 
-The following example will create a unique directory name per project
-in `~/.cache/direnv/layouts/`:
+Currently, all single-word arguments and some well-known double arguments 
+will be interpeted or passed along.
 
-```bash
-# Place in "$HOME"/.config/direnv/direnvrc
+##### Known arguments
 
-# Two things to know:
-# * `direnv_layour_dir` is called once for every {.direnvrc,.envrc} sourced
-# * The indicator for a different direnv file being sourced is a different `$PWD` value
-# This means we can hash `$PWD` to get a fully unique cache path for any given environment
+- `-p`: Starts a list of packages to install; consumes all remaining arguments
+- `--include` / `-I`: Add the following path to the list of lookup locations for `<...>` file names
+- `--attr` / `-A`: Specify the output attribute to utilize
 
-: ${XDG_CACHE_HOME:=$HOME/.cache}
-declare -A direnv_layout_dirs
-direnv_layout_dir() {
-    echo "${direnv_layout_dirs[$PWD]:=$(
-        echo -n "$XDG_CACHE_HOME"/direnv/layouts/
-        echo -n "$PWD" | shasum | cut -d ' ' -f 1
-    )}"
-}
-```
+`--command`, `--run`, `--exclude`, `--pure`, `-i`, and `--keep` are explicitly ignored.
 
-## Watching additional files
+All single word arguments (`-j4`, `--impure` etc) 
+are passed to the underlying nix invocation.
 
-To minimize the number of evaluations, nix-direnv maintains a list of files to check
-for changes when deciding if an update of the cached environment is required. By default, `use_flake` watches
+## General direnv tips
 
-```
-flake.nix
-flake.lock
-devshell.toml
-```
-
-`use_nix` watches
-
-```
-default.nix
-shell.nix
-```
-
-To trigger an evaluation when other nix files change, register them by calling `nix_direnv_watch_file PATH [PATH...]` from `.envrc`.
-
-```bash
-nix_direnv_watch_file module.nix
-nix_direnv_watch_file mod1.nix mod2.nix
-use flake
-```
-
-## Shell integration
-
-See the [wiki](https://github.com/nix-community/nix-direnv/wiki/Shell-integration) for helpers to quickly setup a direnv setup in a new project.
-## Known Bugs
-
-At the moment `nix-direnv` depends on GNU Grep and a modern Bash version.
-This might lead to [problems](https://github.com/nix-community/nix-direnv/issues/3) on macOS.
-As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or Homebrew.
-
-## Why not use `lorri` instead?
-
-- nix-direnv has flakes support.
-- High CPU load/resource usage in some cases: When nixpkgs in `NIX_PATH` is
-  pointed to a directory, i.e. a git checkout, Lorri will try to evaluate
-  nixpkgs everytime something changes causing high cpu load. Nix-direnv
-  compromises between performance and correctness, and only re-evaluates direnv
-  if either the project-specific `default.nix` / `shell.nix` changes, or if
-  there is a new commit added to `nixpkgs`. A re-evaluation can be also
-  triggered by using `touch .envrc` in the same project.
-  A different problem is that it might trigger mass-rebuilds when the same nixpkgs
-  checkout is pointed to something like staging.
-- No additional daemon or services required: The codesize is small enough that it can be vendored
-  into a project itself.
+- [Changing where direnv stores its cache](https://github.com/direnv/direnv/wiki/Customizing-cache-location)
+- [Quickly setting up direnv in a new nix project](https://github.com/nix-community/nix-direnv/wiki/Shell-integration)
 
 ## Other projects in the field
 
 - [lorri](https://github.com/nix-community/lorri)
 - [sorri](https://github.com/nmattia/sorri)
 - [nixify](https://github.com/kalbasit/nur-packages/blob/master/pkgs/nixify/envrc)
-- [direnv-nix-lorelei](https://github.com/shajra/direnv-nix-lorelei)
+- [lorelei](https://github.com/shajra/direnv-nix-lorelei)
