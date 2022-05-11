@@ -140,8 +140,12 @@ _nix_argsum_suffix() {
 }
 
 nix_direnv_watch_file() {
-  watch_file "$@"
-  nix_watches+=("$@")
+  for watch in "$@"; do
+    if [[ -e "${watch}" ]]; then
+      watch_file "${watch}"
+      nix_watches+=("${watch}")
+    fi
+  done
 }
 
 use_flake() {
@@ -150,14 +154,9 @@ use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
 
-  nix_direnv_watch_file .envrc
+  nix_direnv_watch_file ".envrc" "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc"
   if [[ -d "$flake_dir" ]]; then
-    nix_direnv_watch_file "$flake_dir/"flake.nix
-    nix_direnv_watch_file "$flake_dir/"flake.lock
-
-    if [[ -e "$flake_dir/"devshell.toml ]]; then
-      nix_direnv_watch_file "$flake_dir/"devshell.toml
-    fi
+    nix_direnv_watch_file "$flake_dir/flake.nix" "$flake_dir/flake.lock" "$flake_dir/devshell.toml"
   fi
 
   local layout_dir profile
@@ -165,10 +164,6 @@ use_flake() {
   profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
   local profile_rc="${profile}.rc"
   local flake_inputs="${layout_dir}/flake-inputs/"
-
-  nix_watches+=(
-      "$HOME/".direnvrc
-  )
 
   local need_update=0
   local file=
@@ -299,13 +294,7 @@ use_nix() {
     esac
   done
 
-  # TODO: reimplement this in terms of `nix_direnv_watch_file`
-  nix_watches+=(
-      "$HOME/".direnvrc
-      .envrc
-      default.nix
-      shell.nix
-  )
+  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" .envrc default.nix shell.nix
 
   local need_update=0
   local file=
@@ -365,7 +354,6 @@ use_nix() {
   _nix_import_env "$profile_rc"
 
 
-  # TODO: Reimplement this in terms of `nix_direnv_watch_file`
   if [[ "$#" == 0 ]]; then
     watch_file default.nix
     watch_file shell.nix
