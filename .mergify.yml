@@ -2,7 +2,7 @@ pull_request_rules:
   - name: automatic merge on CI success
     conditions:
       - check-success=tests (ubuntu-latest)
-      - author=nix-eval-jobs-bot
+      - author=nix-direnv-bot
     actions:
       merge:
         method: merge
