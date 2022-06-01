@@ -33,7 +33,7 @@ def common_test(direnv_project: DirenvProject) -> None:
         cwd=direnv_project.dir,
     )
     sys.stderr.write(out2.stderr)
-    assert out1.returncode == 0
+    assert out2.returncode == 0
     assert "using cached dev shell" in out2.stderr
     assert "Executing shellHook." in out2.stderr
 
