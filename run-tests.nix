@@ -18,5 +18,5 @@ writeScript "run-tests" ''
   ${mypy}/bin/mypy tests
 
   echo -e "\x1b[32m## run unittest\x1b[0m"
-  ${python3.interpreter} -m unittest discover tests
+  ${python3.pkgs.pytest}/bin/pytest .
 ''
