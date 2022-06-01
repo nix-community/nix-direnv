@@ -1,5 +1,5 @@
 { pkgs ? import <nixpkgs> {} }:
-pkgs.mkShell {
+pkgs.mkShellNoCC {
   nativeBuildInputs = [ pkgs.hello ];
   shellHook = ''
     echo "Executing shellHook."

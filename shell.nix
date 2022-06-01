@@ -3,7 +3,10 @@
 with pkgs;
 mkShell {
   nativeBuildInputs = [
-    python3
+    python3.pkgs.pytest
+    python3.pkgs.mypy
+    python3.pkgs.black
+    python3.pkgs.flake8
     shellcheck
     direnv
   ];
