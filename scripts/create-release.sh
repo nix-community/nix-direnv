@@ -21,7 +21,7 @@ fi
 sed -i direnvrc \
     -e 's!\(declare major=\).*\( # UPDATE(nix-direnv version)\)!\1'"${ver[0]@Q} minor=${ver[1]@Q} patch=${ver[2]@Q}"'\2!'
 
-sed -i README.md template/.envrc \
+sed -i README.md templates/flake/.envrc \
     -e 's!\(nix-direnv/\).*\(/direnvrc\)!\1'"${version}"'\2!' \
     -e 's?\( ! nix_direnv_version \)[0-9.]\+\(; \)?\1'"${version}"'\2?'
 git add README.md direnvrc

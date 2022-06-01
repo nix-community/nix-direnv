@@ -12,7 +12,9 @@
         test-runner = pkgs.callPackage ./run-tests.nix {};
       };
       defaultPackage = self.packages.${system}.default;
-      devShell = pkgs.callPackage ./shell.nix { };
+      devShells.default = pkgs.callPackage ./shell.nix { };
+      # FIXME backward compat, drop soon
+      devShell = self.devShells.default;
       apps.test-runner = {
         type = "app";
         program = "${self.packages.${system}.test-runner}";
@@ -21,9 +23,11 @@
       overlay = final: prev: {
         nix-direnv = final.callPackage ./default.nix { };
       };
-      defaultTemplate = {
-        path = ./template;
+      templates.default = {
+        path = ./templates/flake;
         description = "nix flake new -t github:Mic92/nix-direnv .";
       };
+      # FIXME backward compat, drop soon
+      defaultTemplate = self.templates.default;
     };
 }
