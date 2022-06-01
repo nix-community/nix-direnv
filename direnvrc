@@ -313,7 +313,6 @@ use_nix() {
   then
     local tmp_profile="${layout_dir}/flake-profile.$$"
     local tmp_profile_rc
-    local extra_args=()
 
     if [[ "$packages" != "" ]]; then
       extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
