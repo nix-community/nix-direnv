@@ -277,6 +277,16 @@ will be interpeted or passed along.
 All single word arguments (`-j4`, `--impure` etc) 
 are passed to the underlying nix invocation.
 
+##### Tracked files
+
+`nix-direnv` makes a performance tradeoff only considers changes in a limited
+number of files when deciding to update its cache.
+
+- for `use nix` this is `~/.direnvrc`, `~/.config/direnv/direnvrc`, `.envrc`, `default.nix` and `shell.nix`
+- for `use flake` this is  `~/.direnvrc`, `~/.config/direnv/direnvrc`, `.envrc`, `flake.nix`, `flake.lock` and `devshell.toml`
+
+To add more files to be checked use `nix_direnv_watch_file` like this: `nix_direnv_watch_file your-file.nix`
+
 ## General direnv tips
 
 - [Changing where direnv stores its cache](https://github.com/direnv/direnv/wiki/Customizing-cache-location)
