@@ -212,7 +212,7 @@ including flake inputs.
 
 ### Creating a new flake-native project
 
-This repository ships with a [flake template](https://github.com/nix-community/nix-direnv/tree/master/template).
+This repository ships with a [flake template](https://github.com/nix-community/nix-direnv/tree/master/templates/flake/flake.nix).
 which provides a basic flake with devShell integration and a basic `.envrc`.
 
 To make use of this template, you may issue the following command:
