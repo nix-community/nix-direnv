@@ -136,7 +136,7 @@ source /run/current-system/sw/share/nix-direnv/direnvrc
 
 As **non-root** user do the following:
 
-```console
+```shell
 nix-env -f '<nixpkgs>' -iA nix-direnv
 ```
 
@@ -171,7 +171,7 @@ as described in the installation via home-manager section.
 
 ## Usage example
 
-Either add `shell.nix` or a `default.nix` to the same directory:
+Either add `shell.nix` or a `default.nix` to the project directory:
 
 ``` nix
 # save this as shell.nix
