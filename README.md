@@ -130,7 +130,8 @@ source /run/current-system/sw/share/nix-direnv/direnvrc
 </details>
 
 <details>
-<summary>With nix-env</summary
+  <summary>With nix-env</summary>
+
 ### With nix-env
 
 As **non-root** user do the following:
