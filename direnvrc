@@ -303,7 +303,7 @@ use_nix() {
   done
 
   # nixfile may be empty,
-  # but nix_direnv_watch_file checks for existance before adding to watches
+  # but nix_direnv_watch_file checks for existence before adding to watches
   nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" .envrc "$nixfile"
 
   local need_update=0
