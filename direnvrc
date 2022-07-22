@@ -100,7 +100,7 @@ _nix_import_env() {
   # as it may be garbage collected.
   # Instead - just remove it immediately.
   # Use recursive & force as it may not be empty.
-  if [[ "$NIX_BUILD_TOP" == */nix-shell.* && -d "$NIX_BUILD_TOP" ]]; then
+  if [[ -n "${NIX_BUILD_TOP+x}" && "$NIX_BUILD_TOP" == */nix-shell.* && -d "$NIX_BUILD_TOP" ]]; then
     rm -rf "$NIX_BUILD_TOP"
   fi
 
