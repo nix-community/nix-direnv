@@ -304,7 +304,8 @@ when deciding to update its cache.
 To add more files to be checked use `nix_direnv_watch_file` like this
 
 ```shell
-$ nix_direnv_watch_file your-file.nix
+nix_direnv_watch_file your-file.nix
+use nix # or use flake
 ```
 
 Or - if you don't mind the overhead (runtime and conceptual) of watching all nix-files:
