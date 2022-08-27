@@ -141,12 +141,8 @@ _nix_argsum_suffix() {
 }
 
 nix_direnv_watch_file() {
-  for watch in "$@"; do
-    if [[ -e "${watch}" ]]; then
-      watch_file "${watch}"
-      nix_watches+=("${watch}")
-    fi
-  done
+  watch_file "$@"
+  nix_watches+=($@)
 }
 
 use_flake() {
