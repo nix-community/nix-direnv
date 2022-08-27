@@ -145,6 +145,13 @@ nix_direnv_watch_file() {
   nix_watches+=("$@")
 }
 
+nix_direnv_watch_dir() {
+  while IFS= read -r -d $'\0' file; do
+    nix_watches+=("$file");
+  done < <(find . -name "*.nix" -type f -print0)
+  watch_file "${nix_watches[@]}"
+}
+
 use_flake() {
   _nix_direnv_preflight
 
