@@ -142,7 +142,7 @@ _nix_argsum_suffix() {
 
 nix_direnv_watch_file() {
   watch_file "$@"
-  nix_watches+=($@)
+  nix_watches+=("$@")
 }
 
 use_flake() {
@@ -151,10 +151,14 @@ use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
 
-  nix_direnv_watch_file ".envrc" "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc"
+  local files_to_watch
+  files_to_watch=(".envrc" "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc")
+
   if [[ -d "$flake_dir" ]]; then
-    nix_direnv_watch_file "$flake_dir/flake.nix" "$flake_dir/flake.lock" "$flake_dir/devshell.toml"
+    files_to_watch+=("$flake_dir/flake.nix" "$flake_dir/flake.lock" "$flake_dir/devshell.toml")
   fi
+
+  nix_direnv_watch_file "${files_to_watch[@]}"
 
   local layout_dir profile
   layout_dir=$(direnv_layout_dir)
