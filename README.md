@@ -113,7 +113,7 @@ In `/etc/nixos/configuration.nix`:
   environment.pathsToLink = [
     "/share/nix-direnv"
   ];
-  # if you also want support for flakes 
+  # if you also want support for flakes
   nixpkgs.overlays = [
     (self: super: { nix-direnv = super.nix-direnv.override { enableFlakes = true; }; } )
   ];
@@ -130,12 +130,13 @@ source /run/current-system/sw/share/nix-direnv/direnvrc
 </details>
 
 <details>
-<summary>With nix-env</summary
+  <summary>With nix-env</summary>
+
 ### With nix-env
 
 As **non-root** user do the following:
 
-```console
+```shell
 nix-env -f '<nixpkgs>' -iA nix-direnv
 ```
 
@@ -163,14 +164,14 @@ or `~/.config/direnv/direnvrc`:
 source $HOME/nix-direnv/direnvrc
 ```
 
-You also need to set `keep-outputs` and `keep-derivations` to nix.conf 
+You also need to set `keep-outputs` and `keep-derivations` to nix.conf
 as described in the installation via home-manager section.
 
 </details>
 
 ## Usage example
 
-Either add `shell.nix` or a `default.nix` to the same directory:
+Either add `shell.nix` or a `default.nix` to the project directory:
 
 ``` nix
 # save this as shell.nix
@@ -207,7 +208,7 @@ The code is tested and does work but the upstream flake api is not finalized,
 so we we cannot guarantee stability after an nix upgrade.
 
 Like `use_nix`,
-our `use_flake` will prevent garbage collection of downloaded packages, 
+our `use_flake` will prevent garbage collection of downloaded packages,
 including flake inputs.
 
 ### Creating a new flake-native project
@@ -263,7 +264,7 @@ Due to historical reasons, the argument parsing emulates `nix shell`.
 
 This leads to some limitations in what we can reasonably parse.
 
-Currently, all single-word arguments and some well-known double arguments 
+Currently, all single-word arguments and some well-known double arguments
 will be interpeted or passed along.
 
 ##### Known arguments
@@ -274,18 +275,49 @@ will be interpeted or passed along.
 
 `--command`, `--run`, `--exclude`, `--pure`, `-i`, and `--keep` are explicitly ignored.
 
-All single word arguments (`-j4`, `--impure` etc) 
+All single word arguments (`-j4`, `--impure` etc)
 are passed to the underlying nix invocation.
 
-##### Tracked files
+#### Tracked files
 
-`nix-direnv` makes a performance tradeoff only considers changes in a limited
-number of files when deciding to update its cache.
+`nix-direnv` makes a performance tradeoff
+and only considers changes in a limited number of files
+when deciding to update its cache.
 
-- for `use nix` this is `~/.direnvrc`, `~/.config/direnv/direnvrc`, `.envrc`, `default.nix` and `shell.nix`
-- for `use flake` this is  `~/.direnvrc`, `~/.config/direnv/direnvrc`, `.envrc`, `flake.nix`, `flake.lock` and `devshell.toml`
+- for `use nix` this is:
+    * `~/.direnvrc`
+    * `~/.config/direnv/direnvrc`
+    * `.envrc`,
+    * A single nix file. In order of preference:
+        + The file argument to `use nix`
+        + `default.nix` if it exists
+        + `shell.nix` if it exists
 
-To add more files to be checked use `nix_direnv_watch_file` like this: `nix_direnv_watch_file your-file.nix`
+- for `use flake` this is:
+    * `~/.direnvrc`
+    * `~/.config/direnv/direnvrc`
+    * `.envrc`
+    * `flake.nix`
+    * `flake.lock`
+    * `devshell.toml` if it exists
+
+To add more files to be checked use `nix_direnv_watch_file` like this
+
+```shell
+nix_direnv_watch_file your-file.nix
+use nix # or use flake
+```
+
+Or - if you don't mind the overhead (runtime and conceptual) of watching all nix-files:
+
+```shell
+nix_direnv_watch_file $(find . -name "*.nix" -printf '"%p" ')
+```
+
+Note that this will re-execute direnv for any nix change,
+regardless of whether that change is meaningful for the devShell in use.
+
+`nix_direnv_watch_file` must be invoked before either `use flake` or `use nix` to take effect.
 
 ## General direnv tips
 

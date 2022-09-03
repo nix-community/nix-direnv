@@ -198,8 +198,10 @@ use_flake() {
     local flake_input_paths
     rm -rf "$flake_inputs"
     mkdir "$flake_inputs"
-    flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive --json \
+    flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
+      --json \
       --extra-experimental-features "nix-command flakes" \
+      --no-write-lock-file \
       "$flake_dir" | grep -E -o '/nix/store/[^"]+')
     for path in $flake_input_paths; do
       _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
@@ -249,7 +251,14 @@ use_nix() {
   local attribute=
   local packages=""
   local extra_args=()
+
   local nixfile=
+  if [[ -e "shell.nix" ]]; then
+    nixfile="./shell.nix"
+  elif [[ -e "default.nix" ]]; then
+    nixfile="./default.nix"
+  fi
+
   while [[ "$#" -gt 0 ]]; do
     i="$1"
     shift
@@ -295,7 +304,9 @@ use_nix() {
     esac
   done
 
-  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" .envrc default.nix shell.nix
+  # nixfile may be empty,
+  # but nix_direnv_watch_file checks for existence before adding to watches
+  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" .envrc "$nixfile"
 
   local need_update=0
   local file=
@@ -317,15 +328,6 @@ use_nix() {
     if [[ "$packages" != "" ]]; then
       extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
     else
-      # figure out what file we should use
-      if [[ "$nixfile" == "" ]]; then
-        if [[ -e "shell.nix" ]]; then
-          nixfile="./shell.nix"
-        elif [[ -e "default.nix" ]]; then
-          nixfile="./default.nix"
-        fi
-      fi
-
       # figure out what attribute we should build
       if [[ "$attribute" == "" ]]; then
         extra_args+=("--file" "$nixfile")
