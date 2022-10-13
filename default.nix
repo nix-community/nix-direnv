@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> { } }:
 
 with pkgs;
 stdenv.mkDerivation {
@@ -7,7 +7,7 @@ stdenv.mkDerivation {
   src = ./.;
 
   postPatch = ''
-    sed -i "2iNIX_BIN_PREFIX=${nixFlakes}/bin/" direnvrc
+    sed -i "2iNIX_BIN_PREFIX=${nixVersions.stable}/bin/" direnvrc
     substituteInPlace direnvrc \
       --replace "grep" "${gnugrep}/bin/grep"
   '';
@@ -18,8 +18,8 @@ stdenv.mkDerivation {
 
   meta = with lib; {
     description = "A fast, persistent use_nix implementation for direnv";
-    homepage    = "https://github.com/nix-community/nix-direnv";
-    license     = licenses.mit;
-    platforms   = platforms.unix;
+    homepage = "https://github.com/nix-community/nix-direnv";
+    license = licenses.mit;
+    platforms = platforms.unix;
   };
 }
