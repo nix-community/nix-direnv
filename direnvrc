@@ -135,8 +135,8 @@ _nix_clean_old_gcroots() {
   local escaped_layout_dir
   escaped_layout_dir=$(_nix_strip_escape_path "$layout_dir")
 
-  rm -fv "$layout_dir"/nix-{flake,profile}*
-  rm -fv "/nix/var/nix/gcroots/per-user/$USER/$escaped_layout_dir"--nix--{profile,flake}*
+  rm -fv "$layout_dir"/{nix,flake}-profile*
+  rm -fv "/nix/var/nix/gcroots/per-user/$USER/$escaped_layout_dir"--{nix,flake}--profile*
 }
 
 _nix_argsum_suffix() {
