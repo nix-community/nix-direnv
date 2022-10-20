@@ -38,7 +38,7 @@ def common_test(direnv_project: DirenvProject) -> None:
     assert "Executing shellHook." in out2.stderr
 
 
-def common_test_clean(direnv_project: DirenvProject, num_expected_files: int) -> None:
+def common_test_clean(direnv_project: DirenvProject) -> None:
     testenv = str(direnv_project.dir)
 
     out3 = run(
@@ -49,8 +49,15 @@ def common_test_clean(direnv_project: DirenvProject, num_expected_files: int) ->
     )
     sys.stderr.write(out3.stderr)
 
-    files = list((direnv_project.dir / ".direnv").iterdir())
-    assert len(files) == num_expected_files
+    files = [
+        path for path in (direnv_project.dir / ".direnv").iterdir() if path.is_file()
+    ]
+    rcs = [f for f in files if f.match("*.rc")]
+    profiles = [f for f in files if not f.match("*.rc")]
+    if len(rcs) != 1 or len(profiles) != 1:
+        print(list(files))
+    assert len(rcs) == 1
+    assert len(profiles) == 1
 
 
 def test_use_nix(direnv_project: DirenvProject) -> None:
@@ -59,8 +66,7 @@ def test_use_nix(direnv_project: DirenvProject) -> None:
 
     # --pure here is just a way to make sure the environment changes
     direnv_project.setup_envrc("use nix --pure")
-    # expecting 2 files in .direnv/ : nix-profile-* and nix-profile-*.rc
-    common_test_clean(direnv_project, num_expected_files=2)
+    common_test_clean(direnv_project)
 
 
 def test_use_flake(direnv_project: DirenvProject) -> None:
@@ -75,11 +81,11 @@ def test_use_flake(direnv_project: DirenvProject) -> None:
     for symlink in inputs:
         assert symlink.is_dir()
 
-    # --ignore-environment here is just a way to make sure the environment changes
-    direnv_project.setup_envrc("use flake --ignore-environment")
-    # expecting 5 files in .direnv/ : 2 x nix-flake-*, 2 x nix-flake-*.rc
-    # and flake-inputs
-    common_test_clean(direnv_project, num_expected_files=5)
+    files = list((direnv_project.dir / ".direnv").iterdir())
+    print(files)
+    # -ignore-environment here is just a way to make sure the environment changes
+    direnv_project.setup_envrc("use flake")
+    common_test_clean(direnv_project)
 
 
 if __name__ == "__main__":
