@@ -56,6 +56,8 @@ def common_test_clean(direnv_project: DirenvProject) -> None:
     profiles = [f for f in files if not f.match("*.rc")]
     if len(rcs) != 1 or len(profiles) != 1:
         print(list(files))
+    print(list(files))
+    assert False
     assert len(rcs) == 1
     assert len(profiles) == 1
 
@@ -83,8 +85,8 @@ def test_use_flake(direnv_project: DirenvProject) -> None:
 
     files = list((direnv_project.dir / ".direnv").iterdir())
     print(files)
-    # -ignore-environment here is just a way to make sure the environment changes
-    direnv_project.setup_envrc("use flake")
+    # --impure here is just a way to make sure the environment changes
+    direnv_project.setup_envrc("use flake --impure")
     common_test_clean(direnv_project)
 
 
