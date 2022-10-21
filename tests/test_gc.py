@@ -64,8 +64,7 @@ def test_use_nix(direnv_project: DirenvProject) -> None:
     direnv_project.setup_envrc("use nix")
     common_test(direnv_project)
 
-    # --pure here is just a way to make sure the environment changes
-    direnv_project.setup_envrc("use nix --pure")
+    direnv_project.setup_envrc("use nix --argstr 'echo Executing hijacked shellHook.'")
     common_test_clean(direnv_project)
 
 
@@ -81,7 +80,6 @@ def test_use_flake(direnv_project: DirenvProject) -> None:
     for symlink in inputs:
         assert symlink.is_dir()
 
-    # --impure here is just a way to make sure the environment changes
     direnv_project.setup_envrc("use flake --impure")
     common_test_clean(direnv_project)
 
