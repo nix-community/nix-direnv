@@ -64,7 +64,9 @@ def test_use_nix(direnv_project: DirenvProject) -> None:
     direnv_project.setup_envrc("use nix")
     common_test(direnv_project)
 
-    direnv_project.setup_envrc("use nix --argstr 'echo Executing hijacked shellHook.'")
+    direnv_project.setup_envrc(
+        "use nix --argstr shellHook 'echo Executing hijacked shellHook.'"
+    )
     common_test_clean(direnv_project)
 
 
