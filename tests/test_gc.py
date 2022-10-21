@@ -55,7 +55,7 @@ def common_test_clean(direnv_project: DirenvProject) -> None:
     rcs = [f for f in files if f.match("*.rc")]
     profiles = [f for f in files if not f.match("*.rc")]
     if len(rcs) != 1 or len(profiles) != 1:
-        print(list(files))
+        print(files)
     assert len(rcs) == 1
     assert len(profiles) == 1
 
