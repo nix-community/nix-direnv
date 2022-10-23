@@ -38,9 +38,36 @@ def common_test(direnv_project: DirenvProject) -> None:
     assert "Executing shellHook." in out2.stderr
 
 
+def common_test_clean(direnv_project: DirenvProject) -> None:
+    testenv = str(direnv_project.dir)
+
+    out3 = run(
+        ["direnv", "exec", testenv, "hello"],
+        stderr=subprocess.PIPE,
+        check=False,
+        cwd=direnv_project.dir,
+    )
+    sys.stderr.write(out3.stderr)
+
+    files = [
+        path for path in (direnv_project.dir / ".direnv").iterdir() if path.is_file()
+    ]
+    rcs = [f for f in files if f.match("*.rc")]
+    profiles = [f for f in files if not f.match("*.rc")]
+    if len(rcs) != 1 or len(profiles) != 1:
+        print(files)
+    assert len(rcs) == 1
+    assert len(profiles) == 1
+
+
 def test_use_nix(direnv_project: DirenvProject) -> None:
     direnv_project.setup_envrc("use nix")
     common_test(direnv_project)
+
+    direnv_project.setup_envrc(
+        "use nix --argstr shellHook 'echo Executing hijacked shellHook.'"
+    )
+    common_test_clean(direnv_project)
 
 
 def test_use_flake(direnv_project: DirenvProject) -> None:
@@ -54,6 +81,9 @@ def test_use_flake(direnv_project: DirenvProject) -> None:
     assert len(inputs) == 3
     for symlink in inputs:
         assert symlink.is_dir()
+
+    direnv_project.setup_envrc("use flake --impure")
+    common_test_clean(direnv_project)
 
 
 if __name__ == "__main__":
