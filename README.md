@@ -31,6 +31,7 @@ There are different ways to install nix-direnv, pick your favourite:
 
 <details>
   <summary> Via home-manager (Recommended)</summary>
+
 ### Via home-manager
 
 Note that while the home-manager integration is recommended,
@@ -153,6 +154,7 @@ as described in the installation via home-manager section.
 
 <details>
   <summary>From source</summary>
+
 ### From source
 
 Clone the repository to some directory
