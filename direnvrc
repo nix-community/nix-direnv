@@ -11,6 +11,10 @@ _nix_direnv_preflight () {
 
   if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
     NIX_BIN_PREFIX=$(command -v nix-shell)
+    if [[ -z "${NIX_BIN_PREFIX}" ]]; then
+      log_status "nix-direnv: command not found: nix-shell."
+      exit 1
+    fi
     NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
   fi
 
