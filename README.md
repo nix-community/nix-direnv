@@ -2,7 +2,7 @@
 
 ![Test](https://github.com/nix-community/nix-direnv/workflows/Test/badge.svg)
 
-A faster, persistent implementation of `direnv`'s `use_nix`,
+A faster, persistent implementation of `direnv`'s `use_nix` and `use_flake`,
 to replace the built-in one.
 
 Prominent features:
