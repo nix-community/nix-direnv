@@ -113,7 +113,16 @@ _nix_import_env() {
   _nix_export_or_unset TMPDIR "$old_tmpdir"
   _nix_export_or_unset TEMP "$old_temp"
   _nix_export_or_unset TEMPDIR "$old_tempdir"
-  export XDG_DATA_DIRS=$XDG_DATA_DIRS${old_xdg_data_dirs:+":"}$old_xdg_data_dirs
+  local new_xdg_data_dirs=${XDG_DATA_DIRS:-}
+  export XDG_DATA_DIRS=
+  local IFS=:
+  for dir in $new_xdg_data_dirs${old_xdg_data_dirs:+:}$old_xdg_data_dirs; do
+    dir="${dir%/}" # remove trailing slashes
+    if [[ :$XDG_DATA_DIRS: = *:$dir:* ]]; then
+      continue # already present, skip
+    fi
+    XDG_DATA_DIRS="$XDG_DATA_DIRS${XDG_DATA_DIRS:+:}$dir"
+  done
 }
 
 _nix_strip_escape_path() {
