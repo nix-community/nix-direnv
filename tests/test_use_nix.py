@@ -33,5 +33,10 @@ def test_args(direnv_project: DirenvProject) -> None:
     direnv_exec(direnv_project, "echo $SHOULD_BE_SET")
 
 
+def test_no_files(direnv_project: DirenvProject) -> None:
+    direnv_project.setup_envrc("use nix -p hello")
+    direnv_exec(direnv_project, "hello")
+
+
 if __name__ == "__main__":
     unittest.main()
