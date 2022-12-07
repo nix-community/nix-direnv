@@ -337,7 +337,7 @@ use_nix() {
   done
 
   nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc"
-  if [ -e "$nixfile" ]; then
+  if [ -f "$nixfile" ]; then
     nix_direnv_watch_file "$nixfile"
   fi
 
