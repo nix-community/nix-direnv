@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from dataclasses import dataclass
 import shutil
+import textwrap
+from dataclasses import dataclass
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Iterator
-from pathlib import Path
 
 import pytest
 
@@ -21,12 +22,13 @@ class DirenvProject:
         return self.dir / ".envrc"
 
     def setup_envrc(self, content: str) -> None:
-        self.envrc.write_text(
+        text = textwrap.dedent(
             f"""
-source {self.nix_direnv}
-{content}
+        source {self.nix_direnv}
+        {content}
         """
         )
+        self.envrc.write_text(text)
         run(["direnv", "allow"], cwd=self.dir)
 
 
