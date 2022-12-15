@@ -110,7 +110,7 @@ In `/etc/nixos/configuration.nix`:
   nix.settings = {
     keep-outputs = true;
     keep-derivations = true;
-  }
+  };
   environment.pathsToLink = [
     "/share/nix-direnv"
   ];
