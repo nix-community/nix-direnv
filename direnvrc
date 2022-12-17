@@ -230,6 +230,7 @@ use_flake() {
     # also add garbage collection root for source
     local flake_input_paths
     mkdir "$flake_inputs"
+    # shellcheck disable=SC2016
     flake_input_paths=$("${NIX_BIN_PREFIX}nix" eval \
       --impure --json --expr \
       'builtins.mapAttrs (_: { outPath, ... }: "${outPath}") (builtins.getFlake (toString ./.)).inputs' \
