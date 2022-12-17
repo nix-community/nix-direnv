@@ -230,11 +230,11 @@ use_flake() {
     # also add garbage collection root for source
     local flake_input_paths
     mkdir "$flake_inputs"
-    flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
-      --json \
-      --extra-experimental-features "nix-command flakes" \
+    flake_input_paths=$("${NIX_BIN_PREFIX}nix" eval \
+      --impure --json --expr \
+      'builtins.mapAttrs (_: { outPath, ... }: "${outPath}") (builtins.getFlake (toString ./.)).inputs' \
       --no-write-lock-file \
-      "$flake_dir" | grep -E -o '/nix/store/[^"]+')
+      --extra-experimental-features "nix-command flakes" | jq '.[]' -r)
     for path in $flake_input_paths; do
       _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
     done
