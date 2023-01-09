@@ -336,9 +336,10 @@ use_nix() {
     esac
   done
 
-  # nixfile may be empty,
-  # but nix_direnv_watch_file checks for existence before adding to watches
-  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" .envrc "$nixfile"
+  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc"
+  if [ -f "$nixfile" ]; then
+    nix_direnv_watch_file "$nixfile"
+  fi
 
   local need_update=0
   local file=
