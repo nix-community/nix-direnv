@@ -8,8 +8,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       devShells.default = pkgs.mkShell {
-        nativeBuildInputs = [ pkgs.bashInteractive ];
-        buildInputs = [ ];
+        packages = [ pkgs.bashInteractive ];
       };
     });
 }
