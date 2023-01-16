@@ -1,13 +1,13 @@
 #!/usr/bin/env python2
 
-import sys
 import os
 import subprocess
+import sys
 import unittest
 from typing import Optional
 
-from procs import run
 from direnv_project import DirenvProject
+from procs import run
 
 
 def direnv_exec(

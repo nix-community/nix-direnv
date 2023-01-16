@@ -1,11 +1,11 @@
 #!/usr/bin/env python2
 
-import sys
 import subprocess
+import sys
 import unittest
 
-from procs import run
 from direnv_project import DirenvProject
+from procs import run
 
 
 def common_test(direnv_project: DirenvProject) -> None:

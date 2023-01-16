@@ -8,7 +8,6 @@ from tempfile import TemporaryDirectory
 from typing import Iterator
 
 import pytest
-
 from procs import run
 
 

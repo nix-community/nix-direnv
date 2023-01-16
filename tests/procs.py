@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import subprocess
-from typing import List, Union, IO, Any, Optional
 from pathlib import Path
-
+from typing import IO, Any, List, Optional, Union
 
 _FILE = Union[None, int, IO[Any]]
 _DIR = Union[None, Path, str]
