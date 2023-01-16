@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 88
+
+select = ["E", "F", "I"]
+ignore = [ "E501" ]
+
+[tool.mypy]
+python_version = "3.10"
+warn_redundant_casts = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "setuptools.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytest.*"
+ignore_missing_imports = true
