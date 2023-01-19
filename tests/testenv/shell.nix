@@ -1,6 +1,9 @@
-{ pkgs ? import <nixpkgs> { }, someArg ? null, shellHook ? ''
+{ pkgs ? import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }
+, someArg ? null
+, shellHook ? ''
   echo "Executing shellHook."
-'' }:
+''
+}:
 pkgs.mkShellNoCC {
   inherit shellHook;
 

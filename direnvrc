@@ -252,27 +252,29 @@ use_flake() {
 use_nix() {
   _nix_direnv_preflight
 
-  local layout_dir path
-  path=$(_nix_direnv_realpath "$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs)")
+  local layout_dir path version
   layout_dir=$(direnv_layout_dir)
+  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs 2>/dev/null)
+  if [[ -n "$path" ]]; then
+    path=$(_nix_direnv_realpath "$path")
 
-  local version
-  if [[ -f "${path}/.version-suffix" ]]; then
-    version=$(< "${path}/.version-suffix")
-  elif [[ -f "${path}/.git/HEAD" ]]; then
-    local head
-    read -r head < "${path}/.git/HEAD"
-    local regex="ref: (.*)"
-    if [[ "$head" =~  $regex ]]; then
-      read -r version < "${path}/.git/${BASH_REMATCH[1]}"
-    else
-      version="$head"
+    if [[ -f "${path}/.version-suffix" ]]; then
+      version=$(< "${path}/.version-suffix")
+    elif [[ -f "${path}/.git/HEAD" ]]; then
+      local head
+      read -r head < "${path}/.git/HEAD"
+      local regex="ref: (.*)"
+      if [[ "$head" =~  $regex ]]; then
+        read -r version < "${path}/.git/${BASH_REMATCH[1]}"
+      else
+        version="$head"
+      fi
+    elif [[ -f "${path}/.version" && "${path}" == "/nix/store/"* ]]; then
+      # borrow some bits from the store path
+      local version_prefix
+      read -r version_prefix < "${path}/.version"
+      version="${version_prefix}-${path:11:16}"
     fi
-  elif [[ -f "${path}/.version" && "${path}" == "/nix/store/"* ]]; then
-    # borrow some bits from the store path
-    local version_prefix
-    read -r version_prefix < "${path}/.version"
-    version="${version_prefix}-${path:11:16}"
   fi
 
   local profile
