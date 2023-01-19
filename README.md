@@ -180,7 +180,7 @@ Either add `shell.nix` or a `default.nix` to the project directory:
 { pkgs ? import <nixpkgs> {}}:
 
 pkgs.mkShell {
-  nativeBuildInputs = [ pkgs.hello ];
+  packages = [ pkgs.hello ];
 }
 ```
 
