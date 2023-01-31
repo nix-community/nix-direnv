@@ -229,7 +229,7 @@ use_flake() {
 
     # also add garbage collection root for source
     local flake_input_paths
-    mkdir "$flake_inputs"
+    mkdir -p "$flake_inputs"
     flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
       --json \
       --extra-experimental-features "nix-command flakes" \
