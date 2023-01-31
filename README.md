@@ -131,14 +131,36 @@ source /run/current-system/sw/share/nix-direnv/direnvrc
 </details>
 
 <details>
-  <summary>With nix-env</summary>
+  <summary>With `nix-env`</summary>
 
-### With nix-env
+### With `nix-env`
 
 As **non-root** user do the following:
 
 ```shell
 nix-env -f '<nixpkgs>' -iA nix-direnv
+```
+
+Then add nix-direnv to `$HOME/.direnvrc`:
+
+```bash
+source $HOME/.nix-profile/share/nix-direnv/direnvrc
+```
+
+You also need to set `keep-outputs` and `keep-derivations` to nix.conf
+as described in the installation via home-manager section.
+
+</details>
+  
+  <details>
+  <summary>With `nix profile`</summary>
+
+### With `nix profile`
+
+As **non-root** user do the following:
+
+```shell
+nix profile install nixpkgs#nix-direnv
 ```
 
 Then add nix-direnv to `$HOME/.direnvrc`:
