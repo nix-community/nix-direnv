@@ -27,7 +27,7 @@ _nix_direnv_preflight () {
   nixversion=$("${NIX_BIN_PREFIX}"nix --version)
   [[ "$nixversion" =~ ([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)? ]]
   if [[ "${BASH_REMATCH[1]}" -lt "2" || "${BASH_REMATCH[1]}" -eq "2" && "${BASH_REMATCH[2]}" -lt "4" ]]; then
-    log_status "nix-direnv: nix version is older than the required 2.4."
+    log_status "nix-direnv: nix version ${BASH_REMATCH[0]} is older than the required 2.4."
     exit 1
   fi
 
