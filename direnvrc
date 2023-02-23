@@ -272,7 +272,7 @@ use_nix() {
     elif [[ -f "${path}/.version" && "${path}" == "/nix/store/"* ]]; then
       # borrow some bits from the store path
       local version_prefix
-      read -r version_prefix < "${path}/.version"
+      read -r version_prefix < <(cat "${path}/.version" ; echo)
       version="${version_prefix}-${path:11:16}"
     fi
   fi
