@@ -147,13 +147,9 @@ _nix_add_gcroot() {
 
 _nix_clean_old_gcroots() {
   local layout_dir=$1
-  local escaped_layout_dir
-  escaped_layout_dir=$(_nix_strip_escape_path "$layout_dir")
 
   rm -rf "$layout_dir/flake-inputs/"
   rm -f "$layout_dir"/{nix,flake}-profile*
-  rm -f "/nix/var/nix/gcroots/per-user/$USER/$escaped_layout_dir"-flake--inputs*
-  rm -f "/nix/var/nix/gcroots/per-user/$USER/$escaped_layout_dir"-{nix,flake}--profile*
 }
 
 _nix_argsum_suffix() {
