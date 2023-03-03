@@ -1,0 +1,25 @@
+name: update-flake-lock
+on:
+  workflow_dispatch: # allows manual triggering
+  schedule:
+    - cron: '0 0 * * 1,4' # Run twice a week
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Nix
+        uses: cachix/install-nix-action@v19
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update flake.lock
+        uses: DeterminateSystems/update-flake-lock@v16
+        with:
+          pr-body: |
+            Automated changes by the update-flake-lock
+            ```
+            {{ env.GIT_COMMIT_MESSAGE }}
+            ```
+            bors merge
