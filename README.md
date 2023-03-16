@@ -121,10 +121,10 @@ In `/etc/nixos/configuration.nix`:
 }
 ```
 
-Then source the `direnvrc` from this repository in your own `$HOME/.direnvrc`
+Then source the `direnvrc` from this repository in your own `$HOME/.config/direnv/direnvrc`
 
 ```bash
-# put this in ~/.direnvrc
+# put this in ~/.config/direnv/direnvrc
 source /run/current-system/sw/share/nix-direnv/direnvrc
 ```
 
@@ -141,7 +141,7 @@ As **non-root** user do the following:
 nix-env -f '<nixpkgs>' -iA nix-direnv
 ```
 
-Then add nix-direnv to `$HOME/.direnvrc`:
+Then add nix-direnv to `$HOME/.config/direnv/direnvrc`:
 
 ```bash
 source $HOME/.nix-profile/share/nix-direnv/direnvrc
@@ -163,7 +163,7 @@ As **non-root** user do the following:
 nix profile install nixpkgs#nix-direnv
 ```
 
-Then add nix-direnv to `$HOME/.direnvrc`:
+Then add nix-direnv to `$HOME/.config/direnv/direnvrc`:
 
 ```bash
 source $HOME/.nix-profile/share/nix-direnv/direnvrc
@@ -180,11 +180,11 @@ as described in the installation via home-manager section.
 ### From source
 
 Clone the repository to some directory
-and then source the direnvrc from this repository in your own `~/.direnvrc`
-or `~/.config/direnv/direnvrc`:
+and then source the direnvrc from this repository in your own 
+`~/.config/direnv/direnvrc`:
 
 ```bash
-# put this in ~/.direnvrc or ~/.config/direnv/direnvrc
+# put this in ~/.config/direnv/direnvrc
 source $HOME/nix-direnv/direnvrc
 ```
 
