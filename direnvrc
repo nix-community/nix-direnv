@@ -256,7 +256,7 @@ use_nix() {
 
   local layout_dir path version
   layout_dir=$(direnv_layout_dir)
-  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs 2>/dev/null)
+  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs 2>/dev/null || true)
   if [[ -n "$path" ]]; then
     path=$(_nix_direnv_realpath "$path")
 
