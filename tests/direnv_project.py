@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import shutil
 import textwrap
 from dataclasses import dataclass
@@ -20,9 +18,10 @@ class DirenvProject:
     def envrc(self) -> Path:
         return self.dir / ".envrc"
 
-    def setup_envrc(self, content: str) -> None:
+    def setup_envrc(self, content: str, strict_env: bool) -> None:
         text = textwrap.dedent(
             f"""
+        {'strict_env' if strict_env else ''}
         source {self.nix_direnv}
         {content}
         """

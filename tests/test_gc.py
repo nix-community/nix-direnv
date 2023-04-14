@@ -1,9 +1,8 @@
-#!/usr/bin/env python2
-
 import subprocess
 import sys
 import unittest
 
+import pytest
 from direnv_project import DirenvProject
 from procs import run
 
@@ -60,18 +59,21 @@ def common_test_clean(direnv_project: DirenvProject) -> None:
     assert len(profiles) == 1
 
 
-def test_use_nix(direnv_project: DirenvProject) -> None:
-    direnv_project.setup_envrc("use nix")
+@pytest.mark.parametrize("strict_env", [False, True])
+def test_use_nix(direnv_project: DirenvProject, strict_env: bool) -> None:
+    direnv_project.setup_envrc("use nix", strict_env=strict_env)
     common_test(direnv_project)
 
     direnv_project.setup_envrc(
-        "use nix --argstr shellHook 'echo Executing hijacked shellHook.'"
+        "use nix --argstr shellHook 'echo Executing hijacked shellHook.'",
+        strict_env=strict_env,
     )
     common_test_clean(direnv_project)
 
 
-def test_use_flake(direnv_project: DirenvProject) -> None:
-    direnv_project.setup_envrc("use flake")
+@pytest.mark.parametrize("strict_env", [False, True])
+def test_use_flake(direnv_project: DirenvProject, strict_env: bool) -> None:
+    direnv_project.setup_envrc("use flake", strict_env=strict_env)
     common_test(direnv_project)
     inputs = list((direnv_project.dir / ".direnv/flake-inputs").iterdir())
     # should only contain our flake-utils flake
@@ -82,7 +84,7 @@ def test_use_flake(direnv_project: DirenvProject) -> None:
     for symlink in inputs:
         assert symlink.is_dir()
 
-    direnv_project.setup_envrc("use flake --impure")
+    direnv_project.setup_envrc("use flake --impure", strict_env=strict_env)
     common_test_clean(direnv_project)
 
 

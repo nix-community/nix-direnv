@@ -7,6 +7,7 @@ mkShell {
     python3.pkgs.mypy
     python3.pkgs.black
     python3.pkgs.flake8
+    ruff
     shellcheck
     direnv
   ];

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import subprocess
 from pathlib import Path
 from typing import IO, Any, List, Optional, Union
