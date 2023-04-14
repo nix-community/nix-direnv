@@ -127,33 +127,19 @@ _nix_import_env() {
   done
 }
 
-_nix_strip_escape_path() {
-  local stripped_path=${1/\//}
-  local escaped_path=${stripped_path//-/--}
-  local escaped_path=${escaped_path//\//-}
-
-  echo "$escaped_path"
-}
-
 _nix_add_gcroot() {
   local storepath=$1
   local symlink=$2
-  local escaped_symlink
-  escaped_symlink=$(_nix_strip_escape_path "$symlink")
 
   ln -fsn "$storepath" "$symlink"
-  ln -fsn "$symlink" "/nix/var/nix/gcroots/per-user/$USER/$escaped_symlink"
+  nix-store --realise "$storepath" --add-root "$symlink" >/dev/null
 }
 
 _nix_clean_old_gcroots() {
   local layout_dir=$1
-  local escaped_layout_dir
-  escaped_layout_dir=$(_nix_strip_escape_path "$layout_dir")
 
   rm -rf "$layout_dir/flake-inputs/"
   rm -f "$layout_dir"/{nix,flake}-profile*
-  rm -f "/nix/var/nix/gcroots/per-user/$USER/$escaped_layout_dir"-flake--inputs*
-  rm -f "/nix/var/nix/gcroots/per-user/$USER/$escaped_layout_dir"-{nix,flake}--profile*
 }
 
 _nix_argsum_suffix() {
