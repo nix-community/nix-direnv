@@ -75,10 +75,10 @@ def test_use_flake(direnv_project: DirenvProject) -> None:
     common_test(direnv_project)
     inputs = list((direnv_project.dir / ".direnv/flake-inputs").iterdir())
     # should only contain our flake-utils flake
-    if len(inputs) != 3:
+    if len(inputs) != 4:
         run(["nix", "flake", "archive", "--json"], cwd=direnv_project.dir)
         print(inputs)
-    assert len(inputs) == 3
+    assert len(inputs) == 4
     for symlink in inputs:
         assert symlink.is_dir()
 
