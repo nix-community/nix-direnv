@@ -24,7 +24,7 @@ sed -i direnvrc \
 sed -i README.md templates/flake/.envrc \
     -e 's!\(nix-direnv/\).*\(/direnvrc\)!\1'"${version}"'\2!' \
     -e 's?\( ! nix_direnv_version \)[0-9.]\+\(; \)?\1'"${version}"'\2?'
-git add README.md direnvrc
+git add README.md direnvrc templates/flake/.envrc 
 git commit -m "bump version ${version}"
 git tag -e "${version}"
 
