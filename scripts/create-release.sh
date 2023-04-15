@@ -28,4 +28,6 @@ git add README.md direnvrc templates/flake/.envrc
 git commit -m "bump version ${version}"
 git tag -e "${version}"
 
-echo "now run 'git push --tags origin master && scripts/update-checksum.sh'"
+echo "now run 'git push --tags origin master'"
+echo "Than create a release: https://github.com/nix-community/nix-direnv/releases"
+echo "and run ./scripts/update-checksum.sh"
