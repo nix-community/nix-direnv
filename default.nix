@@ -1,13 +1,12 @@
-{ pkgs ? import <nixpkgs> { } }:
+{ stdenv, nix, gnugrep, lib }:
 
-with pkgs;
 stdenv.mkDerivation {
   name = "nix-direnv";
 
   src = ./.;
 
   postPatch = ''
-    sed -i "2iNIX_BIN_PREFIX=${nixVersions.stable}/bin/" direnvrc
+    sed -i "2iNIX_BIN_PREFIX=${nix}/bin/" direnvrc
     substituteInPlace direnvrc \
       --replace "grep" "${gnugrep}/bin/grep"
   '';

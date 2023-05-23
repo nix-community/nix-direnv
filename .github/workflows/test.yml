@@ -2,7 +2,10 @@ name: "Test"
 on:
   pull_request:
   push:
-
+    branches:
+      - main
+      - staging
+      - trying
 jobs:
   tests:
     strategy:
@@ -21,4 +24,4 @@ jobs:
           keep-derivations = true
           experimental-features = nix-command flakes
     - run:
-        "nix run .#test-runner"
+        "nix run --accept-flake-config .#test-runner"

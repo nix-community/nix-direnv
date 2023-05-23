@@ -82,9 +82,9 @@ keep-outputs = true
 
 </details>
 <details>
-  <summary>Direnv's source_url</summary>
+  <summary>Direnv's source\_url</summary>
 
-### Direnv source_url
+### Direnv source\_url
 
 Put the following lines in your `.envrc`:
 
