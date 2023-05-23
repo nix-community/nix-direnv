@@ -4,7 +4,8 @@ status = [
   "check lint [x86_64-linux]",
   "devShell default [x86_64-linux]",
   "package default [x86_64-linux]",
-  "package test-runner [x86_64-linux]",
+  "package test-runner-stable [x86_64-linux]",
   "package test-runner-unstable [x86_64-linux]",
-  "tests (ubuntu-latest)"
+  "tests (ubuntu-latest, stable)",
+  "tests (ubuntu-latest, unstable)"
 ]

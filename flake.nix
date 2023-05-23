@@ -15,8 +15,12 @@
         {
           packages = {
             default = pkgs.callPackage ./default.nix { };
-            test-runner = pkgs.callPackage ./test-runner.nix { };
-            test-runner-unstable = pkgs.callPackage ./test-runner.nix { };
+            test-runner-stable = pkgs.callPackage ./test-runner.nix {
+              nixVersion = "stable";
+            };
+            test-runner-unstable = pkgs.callPackage ./test-runner.nix { 
+              nixVersion = "unstable";
+            };
           };
           devShells.default = pkgs.callPackage ./shell.nix { };
           apps.test-runner = {
