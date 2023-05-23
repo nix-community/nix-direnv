@@ -4,19 +4,26 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      packages = {
-        default = pkgs.callPackage ./default.nix { };
-        test-runner = pkgs.callPackage ./run-tests.nix {};
-      };
-      devShells.default = pkgs.callPackage ./shell.nix { };
-      apps.test-runner = {
-        type = "app";
-        program = "${self.packages.${system}.test-runner}";
-      };
-    }) // {
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+          packages = {
+            default = pkgs.callPackage ./default.nix { };
+            test-runner = pkgs.callPackage ./test-runner.nix { };
+            test-runner-unstable = pkgs.callPackage ./test-runner.nix { };
+          };
+          devShells.default = pkgs.callPackage ./shell.nix { };
+          apps.test-runner = {
+            type = "app";
+            program = "${self.packages.${system}.test-runner}";
+          };
+          checks = {
+            lint = pkgs.callPackage ./lint.nix { };
+          };
+        }) // {
       overlay = final: prev: {
         nix-direnv = final.callPackage ./default.nix { };
       };
