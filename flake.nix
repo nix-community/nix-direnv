@@ -11,10 +11,7 @@
         default = pkgs.callPackage ./default.nix { };
         test-runner = pkgs.callPackage ./run-tests.nix {};
       };
-      defaultPackage = self.packages.${system}.default;
       devShells.default = pkgs.callPackage ./shell.nix { };
-      # FIXME backward compat, drop soon
-      devShell = self.devShells.default;
       apps.test-runner = {
         type = "app";
         program = "${self.packages.${system}.test-runner}";
@@ -27,7 +24,5 @@
         path = ./templates/flake;
         description = "nix flake new -t github:Mic92/nix-direnv .";
       };
-      # FIXME backward compat, drop soon
-      defaultTemplate = self.templates.default;
     };
 }
