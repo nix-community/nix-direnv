@@ -222,7 +222,7 @@ use_flake() {
       --json \
       --extra-experimental-features "nix-command flakes" \
       --no-write-lock-file \
-      "$flake_dir" | grep -E -o '/nix/store/[^"]+')
+      "$@" | grep -E -o '/nix/store/[^"]+')
     for path in $flake_input_paths; do
       _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
     done
