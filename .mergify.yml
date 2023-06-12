@@ -4,7 +4,6 @@ queue_rules:
       - check-success=Evaluate flake.nix
       - check-success=check lint [x86_64-linux]
       - check-success=devShell default [x86_64-linux]
-      - check-success=lockfile
       - check-success=package default [x86_64-linux]
       - check-success=package test-runner-stable [x86_64-linux]
       - check-success=package test-runner-unstable [x86_64-linux]
