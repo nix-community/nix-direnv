@@ -164,6 +164,11 @@ nix_direnv_watch_file() {
   nix_watches+=("$@")
 }
 
+auto_refresh=t
+nix_direnv_manual_refresh() {
+  auto_refresh=f
+}
+
 use_flake() {
   _nix_direnv_preflight
 
@@ -199,35 +204,40 @@ use_flake() {
      || "$need_update" == "1"
      ]];
   then
-    _nix_clean_old_gcroots "$layout_dir"
+    if [[ "$auto_refresh" == "f" && -z "$nix_direnv_refresh" ]];
+    then
+      log_status "nix-direnv: cache is out of date. use \"nix_direnv_refresh=t direnv exec . true\" to refresh."
+    else
+      _nix_clean_old_gcroots "$layout_dir"
 
-    # We need to update our cache
-    local tmp_profile="${layout_dir}/flake-profile.$$"
-    local tmp_profile_rc
-    tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
-      --extra-experimental-features "nix-command flakes" \
-      --profile "$tmp_profile" "$@")
+      # We need to update our cache
+      local tmp_profile="${layout_dir}/flake-profile.$$"
+      local tmp_profile_rc
+      tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
+        --extra-experimental-features "nix-command flakes" \
+        --profile "$tmp_profile" "$@")
 
-    local drv
-    drv=$(_nix_direnv_realpath "$tmp_profile")
+      local drv
+      drv=$(_nix_direnv_realpath "$tmp_profile")
 
-    echo "$tmp_profile_rc" > "$profile_rc"
-    rm -f "$tmp_profile" "$tmp_profile"*
-    _nix_add_gcroot "$drv" "$profile"
+      echo "$tmp_profile_rc" > "$profile_rc"
+      rm -f "$tmp_profile" "$tmp_profile"*
+      _nix_add_gcroot "$drv" "$profile"
 
-    # also add garbage collection root for source
-    local flake_input_paths
-    mkdir -p "$flake_inputs"
-    flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
-      --json \
-      --extra-experimental-features "nix-command flakes" \
-      --no-write-lock-file \
-      "$flake_dir" | grep -E -o '/nix/store/[^"]+')
-    for path in $flake_input_paths; do
-      _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
-    done
+      # also add garbage collection root for source
+      local flake_input_paths
+      mkdir -p "$flake_inputs"
+      flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
+        --json \
+        --extra-experimental-features "nix-command flakes" \
+        --no-write-lock-file \
+        "$flake_dir" | grep -E -o '/nix/store/[^"]+')
+      for path in $flake_input_paths; do
+        _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
+      done
 
-    log_status "nix-direnv: renewed cache"
+      log_status "nix-direnv: renewed cache"
+    fi
   else
     # Our cache is valid, use that"
     log_status "nix-direnv: using cached dev shell"
