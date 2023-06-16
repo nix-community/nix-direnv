@@ -34,11 +34,24 @@ _nix_direnv_preflight () {
   local layout_dir
   layout_dir=$(direnv_layout_dir)
 
-  if [[ ! -d "$layout_dir" ]]; then
-    mkdir -p "$layout_dir"
+  if [[ ! -d "$layout_dir/bin" ]]; then
+    mkdir -p "$layout_dir/bin"
   fi
 
+  # shellcheck disable=SC2016
+  echo > "${layout_dir}/bin/nix-direnv-reload" '#!/usr/bin/env bash
+dir="$(realpath $(dirname ${BASH_SOURCE[0]})/../..)"
+_nix_direnv_force_reload=1 direnv exec "$dir" true
+direnv reload
+# direnv reload updates the mtime of .envrc. Also update the timestamp of the
+# profile_rc file to keep track that we actually are up to date.
+touch $dir/.direnv/{nix,flake}-profile-*.rc
+'
+  if [[ ! -x "${layout_dir}/bin/nix-direnv-reload" ]]; then
+    chmod +x "${layout_dir}/bin/nix-direnv-reload"
+  fi
 
+  PATH_add "${layout_dir}/bin"
 }
 
 # Usage: nix_direnv_version <version_at_least>
@@ -100,6 +113,12 @@ _nix_import_env() {
   local old_temp=${TEMP:-__UNSET__}
   local old_tempdir=${TEMPDIR:-__UNSET__}
   local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
+
+  # On the first run in manual mode, the profile_rc does not exist.
+  if [[ ! -e "$profile_rc" ]]; then
+    return
+  fi
+
   eval "$(< "$profile_rc")"
   # `nix print-dev-env` will create a temporary directory and use it as TMPDIR
   # We cannot rely on this directory being availble at all times,
@@ -164,10 +183,11 @@ nix_direnv_watch_file() {
   nix_watches+=("$@")
 }
 
-auto_reload=t
+_nix_direnv_manual_reload=0
 nix_direnv_manual_reload() {
-  auto_reload=f
+  _nix_direnv_manual_reload=1
 }
+
 
 use_flake() {
   _nix_direnv_preflight
@@ -199,24 +219,19 @@ use_flake() {
     fi
   done
 
-  if [[ "$auto_reload" == "f" ]]; then
-    mkdir -p "${layout_dir}/bin"
-    echo '#!/usr/bin/env bash' > "${layout_dir}/bin/nix-direnv-reload"
-    echo 'dir="$(realpath $(dirname ${BASH_SOURCE[0]})/../..)"' >> "${layout_dir}/bin/nix-direnv-reload"
-    echo 'nix_direnv_reload=t direnv exec "$dir" true' >> "${layout_dir}/bin/nix-direnv-reload"
-    echo 'direnv reload' >> "${layout_dir}/bin/nix-direnv-reload"
-    chmod +x "${layout_dir}/bin/nix-direnv-reload"
-    PATH_add "${layout_dir}/bin"
-  fi
 
   if [[ ! -e "$profile"
      || ! -e "$profile_rc"
      || "$need_update" == "1"
      ]];
   then
-    if [[ "$auto_reload" == "f" && -z "$nix_direnv_reload" ]];
-    then
-      log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload."
+    if [[ "$_nix_direnv_manual_reload" == "1" && -z "$_nix_direnv_force_reload" ]]; then
+      if [[ -e "$profile_rc" ]]; then
+        log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
+      else
+        log_status "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
+      fi
+
     else
       _nix_clean_old_gcroots "$layout_dir"
 
@@ -365,35 +380,44 @@ use_nix() {
      || "$need_update" -eq "1"
      ]];
   then
-    _nix_clean_old_gcroots "$layout_dir"
-
-    local tmp_profile="${layout_dir}/flake-profile.$$"
-    local tmp_profile_rc
-
-    if [[ "$packages" != "" ]]; then
-      extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
-    else
-      # figure out what attribute we should build
-      if [[ "$attribute" == "" ]]; then
-        extra_args+=("--file" "$nixfile")
+    if [[ "$_nix_direnv_manual_reload" == "1" && -z "$_nix_direnv_force_reload" ]]; then
+      if [[ -e "$profile_rc" ]]; then
+        log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
       else
-        extra_args+=("--expr" "(import ${nixfile} {}).${attribute}")
+        log_status "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
       fi
+     else
+      _nix_clean_old_gcroots "$layout_dir"
+
+      local tmp_profile="${layout_dir}/flake-profile.$$"
+      local tmp_profile_rc
+
+      if [[ "$packages" != "" ]]; then
+        extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
+      else
+        # figure out what attribute we should build
+        if [[ "$attribute" == "" ]]; then
+          extra_args+=("--file" "$nixfile")
+        else
+          extra_args+=("--expr" "(import ${nixfile} {}).${attribute}")
+        fi
+      fi
+
+      tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" \
+                       print-dev-env \
+                       --extra-experimental-features "nix-command flakes" \
+                       --profile "$tmp_profile" \
+                       --impure \
+                       "${extra_args[@]}")
+
+      local drv
+      drv=$(_nix_direnv_realpath "$tmp_profile")
+      echo "$tmp_profile_rc" > "$profile_rc"
+      rm -f "$tmp_profile" "$tmp_profile"*
+      _nix_add_gcroot "$drv" "$profile"
+      log_status "nix-direnv: renewed cache"
+
     fi
-
-    tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" \
-                     print-dev-env \
-                     --extra-experimental-features "nix-command flakes" \
-                     --profile "$tmp_profile" \
-                     --impure \
-                     "${extra_args[@]}")
-
-    local drv
-    drv=$(_nix_direnv_realpath "$tmp_profile")
-    echo "$tmp_profile_rc" > "$profile_rc"
-    rm -f "$tmp_profile" "$tmp_profile"*
-    _nix_add_gcroot "$drv" "$profile"
-    log_status "nix-direnv: renewed cache"
   else
     log_status "nix-direnv: using cached dev shell"
   fi
