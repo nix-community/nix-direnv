@@ -164,9 +164,9 @@ nix_direnv_watch_file() {
   nix_watches+=("$@")
 }
 
-auto_refresh=t
-nix_direnv_manual_refresh() {
-  auto_refresh=f
+auto_reload=t
+nix_direnv_manual_reload() {
+  auto_reload=f
 }
 
 use_flake() {
@@ -199,14 +199,23 @@ use_flake() {
     fi
   done
 
+  if [[ "$auto_reload" == "f" ]]; then
+    mkdir -p "${layout_dir}/bin"
+    echo '#!/usr/bin/env bash' > "${layout_dir}/bin/nix-direnv-reload"
+    echo 'dir="$(realpath $(dirname ${BASH_SOURCE[0]})/../..)"' >> "${layout_dir}/bin/nix-direnv-reload"
+    echo 'nix_direnv_reload=t direnv exec "$dir" true' >> "${layout_dir}/bin/nix-direnv-reload"
+    chmod +x "${layout_dir}/bin/nix-direnv-reload"
+    PATH_add "${layout_dir}/bin"
+  fi
+
   if [[ ! -e "$profile"
      || ! -e "$profile_rc"
      || "$need_update" == "1"
      ]];
   then
-    if [[ "$auto_refresh" == "f" && -z "$nix_direnv_refresh" ]];
+    if [[ "$auto_reload" == "f" && -z "$nix_direnv_reload" ]];
     then
-      log_status "nix-direnv: cache is out of date. use \"nix_direnv_refresh=t direnv exec . true\" to refresh."
+      log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload."
     else
       _nix_clean_old_gcroots "$layout_dir"
 
