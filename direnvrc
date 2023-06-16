@@ -204,6 +204,7 @@ use_flake() {
     echo '#!/usr/bin/env bash' > "${layout_dir}/bin/nix-direnv-reload"
     echo 'dir="$(realpath $(dirname ${BASH_SOURCE[0]})/../..)"' >> "${layout_dir}/bin/nix-direnv-reload"
     echo 'nix_direnv_reload=t direnv exec "$dir" true' >> "${layout_dir}/bin/nix-direnv-reload"
+    echo 'direnv reload' >> "${layout_dir}/bin/nix-direnv-reload"
     chmod +x "${layout_dir}/bin/nix-direnv-reload"
     PATH_add "${layout_dir}/bin"
   fi
