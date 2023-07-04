@@ -291,6 +291,26 @@ This leads to some limitations in what we can reasonably parse.
 Currently, all single-word arguments and some well-known double arguments
 will be interpeted or passed along.
 
+#### Manual reload of the nix environment
+
+To avoid delays and time consuming rebuilds at unexpected times, you can use
+nix-direnv in the "manual reload" mode. nix-direnv will then tell you when the
+nix environment is no longer up to date. You can then decide yourself when you
+want to reload the nix environment.
+
+To activate manual mode, use `nix_direnv_manual_reload` in your `.envrc` like this:
+
+```shell
+nix_direnv_manual_reload
+use nix # or use flake
+```
+
+To reload your nix environment, use the `nix-direnv-reload` command:
+
+```console
+$ nix-direnv-reload
+```
+
 ##### Known arguments
 
 - `-p`: Starts a list of packages to install; consumes all remaining arguments
