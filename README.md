@@ -42,15 +42,13 @@ If you require such specific control, please use another method of installing ni
 In `$HOME/.config/nixpkgs/home.nix` add
 
 ```Nix
-{ pkgs, ... }:
-
 {
   # ...other config, other config...
 
-  programs.direnv.enable = true;
-  programs.direnv.nix-direnv.enable = true;
-  # optional for nix flakes support in home-manager 21.11, not required in home-manager unstable or 22.05
-  programs.direnv.nix-direnv.enableFlakes = true;
+  programs = {
+    direnv.enable = true;
+    nix-direnv.enable = true;
+  };
 
   programs.bash.enable = true;
   # OR
@@ -65,11 +63,11 @@ you also need to add these options to your Nix configuration.
 If you are on NixOS also add the following lines to your `/etc/nixos/configuration.nix`:
 
 ```Nix
-{ pkgs, ... }: {
-  nix.extraOptions = ''
-    keep-outputs = true
-    keep-derivations = true
-  '';
+{
+  nix.settings = {
+    keep-outputs = true;
+    keep-derivations = true;
+  };
 }
 ```
 
@@ -97,13 +95,39 @@ fi
 </details>
 
 <details>
-  <summary>Via configuration.nix in NixOS</summary>
+  <summary>Via system configuration on NixOS</summary>
 
-### Via configuration.nix in NixOS
+### Via system configuration on NixOS
 
-In `/etc/nixos/configuration.nix`:
+For nixos-unstable all that's required is 
+
+```Nix 
+{
+  programs.direnv.enable = true;
+}
+```
+
+other available options are:
 
 ```Nix
+{ pkgs, ... }: {
+  #set to default values
+  programs.direnv = {
+    package = pkgs.direnv;
+    silent = false;
+    persistDerivations = true;
+    loadInNixShell = true;
+    direnvrcExtra = "";
+    nix-direnv = {
+      enable = true;
+      package = pkgs.nix-direnv;
+    };
+  }
+```
+
+23.05 or before requires:
+
+```Nix 
 { pkgs, ... }: {
   environment.systemPackages = with pkgs; [ direnv nix-direnv ];
   # nix options for derivations to persist garbage collection
@@ -114,14 +138,10 @@ In `/etc/nixos/configuration.nix`:
   environment.pathsToLink = [
     "/share/nix-direnv"
   ];
-  # if you also want support for flakes
-  nixpkgs.overlays = [
-    (self: super: { nix-direnv = super.nix-direnv.override { enableFlakes = true; }; } )
-  ];
 }
 ```
 
-Then source the `direnvrc` from this repository in your own `$HOME/.config/direnv/direnvrc`
+and sourcing the `direnvrc` from this repository in your own `$HOME/.config/direnv/direnvrc`
 
 ```bash
 # put this in ~/.config/direnv/direnvrc
