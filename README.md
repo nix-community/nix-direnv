@@ -63,7 +63,7 @@ manage your shell with `programs.<your_shell>.enable = true`.
 
 </details>
 <details>
-  <summary>Direnv's source\_url</summary>
+  <summary>Direnv's source_url</summary>
 
 ### Direnv source\_url
 
