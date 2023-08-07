@@ -46,41 +46,24 @@ In `$HOME/.config/nixpkgs/home.nix` add
   # ...other config, other config...
 
   programs = {
-    direnv.enable = true;
-    nix-direnv.enable = true;
-  };
+    direnv = {
+      enable = true;
+      enableBashIntegration = true; # see note on other shells below
+      nix-direnv.enable = true;
+    };
 
-  programs.bash.enable = true;
-  # OR
-  programs.zsh.enable = true;
-  # Or any other shell you're using.
-}
-```
-
-**Optional**: To protect your nix-shell against garbage collection
-you also need to add these options to your Nix configuration.
-
-If you are on NixOS also add the following lines to your `/etc/nixos/configuration.nix`:
-
-```Nix
-{
-  nix.settings = {
-    keep-outputs = true;
-    keep-derivations = true;
+    bash.enable = true; # see note on other shells below
   };
 }
 ```
 
-On other systems with Nix add the following configuration to your `/etc/nix/nix.conf`:
-
-```Nix
-keep-derivations = true
-keep-outputs = true
-```
+Check the current [Home Manager Options](https://mipmip.github.io/home-manager-option-search/?query=direnv)
+for integration with shells other than Bash. Be sure to also allow `home-manager` to
+manage your shell with `programs.<your_shell>.enable = true`.
 
 </details>
 <details>
-  <summary>Direnv's source\_url</summary>
+  <summary>Direnv's source_url</summary>
 
 ### Direnv source\_url
 
