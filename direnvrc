@@ -195,7 +195,7 @@ use_flake() {
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
 
-  if [[ "$flake_expr" =~ ^-[^#]*$ ]]; then
+  if [[ "$flake_expr" = -* ]]; then
     if [[ -n "$2" ]]; then
       log_status "nix-direnv: the first argument must be a flake expression"
     else
