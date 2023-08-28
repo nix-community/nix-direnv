@@ -82,7 +82,7 @@ fi
 
 ### Via system configuration on NixOS
 
-For nixos-unstable all that's required is 
+For NixOS 23.05+ all that's required is 
 
 ```Nix 
 {
@@ -108,7 +108,7 @@ other available options are:
   }
 ```
 
-23.05 or before requires:
+NixOS 22.11 or before requires:
 
 ```Nix 
 { pkgs, ... }: {
