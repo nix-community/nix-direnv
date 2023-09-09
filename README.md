@@ -108,22 +108,6 @@ other available options are:
   }
 ```
 
-NixOS 22.11 or before requires:
-
-```Nix 
-{ pkgs, ... }: {
-  environment.systemPackages = with pkgs; [ direnv nix-direnv ];
-  # nix options for derivations to persist garbage collection
-  nix.settings = {
-    keep-outputs = true;
-    keep-derivations = true;
-  };
-  environment.pathsToLink = [
-    "/share/nix-direnv"
-  ];
-}
-```
-
 and sourcing the `direnvrc` from this repository in your own `$HOME/.config/direnv/direnvrc`
 
 ```bash
@@ -150,9 +134,6 @@ Then add nix-direnv to `$HOME/.config/direnv/direnvrc`:
 source $HOME/.nix-profile/share/nix-direnv/direnvrc
 ```
 
-You also need to set `keep-outputs` and `keep-derivations` to nix.conf
-as described in the installation via home-manager section.
-
 </details>
   
   <details>
@@ -172,9 +153,6 @@ Then add nix-direnv to `$HOME/.config/direnv/direnvrc`:
 source $HOME/.nix-profile/share/nix-direnv/direnvrc
 ```
 
-You also need to set `keep-outputs` and `keep-derivations` to nix.conf
-as described in the installation via home-manager section.
-
 </details>
 
 <details>
@@ -190,9 +168,6 @@ and then source the direnvrc from this repository in your own
 # put this in ~/.config/direnv/direnvrc
 source $HOME/nix-direnv/direnvrc
 ```
-
-You also need to set `keep-outputs` and `keep-derivations` to nix.conf
-as described in the installation via home-manager section.
 
 </details>
 
