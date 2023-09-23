@@ -98,7 +98,6 @@ other available options are:
   programs.direnv = {
     package = pkgs.direnv;
     silent = false;
-    persistDerivations = true;
     loadInNixShell = true;
     direnvrcExtra = "";
     nix-direnv = {
@@ -107,14 +106,6 @@ other available options are:
     };
   }
 ```
-
-and sourcing the `direnvrc` from this repository in your own `$HOME/.config/direnv/direnvrc`
-
-```bash
-# put this in ~/.config/direnv/direnvrc
-source /run/current-system/sw/share/nix-direnv/direnvrc
-```
-
 </details>
 
 <details>
