@@ -233,7 +233,7 @@ use_flake() {
      || "$need_update" == "1"
      ]];
   then
-    if [[ "$_nix_direnv_manual_reload" == "1" && -z "$_nix_direnv_force_reload" ]]; then
+    if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
       if [[ -e "$profile_rc" ]]; then
         log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
       else
@@ -388,7 +388,7 @@ use_nix() {
      || "$need_update" -eq "1"
      ]];
   then
-    if [[ "$_nix_direnv_manual_reload" == "1" && -z "$_nix_direnv_force_reload" ]]; then
+    if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
       if [[ -e "$profile_rc" ]]; then
         log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
       else
