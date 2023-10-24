@@ -70,8 +70,8 @@ manage your shell with `programs.<your_shell>.enable = true`.
 Put the following lines in your `.envrc`:
 
 ```bash
-if ! has nix_direnv_version || ! nix_direnv_version 2.3.0; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.3.0/direnvrc" "sha256-Dmd+j63L84wuzgyjITIfSxSD57Tx7v51DMxVZOsiUD8="
+if ! has nix_direnv_version || ! nix_direnv_version 2.4.0; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/2.4.0/direnvrc" "sha256-XQzUAvL6pysIJnRJyR7uVpmUSZfc7LSgWQwq/4mBr1U="
 fi
 ```
 
