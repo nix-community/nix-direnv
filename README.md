@@ -198,7 +198,7 @@ $ echo "use nix foo.nix" >> .envrc
 
 nix-direnv also comes with an alternative `use_flake` implementation.
 The code is tested and does work but the upstream flake api is not finalized,
-so we we cannot guarantee stability after an nix upgrade.
+so we we cannot guarantee stability after a nix upgrade.
 
 Like `use_nix`,
 our `use_flake` will prevent garbage collection of downloaded packages,
