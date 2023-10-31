@@ -212,6 +212,7 @@ use_flake() {
 
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
+  flake_dir=${flake_dir#"path:"}
 
   if [[ "$flake_expr" = -* ]]; then
     if [[ -n "$2" ]]; then
