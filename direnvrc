@@ -253,9 +253,9 @@ use_flake() {
   then
     if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
       if [[ -e "$profile_rc" ]]; then
-        log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
+        log_error "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
       else
-        log_status "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
+        log_error "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
       fi
 
     else
@@ -408,9 +408,9 @@ use_nix() {
   then
     if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
       if [[ -e "$profile_rc" ]]; then
-        log_status "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
+        log_error "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
       else
-        log_status "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
+        log_error "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
       fi
      else
       _nix_clean_old_gcroots "$layout_dir"
