@@ -62,7 +62,7 @@ touch "$PWD/.envrc"
 
 # Also update the timestamp of whatever profile_rc we have.
 # This makes sure that we know we are up to date.
-touch -r "$PWD/.envrc" ${layout_dir}/*.rc
+touch -r "$PWD/.envrc" "${layout_dir}"/*.rc
 EOF
 
   if [[ ! -x "${layout_dir}/bin/nix-direnv-reload" ]]; then
