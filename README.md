@@ -303,8 +303,8 @@ when deciding to update its cache.
     * `.envrc`,
     * A single nix file. In order of preference:
         + The file argument to `use nix`
-        + `default.nix` if it exists
         + `shell.nix` if it exists
+        + `default.nix` if it exists
 
 - for `use flake` this is:
     * `~/.direnvrc`
