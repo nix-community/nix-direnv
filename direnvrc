@@ -388,10 +388,7 @@ use_nix() {
     esac
   done
 
-  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc"
-  if [ -f "$nixfile" ]; then
-    nix_direnv_watch_file "$nixfile"
-  fi
+  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc" "shell.nix" "default.nix"
 
   local need_update=0
   local file=
