@@ -139,7 +139,7 @@ _nix_import_env() {
 
   eval "$(< "$profile_rc")"
   # `nix print-dev-env` will create a temporary directory and use it as TMPDIR
-  # We cannot rely on this directory being availble at all times,
+  # We cannot rely on this directory being available at all times,
   # as it may be garbage collected.
   # Instead - just remove it immediately.
   # Use recursive & force as it may not be empty.
@@ -188,7 +188,7 @@ _nix_argsum_suffix() {
     elif has shasum; then
       out=$(shasum <<< "$1")
     else
-      # degrate gracefully both tools are not present
+      # degrade gracefully both tools are not present
       return
     fi
     read -r checksum _ <<< "$out"
