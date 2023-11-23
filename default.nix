@@ -1,4 +1,4 @@
-{ stdenv, nix, gnugrep, lib }:
+{ stdenv, nix, gnugrep, gzip, jq, lib }:
 
 stdenv.mkDerivation {
   name = "nix-direnv";
@@ -8,7 +8,9 @@ stdenv.mkDerivation {
   postPatch = ''
     sed -i "2iNIX_BIN_PREFIX=${nix}/bin/" direnvrc
     substituteInPlace direnvrc \
-      --replace "grep" "${gnugrep}/bin/grep"
+      --replace "grep" "${gnugrep}/bin/grep" \
+      --replace gzip "${gzip}/bin/gzip" \
+      --replace JQ= "JQ=${jq}/bin/jq"
   '';
 
   installPhase = ''
