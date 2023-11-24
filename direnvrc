@@ -27,26 +27,28 @@ _nix_direnv_fatal() {
   exit 1
 }
 
+_nix() {
+  nix --extra-experimental-features "nix-command flakes" "$@"
+}
+
 _nix_direnv_preflight () {
   if [[ -z "$direnv" ]]; then
     _nix_direnv_fatal "\$direnv environment variable was not defined. Was this script run inside direnv?"
   fi
 
-
-  if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
-    NIX_BIN_PREFIX=$(command -v nix-shell)
-    if [[ -z "${NIX_BIN_PREFIX}" ]]; then
-      _nix_direnv_fatal "command not found: nix-shell."
-    fi
-    NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
-  fi
-
-
   if ! has direnv_version || ! direnv_version "$REQUIRED_DIRENV_VERSION" 2>/dev/null; then
     _nix_direnv_fatal "base direnv version is older than the required v$REQUIRED_DIRENV_VERSION."
   fi
 
-  nixversion=$("${NIX_BIN_PREFIX}"nix --version)
+  if [[ -n ${NIX_BIN_PREFIX:-} ]]; then
+    PATH_add "$NIX_BIN_PREFIX"
+  fi
+
+  if ! has nix; then
+    _nix_direnv_fatal "command not found: nix"
+  fi
+
+  nixversion=$(nix --version)
   [[ "$nixversion" =~ ([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)? ]]
   if [[ "${BASH_REMATCH[1]}" -lt "2" || "${BASH_REMATCH[1]}" -eq "2" && "${BASH_REMATCH[2]}" -lt "4" ]]; then
     _nix_direnv_fatal "nix version ${BASH_REMATCH[0]} is older than the required 2.4."
@@ -186,7 +188,7 @@ _nix_import_env() {
 _nix_add_gcroot() {
   local storepath=$1
   local symlink=$2
-  nix-store --realise "$storepath" --add-root "$symlink" >/dev/null
+  _nix build --out-link "$symlink" "$storepath"
 }
 
 _nix_clean_old_gcroots() {
@@ -310,8 +312,7 @@ use_flake() {
       # We need to update our cache
       local tmp_profile="${layout_dir}/flake-profile.$$"
       local tmp_profile_rc
-      tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
-        --extra-experimental-features "nix-command flakes" \
+      tmp_profile_rc=$(_nix print-dev-env \
         --profile "$tmp_profile" "$@")
 
       local drv
@@ -324,9 +325,8 @@ use_flake() {
       # also add garbage collection root for source
       local flake_input_paths
       mkdir -p "$flake_inputs"
-      flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
+      flake_input_paths=$(_nix flake archive \
         --json --no-write-lock-file \
-        --extra-experimental-features "nix-command flakes" \
         "$flake_dir")
 
       while [[ "$flake_input_paths" =~ /nix/store/[^\"]+ ]]; do
@@ -351,10 +351,7 @@ use_nix() {
 
   local layout_dir path version
   layout_dir=$(direnv_layout_dir)
-  path=$("${NIX_BIN_PREFIX}nix-instantiate" --find-file nixpkgs 2>/dev/null || true)
-  if [[ -n "$path" ]]; then
-    path=$(_nix_direnv_realpath "$path")
-
+  if path=$(_nix eval --impure --expr "<nixpkgs>" 2>/dev/null); then
     if [[ -f "${path}/.version-suffix" ]]; then
       version=$(< "${path}/.version-suffix")
     elif [[ -f "${path}/.git/HEAD" ]]; then
@@ -472,9 +469,8 @@ use_nix() {
         fi
       fi
 
-      tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" \
+      tmp_profile_rc=$(_nix \
                        print-dev-env \
-                       --extra-experimental-features "nix-command flakes" \
                        --profile "$tmp_profile" \
                        --impure \
                        "${extra_args[@]}")
