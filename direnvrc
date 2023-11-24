@@ -272,7 +272,7 @@ use_flake() {
   fi
 
   local files_to_watch
-  files_to_watch=(".envrc" "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc")
+  files_to_watch=("$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc")
 
   if [[ -d "$flake_dir" ]]; then
     files_to_watch+=("$flake_dir/flake.nix" "$flake_dir/flake.lock" "$flake_dir/devshell.toml")
@@ -437,7 +437,7 @@ use_nix() {
     esac
   done
 
-  watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc" "shell.nix" "default.nix"
+  watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" "shell.nix" "default.nix"
 
   local need_update=0
   local watches
@@ -495,8 +495,4 @@ use_nix() {
 
   _nix_import_env "$profile_rc"
 
-
-  if [[ "$#" == 0 ]]; then
-    watch_file default.nix shell.nix
-  fi
 }
