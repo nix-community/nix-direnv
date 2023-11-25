@@ -2,33 +2,54 @@
 
 REQUIRED_DIRENV_VERSION="2.21.3"
 
+_NIX_DIRENV_LOG_PREFIX="nix-direnv: "
+
+_nix_direnv_info() {
+  log_status "${_NIX_DIRENV_LOG_PREFIX}$*"
+}
+
+_nix_direnv_warning() {
+  if [[ -n $DIRENV_LOG_FORMAT ]]; then
+    local msg=$* color_normal='' color_warning=''
+    if [[ -t 2 ]]; then
+      color_normal="\e[m"
+      color_warning="\e[33m"
+    fi
+    # shellcheck disable=SC2059
+    printf "${color_warning}${DIRENV_LOG_FORMAT}${color_normal}\n" \
+      "${_NIX_DIRENV_LOG_PREFIX}${msg}" >&2
+  fi
+}
+
+_nix_direnv_fatal() {
+  log_error "${_NIX_DIRENV_LOG_PREFIX}$*"
+  # exit 1 rather than return 1 since we may not be running in strict mode
+  exit 1
+}
+
 _nix_direnv_preflight () {
   if [[ -z "$direnv" ]]; then
-    printf '%s\n' "\$direnv environment variable was not defined. Was this script run inside direnv?"
-    exit 1
+    _nix_direnv_fatal "\$direnv environment variable was not defined. Was this script run inside direnv?"
   fi
 
 
   if [[ -z ${NIX_BIN_PREFIX:-} ]]; then
     NIX_BIN_PREFIX=$(command -v nix-shell)
     if [[ -z "${NIX_BIN_PREFIX}" ]]; then
-      log_status "nix-direnv: command not found: nix-shell."
-      exit 1
+      _nix_direnv_fatal "command not found: nix-shell."
     fi
     NIX_BIN_PREFIX="${NIX_BIN_PREFIX%/*}/"
   fi
 
 
   if ! has direnv_version || ! direnv_version "$REQUIRED_DIRENV_VERSION" 2>/dev/null; then
-    log_status "nix-direnv: base direnv version is older than the required v$REQUIRED_DIRENV_VERSION."
-    exit 1
+    _nix_direnv_fatal "base direnv version is older than the required v$REQUIRED_DIRENV_VERSION."
   fi
 
   nixversion=$("${NIX_BIN_PREFIX}"nix --version)
   [[ "$nixversion" =~ ([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)? ]]
   if [[ "${BASH_REMATCH[1]}" -lt "2" || "${BASH_REMATCH[1]}" -eq "2" && "${BASH_REMATCH[2]}" -lt "4" ]]; then
-    log_status "nix-direnv: nix version ${BASH_REMATCH[0]} is older than the required 2.4."
-    exit 1
+    _nix_direnv_fatal "nix version ${BASH_REMATCH[0]} is older than the required 2.4."
   fi
 
   local layout_dir
@@ -92,16 +113,14 @@ nix_direnv_version() {
     || ( ${ver[7]} == '+' && ${ver[8]} != +([0-9A-Za-z-])*(.+([0-9A-Za-z-])) ) \
     || ( ( -n ${ver[5]} || -n ${ver[7]} ) && ( -z ${ver[2]} || -z ${ver[4]} ) ) \
   ]]; then
-    printf '%s\n' "nix-direnv: error v$1 is not a valid semver version" >&2
-    return 1
+    _nix_direnv_fatal "error v$1 is not a valid semver version"
   fi
 
   if [[ ($req_major -gt $major) \
      || ($req_major -eq $major && $req_minor -gt $minor) \
      || ($req_major -eq $major && $req_minor -eq $minor && $req_patch -gt $patch)
   ]]; then
-    printf '%s\n' "nix-direnv: error current version v$major.$minor.$patch is older than the desired version v$1" >&2
-    return 1
+    _nix_direnv_fatal "error current version v$major.$minor.$patch is older than the desired version v$1"
   fi
 }
 
@@ -228,6 +247,14 @@ nix_direnv_manual_reload() {
   _nix_direnv_manual_reload=1
 }
 
+_nix_direnv_warn_manual_reload() {
+  if [[ -e "$1" ]]; then
+    _nix_direnv_warning "cache is out of date. use \"nix-direnv-reload\" to reload"
+  else
+    _nix_direnv_warning "cache does not exist. use \"nix-direnv-reload\" to create it"
+  fi
+}
+
 use_flake() {
   _nix_direnv_preflight
 
@@ -237,9 +264,9 @@ use_flake() {
 
   if [[ "$flake_expr" = -* ]]; then
     if [[ -n "$2" ]]; then
-      log_status "nix-direnv: the first argument must be a flake expression"
+      log_status "the first argument must be a flake expression"
     else
-      log_status "nix-direnv: the first argument must be a flake expression. did you mean 'use flake . $1'?"
+      log_status "the first argument must be a flake expression. did you mean 'use flake . $1'?"
     fi
   fi
 
@@ -276,11 +303,7 @@ use_flake() {
      ]];
   then
     if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
-      if [[ -e "$profile_rc" ]]; then
-        log_error "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
-      else
-        log_error "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
-      fi
+      _nix_direnv_warn_manual_reload "$profile_rc"
 
     else
       _nix_clean_old_gcroots "$layout_dir"
@@ -313,11 +336,11 @@ use_flake() {
         flake_input_paths="${flake_input_paths/${store_path}/}"
       done
 
-      log_status "nix-direnv: renewed cache"
+      _nix_direnv_info "renewed cache"
     fi
   else
     # Our cache is valid, use that"
-    log_status "nix-direnv: using cached dev shell"
+    _nix_direnv_info "using cached dev shell"
 
   fi
 
@@ -432,11 +455,7 @@ use_nix() {
      ]];
   then
     if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
-      if [[ -e "$profile_rc" ]]; then
-        log_error "nix-direnv: cache is out of date. use \"nix-direnv-reload\" to reload"
-      else
-        log_error "nix-direnv: cache does not exist. use \"nix-direnv-reload\" to create it"
-      fi
+      _nix_direnv_warn_manual_reload "$profile_rc"
      else
       _nix_clean_old_gcroots "$layout_dir"
 
@@ -466,11 +485,11 @@ use_nix() {
       echo "$tmp_profile_rc" > "$profile_rc"
       rm -f "$tmp_profile" "$tmp_profile"*
       _nix_add_gcroot "$drv" "$profile"
-      log_status "nix-direnv: renewed cache"
+      _nix_direnv_info "renewed cache"
 
     fi
   else
-    log_status "nix-direnv: using cached dev shell"
+    _nix_direnv_info "using cached dev shell"
   fi
 
   _nix_import_env "$profile_rc"
