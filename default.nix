@@ -7,8 +7,6 @@ stdenv.mkDerivation {
 
   postPatch = ''
     sed -i "2iNIX_BIN_PREFIX=${nix}/bin/" direnvrc
-    substituteInPlace direnvrc \
-      --replace "grep" "${gnugrep}/bin/grep"
   '';
 
   installPhase = ''
