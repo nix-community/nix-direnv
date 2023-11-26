@@ -202,27 +202,21 @@ nix_direnv_watch_file() {
   watch_file "$@"
 }
 
-# set by nix build - see ./default.nix
-JQ=
-
-_jq() {
-  if [[ -n $JQ ]]; then
-    $JQ "$@"
-  elif has jq; then
-    jq "$@"
-  else
-    nix-shell --packages jq --run "$(join_args jq "$@")"
-  fi
-}
-
 _nix_direnv_watches() {
   local -n _watches=$1
-  # allow files under $XDG_DATA_HOME/direnv/allow are filtered out as not relevant
-  mapfile -td "" _watches < <(
-    # shellcheck disable=2016
-    direnv show_dump "${DIRENV_WATCHES}" \
-      | _jq --join-output '.[] | select(.Exists ) | .Path | select(. | test($ENV.XDG_DATA_HOME + "/direnv/allow") | not) | (. + "\u0000")'
-  )
+  while IFS= read -r line; do
+    local regex='"path": "(.+)"$'
+    if [[ "$line" =~ $regex ]]; then
+      local path="${BASH_REMATCH[1]}"
+      if [[ "$path" == "${XDG_DATA_HOME:-${HOME:-/var/empty}/.local/share}/direnv/allow/"* ]]; then
+        continue
+      fi
+      # expand new lines and other json escapes
+      # shellcheck disable=2059
+      path=$(printf "$path")
+      _watches+=("$path")
+    fi
+  done < <(direnv show_dump "${DIRENV_WATCHES}")
 }
 
 _nix_direnv_manual_reload=0
@@ -477,7 +471,6 @@ use_nix() {
 
 
   if [[ "$#" == 0 ]]; then
-    watch_file default.nix
-    watch_file shell.nix
+    watch_file default.nix shell.nix
   fi
 }
