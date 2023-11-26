@@ -206,11 +206,9 @@ nix_direnv_watch_file() {
 JQ=
 
 _jq() {
-  if [[ -n $JQ ]]
-  then
+  if [[ -n $JQ ]]; then
     $JQ "$@"
-  elif has jq
-  then
+  elif has jq; then
     jq "$@"
   else
     nix-shell --packages jq --run "$(join_args jq "$@")"
@@ -219,15 +217,10 @@ _jq() {
 
 _nix_direnv_watches() {
   local -n _watches=$1
-  # DIRENV_WATCHES is json | gzip (without header and trailer) | base64url
-  # allow files under $XDG_DATA_HOME/direenv/allow are filtered out as not relevant
-  # gzip header: https://datatracker.ietf.org/doc/html/rfc1952#page-6
+  # allow files under $XDG_DATA_HOME/direnv/allow are filtered out as not relevant
   mapfile -td "" _watches < <(
     # shellcheck disable=2016
-    tr -- "-_" "+/" <<< "$DIRENV_WATCHES" \
-      | base64 --decode \
-      | (echo -ne "\x1f\x8b\x08\x00\x00\x00\x00\x00"; cat /dev/stdin) \
-      | (gzip --decompress 2>/dev/null || true) \
+    direnv show_dump "${DIRENV_WATCHES}" \
       | _jq --join-output '.[] | select(.Exists ) | .Path | select(. | test($ENV.XDG_DATA_HOME + "/direnv/allow") | not) | (. + "\u0000")'
   )
 }
@@ -236,7 +229,6 @@ _nix_direnv_manual_reload=0
 nix_direnv_manual_reload() {
   _nix_direnv_manual_reload=1
 }
-
 
 use_flake() {
   _nix_direnv_preflight

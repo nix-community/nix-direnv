@@ -9,7 +9,6 @@ stdenv.mkDerivation {
     sed -i "2iNIX_BIN_PREFIX=${nix}/bin/" direnvrc
     substituteInPlace direnvrc \
       --replace "grep" "${gnugrep}/bin/grep" \
-      --replace gzip "${gzip}/bin/gzip" \
       --replace JQ= "JQ=${jq}/bin/jq"
   '';
 
