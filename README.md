@@ -314,23 +314,23 @@ when deciding to update its cache.
     * `flake.lock`
     * `devshell.toml` if it exists
 
-To add more files to be checked use `nix_direnv_watch_file` like this
+To add more files to be checked use `watch_file` like this
 
 ```shell
-nix_direnv_watch_file your-file.nix
+watch_file your-file.nix
 use nix # or use flake
 ```
 
 Or - if you don't mind the overhead (runtime and conceptual) of watching all nix-files:
 
 ```shell
-nix_direnv_watch_file $(find . -name "*.nix" -printf '"%p" ')
+watch_file $(find . -name "*.nix" -printf '"%p" ')
 ```
 
 Note that this will re-execute direnv for any nix change,
 regardless of whether that change is meaningful for the devShell in use.
 
-`nix_direnv_watch_file` must be invoked before either `use flake` or `use nix` to take effect.
+`watch_file` must be invoked before either `use flake` or `use nix` to take effect.
 
 ## General direnv tips
 
