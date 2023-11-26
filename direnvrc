@@ -139,7 +139,7 @@ _nix_import_env() {
 
   eval "$(< "$profile_rc")"
   # `nix print-dev-env` will create a temporary directory and use it as TMPDIR
-  # We cannot rely on this directory being availble at all times,
+  # We cannot rely on this directory being available at all times,
   # as it may be garbage collected.
   # Instead - just remove it immediately.
   # Use recursive & force as it may not be empty.
@@ -188,7 +188,7 @@ _nix_argsum_suffix() {
     elif has shasum; then
       out=$(shasum <<< "$1")
     else
-      # degrate gracefully both tools are not present
+      # degrade gracefully both tools are not present
       return
     fi
     read -r checksum _ <<< "$out"
@@ -197,15 +197,35 @@ _nix_argsum_suffix() {
 }
 
 nix_direnv_watch_file() {
+  # shellcheck disable=2016
+  log_error '`nix_direnv_watch_file` is deprecated - use `watch_file`'
   watch_file "$@"
-  nix_watches+=("$@")
+}
+
+_nix_direnv_watches() {
+  local -n _watches=$1
+  if [[ -z "${DIRENV_WATCHES-}" ]]; then
+    return
+  fi
+  while IFS= read -r line; do
+    local regex='"path": "(.+)"$'
+    if [[ "$line" =~ $regex ]]; then
+      local path="${BASH_REMATCH[1]}"
+      if [[ "$path" == "${XDG_DATA_HOME:-${HOME:-/var/empty}/.local/share}/direnv/allow/"* ]]; then
+        continue
+      fi
+      # expand new lines and other json escapes
+      # shellcheck disable=2059
+      path=$(printf "$path")
+      _watches+=("$path")
+    fi
+  done < <(direnv show_dump "${DIRENV_WATCHES}")
 }
 
 _nix_direnv_manual_reload=0
 nix_direnv_manual_reload() {
   _nix_direnv_manual_reload=1
 }
-
 
 use_flake() {
   _nix_direnv_preflight
@@ -229,7 +249,7 @@ use_flake() {
     files_to_watch+=("$flake_dir/flake.nix" "$flake_dir/flake.lock" "$flake_dir/devshell.toml")
   fi
 
-  nix_direnv_watch_file "${files_to_watch[@]}"
+  watch_file "${files_to_watch[@]}"
 
   local layout_dir profile
   layout_dir=$(direnv_layout_dir)
@@ -238,8 +258,10 @@ use_flake() {
   local flake_inputs="${layout_dir}/flake-inputs/"
 
   local need_update=0
+  local watches
+  _nix_direnv_watches watches
   local file=
-  for file in "${nix_watches[@]}"; do
+  for file in "${watches[@]}"; do
     if [[ "$file" -nt "$profile_rc" ]]; then
       need_update=1
       break
@@ -388,11 +410,13 @@ use_nix() {
     esac
   done
 
-  nix_direnv_watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc" "shell.nix" "default.nix"
+  watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" ".envrc" "shell.nix" "default.nix"
 
   local need_update=0
+  local watches
+  _nix_direnv_watches watches
   local file=
-  for file in "${nix_watches[@]}"; do
+  for file in "${watches[@]}"; do
     if [[ "$file" -nt "$profile_rc" ]]; then
       need_update=1
       break
@@ -450,7 +474,6 @@ use_nix() {
 
 
   if [[ "$#" == 0 ]]; then
-    watch_file default.nix
-    watch_file shell.nix
+    watch_file default.nix shell.nix
   fi
 }
