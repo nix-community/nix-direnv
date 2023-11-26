@@ -302,12 +302,14 @@ use_flake() {
       local flake_input_paths
       mkdir -p "$flake_inputs"
       flake_input_paths=$("${NIX_BIN_PREFIX}nix" flake archive \
-        --json \
+        --json --no-write-lock-file \
         --extra-experimental-features "nix-command flakes" \
-        --no-write-lock-file \
-        "$flake_dir" | grep -E -o '/nix/store/[^"]+')
-      for path in $flake_input_paths; do
-        _nix_add_gcroot "$path" "${flake_inputs}/${path##*/}"
+        "$flake_dir")
+
+      while [[ "$flake_input_paths" =~ /nix/store/[^\"]+ ]]; do
+        local store_path="${BASH_REMATCH[0]}"
+        _nix_add_gcroot "${store_path}" "${flake_inputs}/${store_path##*/}"
+        flake_input_paths="${flake_input_paths/${store_path}/}"
       done
 
       log_status "nix-direnv: renewed cache"
