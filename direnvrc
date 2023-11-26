@@ -126,14 +126,6 @@ nix_direnv_version() {
   fi
 }
 
-_nix_direnv_realpath () {
-    if has realpath; then
-      realpath "$1"
-    else
-      perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"
-    fi
-}
-
 _nix_export_or_unset() {
   local key=$1 value=$2
   if [[ "$value" == __UNSET__ ]]; then
@@ -315,12 +307,9 @@ use_flake() {
       tmp_profile_rc=$(_nix print-dev-env \
         --profile "$tmp_profile" "$@")
 
-      local drv
-      drv=$(_nix_direnv_realpath "$tmp_profile")
-
       echo "$tmp_profile_rc" > "$profile_rc"
+      _nix_add_gcroot "$tmp_profile" "$profile"
       rm -f "$tmp_profile" "$tmp_profile"*
-      _nix_add_gcroot "$drv" "$profile"
 
       # also add garbage collection root for source
       local flake_input_paths
@@ -475,11 +464,9 @@ use_nix() {
                        --impure \
                        "${extra_args[@]}")
 
-      local drv
-      drv=$(_nix_direnv_realpath "$tmp_profile")
       echo "$tmp_profile_rc" > "$profile_rc"
+      _nix_add_gcroot "$tmp_profile" "$profile"
       rm -f "$tmp_profile" "$tmp_profile"*
-      _nix_add_gcroot "$drv" "$profile"
       _nix_direnv_info "renewed cache"
 
     fi
