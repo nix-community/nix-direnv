@@ -22,13 +22,10 @@ to perpetual high CPU load).
 
 ## Installation
 
-> **Heads up**: nix-direnv requires a modern Bash and GNU Grep. MacOS ships with
-> outdated or non-GNU versions of these tools, As a work-around we suggest that
-> macOS users install `direnv`/`grep` via Nix or Homebrew. Discussion of these
-> problems can be found
-> [here](https://github.com/nix-community/nix-direnv/issues/3).
-
-There are different ways to install nix-direnv, pick your favourite:
+> **Heads up**: nix-direnv requires a modern Bash. MacOS ships with bash 3.2
+> from 2007. As a work-around we suggest that macOS users install `direnv` via
+> Nix or Homebrew. There are different ways to install nix-direnv, pick your
+> favourite:
 
 <details>
   <summary> Via home-manager (Recommended)</summary>
