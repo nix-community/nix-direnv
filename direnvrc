@@ -50,7 +50,7 @@ _nix_direnv_preflight () {
 
   nixversion=$(nix --version)
   [[ "$nixversion" =~ ([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)? ]]
-  if [[ "${BASH_REMATCH[1]}" -lt "2" || "${BASH_REMATCH[1]}" -eq "2" && "${BASH_REMATCH[2]}" -lt "4" ]]; then
+  if [[ ${BASH_REMATCH[1]} -lt 2 || ${BASH_REMATCH[1]} -eq 2 && ${BASH_REMATCH[2]} -lt 4 ]]; then
     _nix_direnv_fatal "nix version ${BASH_REMATCH[0]} is older than the required 2.4."
   fi
 
@@ -292,10 +292,10 @@ use_flake() {
 
   if [[ ! -e "$profile"
      || ! -e "$profile_rc"
-     || "$need_update" == "1"
+     || $need_update -eq 1
      ]];
   then
-    if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
+    if [[ $_nix_direnv_manual_reload -eq 1 && -z "${_nix_direnv_force_reload-}" ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
 
     else
@@ -412,7 +412,7 @@ use_nix() {
         extra_args+=("$i")
         ;;
       *)
-        if [[ $in_packages == 1 ]]; then
+        if [[ $in_packages -eq 1 ]]; then
           packages+=" $i"
         else
           nixfile=$i
@@ -436,10 +436,10 @@ use_nix() {
 
   if [[ ! -e "$profile"
      || ! -e "$profile_rc"
-     || "$need_update" -eq "1"
+     || $need_update -eq 1
      ]];
   then
-    if [[ "$_nix_direnv_manual_reload" == "1" && -z "${_nix_direnv_force_reload-}" ]]; then
+    if [[ $_nix_direnv_manual_reload -eq 1 && -z "${_nix_direnv_force_reload-}" ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
      else
       _nix_clean_old_gcroots "$layout_dir"
@@ -447,11 +447,11 @@ use_nix() {
       local tmp_profile="${layout_dir}/flake-profile.$$"
       local tmp_profile_rc
 
-      if [[ "$packages" != "" ]]; then
+      if [[ -n "$packages" ]]; then
         extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
       else
         # figure out what attribute we should build
-        if [[ "$attribute" == "" ]]; then
+        if [[ -z "$attribute" ]]; then
           extra_args+=("--file" "$nixfile")
         else
           extra_args+=("--expr" "(import ${nixfile} {}).${attribute}")
