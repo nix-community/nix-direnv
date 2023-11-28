@@ -12,6 +12,9 @@ stdenv.mkDerivation (finalAttrs: {
     sed -i "2iNIX_BIN_PREFIX=${nix}/bin/" direnvrc
   '';
 
+  # Makefile is purely for lint/test
+  buildPhase = "true";
+
   installPhase = ''
     install -m400 -D direnvrc $out/share/nix-direnv/direnvrc
   '';

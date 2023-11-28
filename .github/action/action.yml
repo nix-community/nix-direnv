@@ -1,0 +1,13 @@
+name: nix-setup
+description: '...'
+
+runs:
+  using: composite
+  steps:
+    - uses: cachix/install-nix-action@v23
+      with:
+        nix_path: nixpkgs=channel:nixpkgs-unstable
+        extra_nix_config: accept-flake-config = true
+    - uses: jrmurr/direnv-nix-action@v4.1.0
+      with:
+        install-nix: false

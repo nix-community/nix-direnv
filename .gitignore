@@ -1,7 +1,16 @@
-.direnv/
+/.direnv/
 /template/flake.lock
 
-# Byte-compiled / optimized / DLL files
+# build and test results
+/result
+/lint
+/test
+/test_*
+/.coverage
+/.tests.mk
+/.test_gcroot/
+/htmlcov/
+
+# py
 __pycache__/
-*.py[cod]
-*$py.class
+/.dmypy.json
