@@ -9,6 +9,7 @@ pkgs.mkShellNoCC {
 
   nativeBuildInputs = [ pkgs.hello ];
   SHOULD_BE_SET = someArg;
+  IS_SET = "OK";
 
   passthru = { subshell = pkgs.mkShellNoCC { THIS_IS_A_SUBSHELL = "OK"; }; };
 }
