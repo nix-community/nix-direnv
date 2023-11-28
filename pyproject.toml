@@ -1,8 +1,11 @@
-[tool.ruff]
-line-length = 88
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["."]
+relative_files = true
 
-select = ["E", "F", "I"]
-ignore = [ "E501" ]
+[tool.coverage.html]
+show_contexts = true
 
 [tool.coverage.report]
 exclude_lines = [
@@ -17,9 +20,39 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 
 [[tool.mypy.overrides]]
-module = "setuptools.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
 module = "pytest.*"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = """
+  --log-level=NOTSET
+  --log-format="%(relativeCreated)4d %(levelname)s %(message)s"
+  --tb=short
+"""
+
+[tool.ruff]
+select = ["ALL"]
+ignore = [
+  # pydocstyle
+  "D",
+  # Missing type annotation for `self` in method
+  "ANN101",
+  # Trailing comma missing
+  "COM812",
+  # Unnecessary `dict` call (rewrite as a literal)
+  "C408",
+  # Boolean-typed positional argument in function definition
+  "FBT001",
+  # Logging statement uses f-string
+  "G004",
+  # disabled on ruff's recommendation as causes problems with the formatter
+  "ISC001",
+  # Use of `assert` detected
+  "S101",
+  # `subprocess` call: check for execution of untrusted input
+  "S603",
+]
+
+[tool.ruff.isort]
+combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
