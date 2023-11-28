@@ -137,7 +137,17 @@ _nix_import_env() {
     return
   fi
 
-  eval "$(< "$profile_rc")"
+  # to support nix 2.10
+  # https://github.com/NixOS/nix/issues/6809
+  if set +o | grep -q nounset \
+    && [[ $(nix eval --expr 'builtins.compareVersions builtins.nixVersion "2.11"') -lt 0 ]]; then
+    set +u
+    eval "$(< "$profile_rc")"
+    set -u
+  else
+    eval "$(< "$profile_rc")"
+  fi
+
   # `nix print-dev-env` will create a temporary directory and use it as TMPDIR
   # We cannot rely on this directory being available at all times,
   # as it may be garbage collected.
