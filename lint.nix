@@ -5,7 +5,7 @@
 , ruff
 , runCommand
 }:
-runCommand "lint" {} ''
+runCommand "lint" { } ''
   set -e
   mkdir source
   cp -r ${./.}/* source
