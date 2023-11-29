@@ -1,3 +1,4 @@
+import logging
 import subprocess
 import sys
 import unittest
@@ -6,6 +7,8 @@ import pytest
 
 from .direnv_project import DirenvProject
 from .procs import run
+
+log = logging.getLogger(__name__)
 
 def common_test(direnv_project: DirenvProject) -> None:
     run(["nix-collect-garbage"])
@@ -54,7 +57,7 @@ def common_test_clean(direnv_project: DirenvProject) -> None:
     rcs = [f for f in files if f.match("*.rc")]
     profiles = [f for f in files if not f.match("*.rc")]
     if len(rcs) != 1 or len(profiles) != 1:
-        print(files)
+        log.debug(files)
     assert len(rcs) == 1
     assert len(profiles) == 1
 
@@ -79,7 +82,7 @@ def test_use_flake(direnv_project: DirenvProject, strict_env: bool) -> None:
     # should only contain our flake-utils flake
     if len(inputs) != 4:
         run(["nix", "flake", "archive", "--json"], cwd=direnv_project.directory)
-        print(inputs)
+        log.debug(inputs)
     assert len(inputs) == 4
     for symlink in inputs:
         assert symlink.is_dir()

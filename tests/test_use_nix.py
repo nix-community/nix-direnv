@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 import sys
@@ -8,12 +9,14 @@ import pytest
 from .direnv_project import DirenvProject
 from .procs import run
 
+log = logging.getLogger(__name__)
+
 
 def direnv_exec(
     direnv_project: DirenvProject, cmd: str, env: dict[str, str] | None = None
 ) -> None:
     args = ["direnv", "exec", str(direnv_project.directory), "sh", "-c", cmd]
-    print("$ " + " ".join(args))
+    log.debug("$ " + " ".join(args))
     out = run(
         args,
         stderr=subprocess.PIPE,
