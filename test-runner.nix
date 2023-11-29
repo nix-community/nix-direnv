@@ -12,5 +12,5 @@ writeShellScriptBin "test-runner-${nixVersion}" ''
   export PATH=${lib.makeBinPath [ direnv nixVersions.${nixVersion} coreutils gnugrep ]}
 
   echo run unittest
-  ${lib.getExe python3.pkgs.pytest} .
+  ${lib.getExe' python3.pkgs.pytest "pytest"} .
 ''
