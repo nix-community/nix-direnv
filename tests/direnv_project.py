@@ -1,9 +1,9 @@
 import shutil
 import textwrap
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator
 
 import pytest
 
@@ -31,7 +31,7 @@ class DirenvProject:
         run(["direnv", "allow"], cwd=self.directory)
 
 
-@pytest.fixture
+@pytest.fixture()
 def direnv_project(test_root: Path, project_root: Path) -> Iterator[DirenvProject]:
     """
     Setups a direnv test project

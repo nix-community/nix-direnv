@@ -1,4 +1,5 @@
 import logging
+import shlex
 import subprocess
 from pathlib import Path
 from typing import IO, Any
@@ -20,7 +21,7 @@ def run(
 ) -> subprocess.CompletedProcess:
     if cwd is not None:
         log.debug(f"cd {cwd}")
-    log.debug("$ " + " ".join(cmd))
+    log.debug(f"$ {shlex.join(cmd)}")
     return subprocess.run(
         cmd, text=text, check=check, cwd=cwd, stderr=stderr, stdout=stdout, env=env
     )

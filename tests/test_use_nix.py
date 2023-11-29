@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 import subprocess
 import sys
 import unittest
@@ -16,7 +17,7 @@ def direnv_exec(
     direnv_project: DirenvProject, cmd: str, env: dict[str, str] | None = None
 ) -> None:
     args = ["direnv", "exec", str(direnv_project.directory), "sh", "-c", cmd]
-    log.debug("$ " + " ".join(args))
+    log.debug(f"$ {shlex.join(args)}")
     out = run(
         args,
         stderr=subprocess.PIPE,
@@ -28,7 +29,7 @@ def direnv_exec(
     sys.stdout.write(out.stdout)
     sys.stderr.write(out.stderr)
     assert out.returncode == 0
-    assert "OK\n" == out.stdout
+    assert out.stdout == "OK\n"
     assert "renewed cache" in out.stderr
 
 

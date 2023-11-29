@@ -10,6 +10,7 @@ from .procs import run
 
 log = logging.getLogger(__name__)
 
+
 def common_test(direnv_project: DirenvProject) -> None:
     run(["nix-collect-garbage"])
 
@@ -52,7 +53,9 @@ def common_test_clean(direnv_project: DirenvProject) -> None:
     sys.stderr.write(out3.stderr)
 
     files = [
-        path for path in (direnv_project.directory / ".direnv").iterdir() if path.is_file()
+        path
+        for path in (direnv_project.directory / ".direnv").iterdir()
+        if path.is_file()
     ]
     rcs = [f for f in files if f.match("*.rc")]
     profiles = [f for f in files if not f.match("*.rc")]
