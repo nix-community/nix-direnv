@@ -21,6 +21,11 @@ ignore = [
   "S101",
   # `subprocess` call: check for execution of untrusted input
   "S603",
+
+  # FIXME? Maybe we should enable these?
+  "PLR0913", # Too many arguments in function definition (7 > 5)
+  "PLR2004", # Magic value used in comparison, consider replacing 4 with a constant variable
+  "FBT002",  # Boolean default positional argument in function definition
 ]
 
 [tool.mypy]
