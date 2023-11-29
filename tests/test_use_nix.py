@@ -1,31 +1,35 @@
+import logging
 import os
+import shlex
 import subprocess
 import sys
 import unittest
-from typing import Optional
 
 import pytest
-from direnv_project import DirenvProject
-from procs import run
+
+from .direnv_project import DirenvProject
+from .procs import run
+
+log = logging.getLogger(__name__)
 
 
 def direnv_exec(
-    direnv_project: DirenvProject, cmd: str, env: Optional[dict[str, str]] = None
+    direnv_project: DirenvProject, cmd: str, env: dict[str, str] | None = None
 ) -> None:
-    args = ["direnv", "exec", str(direnv_project.dir), "sh", "-c", cmd]
-    print("$ " + " ".join(args))
+    args = ["direnv", "exec", str(direnv_project.directory), "sh", "-c", cmd]
+    log.debug(f"$ {shlex.join(args)}")
     out = run(
         args,
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
         check=False,
-        cwd=direnv_project.dir,
+        cwd=direnv_project.directory,
         env=env,
     )
     sys.stdout.write(out.stdout)
     sys.stderr.write(out.stderr)
     assert out.returncode == 0
-    assert "OK\n" == out.stdout
+    assert out.stdout == "OK\n"
     assert "renewed cache" in out.stderr
 
 
@@ -57,7 +61,7 @@ def test_no_files(direnv_project: DirenvProject, strict_env: bool) -> None:
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
         check=False,
-        cwd=direnv_project.dir,
+        cwd=direnv_project.directory,
     )
     assert out.returncode == 0
     assert 'Loaded watch: "."' not in out.stdout

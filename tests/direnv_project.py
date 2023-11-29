@@ -1,22 +1,23 @@
 import shutil
 import textwrap
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator
 
 import pytest
-from procs import run
+
+from .procs import run
 
 
 @dataclass
 class DirenvProject:
-    dir: Path
+    directory: Path
     nix_direnv: Path
 
     @property
     def envrc(self) -> Path:
-        return self.dir / ".envrc"
+        return self.directory / ".envrc"
 
     def setup_envrc(self, content: str, strict_env: bool) -> None:
         text = textwrap.dedent(
@@ -27,23 +28,23 @@ class DirenvProject:
         """
         )
         self.envrc.write_text(text)
-        run(["direnv", "allow"], cwd=self.dir)
+        run(["direnv", "allow"], cwd=self.directory)
 
 
-@pytest.fixture
+@pytest.fixture()
 def direnv_project(test_root: Path, project_root: Path) -> Iterator[DirenvProject]:
     """
     Setups a direnv test project
     """
     with TemporaryDirectory() as _dir:
-        dir = Path(_dir) / "proj"
-        shutil.copytree(test_root / "testenv", dir)
-        shutil.copyfile(project_root / "flake.nix", dir / "flake.nix")
-        shutil.copyfile(project_root / "flake.lock", dir / "flake.lock")
-        shutil.copyfile(project_root / "treefmt.nix", dir / "treefmt.nix")
+        directory = Path(_dir) / "proj"
+        shutil.copytree(test_root / "testenv", directory)
+        shutil.copyfile(project_root / "flake.nix", directory / "flake.nix")
+        shutil.copyfile(project_root / "flake.lock", directory / "flake.lock")
+        shutil.copyfile(project_root / "treefmt.nix", directory / "treefmt.nix")
         nix_direnv = project_root / "direnvrc"
 
-        c = DirenvProject(Path(dir), nix_direnv)
+        c = DirenvProject(Path(directory), nix_direnv)
         try:
             yield c
         finally:
