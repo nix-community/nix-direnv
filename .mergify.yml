@@ -1,12 +1,7 @@
 queue_rules:
   - name: default
     merge_conditions:
-      - check-success=Evaluate flake.nix
-      - check-success=check lint [x86_64-linux]
-      - check-success=devShell default [x86_64-linux]
-      - check-success=package default [x86_64-linux]
-      - check-success=package test-runner-stable [x86_64-linux]
-      - check-success=package test-runner-unstable [x86_64-linux]
+      - check-success=buildbot/nix-eval
       - check-success=tests (ubuntu-latest, stable)
       - check-success=tests (ubuntu-latest, unstable)
 defaults:

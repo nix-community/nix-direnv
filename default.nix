@@ -1,4 +1,4 @@
-{ stdenv, nix, gnugrep, lib }:
+{ stdenv, nix, lib }:
 
 stdenv.mkDerivation {
   name = "nix-direnv";

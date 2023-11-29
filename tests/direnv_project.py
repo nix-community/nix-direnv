@@ -40,6 +40,7 @@ def direnv_project(test_root: Path, project_root: Path) -> Iterator[DirenvProjec
         shutil.copytree(test_root / "testenv", dir)
         shutil.copyfile(project_root / "flake.nix", dir / "flake.nix")
         shutil.copyfile(project_root / "flake.lock", dir / "flake.lock")
+        shutil.copyfile(project_root / "treefmt.nix", dir / "treefmt.nix")
         nix_direnv = project_root / "direnvrc"
 
         c = DirenvProject(Path(dir), nix_direnv)

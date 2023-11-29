@@ -2,29 +2,30 @@
 
 ![Test](https://github.com/nix-community/nix-direnv/workflows/Test/badge.svg)
 
-A faster, persistent implementation of `direnv`'s `use_nix` and `use_flake`,
-to replace the built-in one.
+A faster, persistent implementation of `direnv`'s `use_nix` and `use_flake`, to
+replace the built-in one.
 
 Prominent features:
 
-- significantly faster after the first run by caching the `nix-shell` environment
+- significantly faster after the first run by caching the `nix-shell`
+  environment
 - prevents garbage collection of build dependencies by symlinking the resulting
-  shell derivation in the user's `gcroots` (Life is too short to lose
-  your project's build cache if you are on a flight with no internet connection)
+  shell derivation in the user's `gcroots` (Life is too short to lose your
+  project's build cache if you are on a flight with no internet connection)
 
 ## Why not use `lorri` instead?
 
-Compared to [lorri](https://github.com/nix-community/lorri),
-nix-direnv is simpler (and requires no external daemon) and supports flakes.
-Additionally, lorri can sometimes re-evaluate the entirety of nixpkgs on every change
-(leading to perpetual high CPU load).
+Compared to [lorri](https://github.com/nix-community/lorri), nix-direnv is
+simpler (and requires no external daemon) and supports flakes. Additionally,
+lorri can sometimes re-evaluate the entirety of nixpkgs on every change (leading
+to perpetual high CPU load).
 
 ## Installation
 
-> **Heads up**: nix-direnv requires a modern Bash and GNU Grep.
-> MacOS ships with outdated or non-GNU versions of these tools,
-> As a work-around we suggest that macOS users install `direnv`/`grep` via Nix or Homebrew.
-> Discussion of these problems can be found
+> **Heads up**: nix-direnv requires a modern Bash and GNU Grep. MacOS ships with
+> outdated or non-GNU versions of these tools, As a work-around we suggest that
+> macOS users install `direnv`/`grep` via Nix or Homebrew. Discussion of these
+> problems can be found
 > [here](https://github.com/nix-community/nix-direnv/issues/3).
 
 There are different ways to install nix-direnv, pick your favourite:
@@ -34,10 +35,11 @@ There are different ways to install nix-direnv, pick your favourite:
 
 ### Via home-manager
 
-Note that while the home-manager integration is recommended,
-some use cases require the use of features only present in some versions of nix-direnv.
-It is much harder to control the version of nix-direnv installedwith this method.
-If you require such specific control, please use another method of installing nix-direnv.
+Note that while the home-manager integration is recommended, some use cases
+require the use of features only present in some versions of nix-direnv. It is
+much harder to control the version of nix-direnv installedwith this method. If
+you require such specific control, please use another method of installing
+nix-direnv.
 
 In `$HOME/.config/nixpkgs/home.nix` add
 
@@ -57,15 +59,16 @@ In `$HOME/.config/nixpkgs/home.nix` add
 }
 ```
 
-Check the current [Home Manager Options](https://mipmip.github.io/home-manager-option-search/?query=direnv)
-for integration with shells other than Bash. Be sure to also allow `home-manager` to
-manage your shell with `programs.<your_shell>.enable = true`.
+Check the current
+[Home Manager Options](https://mipmip.github.io/home-manager-option-search/?query=direnv)
+for integration with shells other than Bash. Be sure to also allow
+`home-manager` to manage your shell with `programs.<your_shell>.enable = true`.
 
 </details>
 <details>
   <summary>Direnv's source_url</summary>
 
-### Direnv source\_url
+### Direnv source_url
 
 Put the following lines in your `.envrc`:
 
@@ -82,9 +85,9 @@ fi
 
 ### Via system configuration on NixOS
 
-For NixOS 23.05+ all that's required is 
+For NixOS 23.05+ all that's required is
 
-```Nix 
+```Nix
 {
   programs.direnv.enable = true;
 }
@@ -106,6 +109,7 @@ other available options are:
     };
   }
 ```
+
 </details>
 
 <details>
@@ -126,8 +130,8 @@ source $HOME/.nix-profile/share/nix-direnv/direnvrc
 ```
 
 </details>
-  
-  <details>
+
+<details>
   <summary>With `nix profile`</summary>
 
 ### With `nix profile`
@@ -151,9 +155,8 @@ source $HOME/.nix-profile/share/nix-direnv/direnvrc
 
 ### From source
 
-Clone the repository to some directory
-and then source the direnvrc from this repository in your own 
-`~/.config/direnv/direnvrc`:
+Clone the repository to some directory and then source the direnvrc from this
+repository in your own `~/.config/direnv/direnvrc`:
 
 ```bash
 # put this in ~/.config/direnv/direnvrc
@@ -166,7 +169,7 @@ source $HOME/nix-direnv/direnvrc
 
 Either add `shell.nix` or a `default.nix` to the project directory:
 
-``` nix
+```nix
 # save this as shell.nix
 { pkgs ? import <nixpkgs> {}}:
 
@@ -182,13 +185,13 @@ $ echo "use nix" >> .envrc
 $ direnv allow
 ```
 
-If you haven't used direnv before,
-make sure to [hook it into your shell](https://direnv.net/docs/hook.html) first.
+If you haven't used direnv before, make sure to
+[hook it into your shell](https://direnv.net/docs/hook.html) first.
 
 ### Using a non-standard file name
 
-You may use a different file name than `shell.nix` or `default.nix`
-by passing the file name in `.envrc`, e.g.:
+You may use a different file name than `shell.nix` or `default.nix` by passing
+the file name in `.envrc`, e.g.:
 
 ```console
 $ echo "use nix foo.nix" >> .envrc
@@ -196,35 +199,33 @@ $ echo "use nix foo.nix" >> .envrc
 
 ## Flakes support
 
-nix-direnv also comes with an alternative `use_flake` implementation.
-The code is tested and does work but the upstream flake api is not finalized,
-so we we cannot guarantee stability after a nix upgrade.
+nix-direnv also comes with an alternative `use_flake` implementation. The code
+is tested and does work but the upstream flake api is not finalized, so we we
+cannot guarantee stability after a nix upgrade.
 
-Like `use_nix`,
-our `use_flake` will prevent garbage collection of downloaded packages,
-including flake inputs.
+Like `use_nix`, our `use_flake` will prevent garbage collection of downloaded
+packages, including flake inputs.
 
 ### Creating a new flake-native project
 
-This repository ships with a [flake template](https://github.com/nix-community/nix-direnv/tree/master/templates/flake).
+This repository ships with a
+[flake template](https://github.com/nix-community/nix-direnv/tree/master/templates/flake).
 which provides a basic flake with devShell integration and a basic `.envrc`.
 
 To make use of this template, you may issue the following command:
 
 ```console
 $ nix flake new -t github:nix-community/nix-direnv <desired output path>
-
 ```
 
 ### Integrating with a existing flake
 
 ```console
 $ echo "use flake" >> .envrc && direnv allow
-
 ```
 
-The `use flake` line also takes an additional arbitrary flake parameter,
-so you can point at external flakes as follows:
+The `use flake` line also takes an additional arbitrary flake parameter, so you
+can point at external flakes as follows:
 
 ```bash
 use flake ~/myflakes#project
@@ -234,14 +235,14 @@ use flake ~/myflakes#project
 
 #### use flake
 
-Under the covers, `use_flake` calls `nix print-dev-env`.
-The first argument to the `use_flake` function is the flake expression to use,
-and all other arguments are proxied along to the call to `print-dev-env`.
-You may make use of this fact for some more arcane invocations.
+Under the covers, `use_flake` calls `nix print-dev-env`. The first argument to
+the `use_flake` function is the flake expression to use, and all other arguments
+are proxied along to the call to `print-dev-env`. You may make use of this fact
+for some more arcane invocations.
 
-For instance, if you have a flake that needs to be called impurely under some conditions,
-you may wish to pass `--impure` to the `print-dev-env` invocation
-so that the environment of the calling shell is passed in.
+For instance, if you have a flake that needs to be called impurely under some
+conditions, you may wish to pass `--impure` to the `print-dev-env` invocation so
+that the environment of the calling shell is passed in.
 
 You can do that as follows:
 
@@ -252,13 +253,13 @@ $ direnv allow
 
 #### use nix
 
-Like `use flake`, `use nix` now uses `nix print-dev-env`.
-Due to historical reasons, the argument parsing emulates `nix shell`.
+Like `use flake`, `use nix` now uses `nix print-dev-env`. Due to historical
+reasons, the argument parsing emulates `nix shell`.
 
 This leads to some limitations in what we can reasonably parse.
 
-Currently, all single-word arguments and some well-known double arguments
-will be interpeted or passed along.
+Currently, all single-word arguments and some well-known double arguments will
+be interpeted or passed along.
 
 #### Manual reload of the nix environment
 
@@ -267,7 +268,8 @@ nix-direnv in the "manual reload" mode. nix-direnv will then tell you when the
 nix environment is no longer up to date. You can then decide yourself when you
 want to reload the nix environment.
 
-To activate manual mode, use `nix_direnv_manual_reload` in your `.envrc` like this:
+To activate manual mode, use `nix_direnv_manual_reload` in your `.envrc` like
+this:
 
 ```shell
 nix_direnv_manual_reload
@@ -283,36 +285,38 @@ $ nix-direnv-reload
 ##### Known arguments
 
 - `-p`: Starts a list of packages to install; consumes all remaining arguments
-- `--include` / `-I`: Add the following path to the list of lookup locations for `<...>` file names
+- `--include` / `-I`: Add the following path to the list of lookup locations for
+  `<...>` file names
 - `--attr` / `-A`: Specify the output attribute to utilize
 
-`--command`, `--run`, `--exclude`, `--pure`, `-i`, and `--keep` are explicitly ignored.
+`--command`, `--run`, `--exclude`, `--pure`, `-i`, and `--keep` are explicitly
+ignored.
 
-All single word arguments (`-j4`, `--impure` etc)
-are passed to the underlying nix invocation.
+All single word arguments (`-j4`, `--impure` etc) are passed to the underlying
+nix invocation.
 
 #### Tracked files
 
-`nix-direnv` makes a performance tradeoff
-and only considers changes in a limited number of files
-when deciding to update its cache.
+`nix-direnv` makes a performance tradeoff and only considers changes in a
+limited number of files when deciding to update its cache.
 
 - for `use nix` this is:
-    * `~/.direnvrc`
-    * `~/.config/direnv/direnvrc`
-    * `.envrc`,
-    * A single nix file. In order of preference:
-        + The file argument to `use nix`
-        + `shell.nix` if it exists
-        + `default.nix` if it exists
+
+  - `~/.direnvrc`
+  - `~/.config/direnv/direnvrc`
+  - `.envrc`,
+  - A single nix file. In order of preference:
+    - The file argument to `use nix`
+    - `shell.nix` if it exists
+    - `default.nix` if it exists
 
 - for `use flake` this is:
-    * `~/.direnvrc`
-    * `~/.config/direnv/direnvrc`
-    * `.envrc`
-    * `flake.nix`
-    * `flake.lock`
-    * `devshell.toml` if it exists
+  - `~/.direnvrc`
+  - `~/.config/direnv/direnvrc`
+  - `.envrc`
+  - `flake.nix`
+  - `flake.lock`
+  - `devshell.toml` if it exists
 
 To add more files to be checked use `watch_file` like this
 
@@ -321,16 +325,18 @@ watch_file your-file.nix
 use nix # or use flake
 ```
 
-Or - if you don't mind the overhead (runtime and conceptual) of watching all nix-files:
+Or - if you don't mind the overhead (runtime and conceptual) of watching all
+nix-files:
 
 ```shell
 watch_file $(find . -name "*.nix" -printf '"%p" ')
 ```
 
-Note that this will re-execute direnv for any nix change,
-regardless of whether that change is meaningful for the devShell in use.
+Note that this will re-execute direnv for any nix change, regardless of whether
+that change is meaningful for the devShell in use.
 
-`watch_file` must be invoked before either `use flake` or `use nix` to take effect.
+`watch_file` must be invoked before either `use flake` or `use nix` to take
+effect.
 
 ## General direnv tips
 
