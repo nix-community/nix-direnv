@@ -263,10 +263,11 @@ use_flake() {
   flake_dir=${flake_dir#"path:"}
 
   if [[ "$flake_expr" = -* ]]; then
+    local message="the first argument must be a flake expression"
     if [[ -n "$2" ]]; then
-      log_status "the first argument must be a flake expression"
+      _nix_direnv_fatal "$message"
     else
-      log_status "the first argument must be a flake expression. did you mean 'use flake . $1'?"
+      _nix_direnv_fatal "$message. did you mean 'use flake . $1'?"
     fi
   fi
 
