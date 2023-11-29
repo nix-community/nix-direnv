@@ -299,37 +299,41 @@ use_flake() {
       _nix_direnv_warn_manual_reload "$profile_rc"
 
     else
-      _nix_clean_old_gcroots "$layout_dir"
-
-      # We need to update our cache
-      local tmp_profile="${layout_dir}/flake-profile.$$"
       local tmp_profile_rc
-      tmp_profile_rc=$(_nix print-dev-env \
-        --profile "$tmp_profile" "$@")
+      local tmp_profile="${layout_dir}/flake-profile.$$"
+      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
+        _nix_clean_old_gcroots "$layout_dir"
 
-      echo "$tmp_profile_rc" > "$profile_rc"
-      _nix_add_gcroot "$tmp_profile" "$profile"
-      rm -f "$tmp_profile" "$tmp_profile"*
+        # We need to update our cache
 
-      # also add garbage collection root for source
-      local flake_input_paths
-      mkdir -p "$flake_inputs"
-      flake_input_paths=$(_nix flake archive \
-        --json --no-write-lock-file \
-        "$flake_dir")
+        echo "$tmp_profile_rc" > "$profile_rc"
+        _nix_add_gcroot "$tmp_profile" "$profile"
+        rm -f "$tmp_profile" "$tmp_profile"*
 
-      while [[ "$flake_input_paths" =~ /nix/store/[^\"]+ ]]; do
-        local store_path="${BASH_REMATCH[0]}"
-        _nix_add_gcroot "${store_path}" "${flake_inputs}/${store_path##*/}"
-        flake_input_paths="${flake_input_paths/${store_path}/}"
-      done
+        # also add garbage collection root for source
+        local flake_input_paths
+        mkdir -p "$flake_inputs"
+        flake_input_paths=$(_nix flake archive \
+          --json --no-write-lock-file \
+          "$flake_dir")
 
-      _nix_direnv_info "renewed cache"
+        while [[ "$flake_input_paths" =~ /nix/store/[^\"]+ ]]; do
+          local store_path="${BASH_REMATCH[0]}"
+          _nix_add_gcroot "${store_path}" "${flake_inputs}/${store_path##*/}"
+          flake_input_paths="${flake_input_paths/${store_path}/}"
+        done
+
+        _nix_direnv_info "renewed cache"
+      fi
     fi
   else
-    # Our cache is valid, use that"
-    _nix_direnv_info "using cached dev shell"
-
+    if [[ -e "${profile_rc}" ]]; then
+      # Our cache is valid, use that
+      _nix_direnv_info "using cached dev shell"
+    else
+      # We don't have a profile_rc to use!
+      _nix_direnv_fatal "use_flake failed - Is your flake's devShell working?"
+    fi
   fi
 
   _nix_import_env "$profile_rc"
@@ -441,12 +445,9 @@ use_nix() {
   then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z "${_nix_direnv_force_reload-}" ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
-     else
-      _nix_clean_old_gcroots "$layout_dir"
-
+    else
       local tmp_profile="${layout_dir}/flake-profile.$$"
       local tmp_profile_rc
-
       if [[ -n "$packages" ]]; then
         extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
       else
@@ -458,20 +459,27 @@ use_nix() {
         fi
       fi
 
-      tmp_profile_rc=$(_nix \
+
+      if tmp_profile_rc=$(_nix \
                        print-dev-env \
                        --profile "$tmp_profile" \
                        --impure \
-                       "${extra_args[@]}")
+                       "${extra_args[@]}"); then
+        _nix_clean_old_gcroots "$layout_dir"
 
-      echo "$tmp_profile_rc" > "$profile_rc"
-      _nix_add_gcroot "$tmp_profile" "$profile"
-      rm -f "$tmp_profile" "$tmp_profile"*
-      _nix_direnv_info "renewed cache"
 
+        echo "$tmp_profile_rc" > "$profile_rc"
+        _nix_add_gcroot "$tmp_profile" "$profile"
+        rm -f "$tmp_profile" "$tmp_profile"*
+        _nix_direnv_info "renewed cache"
+      fi
     fi
   else
-    _nix_direnv_info "using cached dev shell"
+    if [[ -e "${profile_rc}" ]]; then
+      _nix_direnv_info "using cached dev shell"
+    else
+      _nix_direnv_fatal "use_nix failed - Is your nix shell working?"
+    fi
   fi
 
   _nix_import_env "$profile_rc"
