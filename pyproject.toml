@@ -1,8 +1,27 @@
 [tool.ruff]
+target-version = "py311"
 line-length = 88
-
-select = ["E", "F", "I"]
-ignore = [ "E501" ]
+select = ["ALL"]
+ignore = [
+  # pydocstyle
+  "D",
+  # Missing type annotation for `self` in method
+  "ANN101",
+  # Trailing comma missing
+  "COM812",
+  # Unnecessary `dict` call (rewrite as a literal)
+  "C408",
+  # Boolean-typed positional argument in function definition
+  "FBT001",
+  # Logging statement uses f-string
+  "G004",
+  # disabled on ruff's recommendation as causes problems with the formatter
+  "ISC001",
+  # Use of `assert` detected
+  "S101",
+  # `subprocess` call: check for execution of untrusted input
+  "S603",
+]
 
 [tool.mypy]
 python_version = "3.10"
