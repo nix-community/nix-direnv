@@ -204,7 +204,7 @@ nix_direnv_watch_file() {
 }
 
 _nix_direnv_watches() {
-  local -n _watches=$1
+  local _watches=$1
   if [[ -z "${DIRENV_WATCHES-}" ]]; then
     return
   fi
