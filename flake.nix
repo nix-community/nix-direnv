@@ -45,7 +45,7 @@
             packages // devShells;
         };
         flake = {
-          overlay = final: _prev: {
+          overlays.default = final: _prev: {
             nix-direnv = final.callPackage ./default.nix { };
           };
           templates.default = {
