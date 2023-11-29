@@ -300,12 +300,11 @@ use_flake() {
 
     else
       local tmp_profile_rc
-      local tmp_profile="${layout_dir}/flake-profile.$$"
+      local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
       if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
         _nix_clean_old_gcroots "$layout_dir"
 
         # We need to update our cache
-
         echo "$tmp_profile_rc" > "$profile_rc"
         _nix_add_gcroot "$tmp_profile" "$profile"
         rm -f "$tmp_profile" "$tmp_profile"*
@@ -446,7 +445,7 @@ use_nix() {
     if [[ $_nix_direnv_manual_reload -eq 1 && -z "${_nix_direnv_force_reload-}" ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
     else
-      local tmp_profile="${layout_dir}/flake-profile.$$"
+      local tmp_profile="${layout_dir}/nix-tmp-profile.$$"
       local tmp_profile_rc
       if [[ -n "$packages" ]]; then
         extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
