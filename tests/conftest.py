@@ -1,4 +1,4 @@
 pytest_plugins = [
-    "direnv_project",
-    "root",
+    "tests.direnv_project",
+    "tests.root",
 ]

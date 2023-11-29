@@ -5,8 +5,9 @@ import unittest
 from typing import Optional
 
 import pytest
-from direnv_project import DirenvProject
-from procs import run
+
+from .direnv_project import DirenvProject
+from .procs import run
 
 
 def direnv_exec(

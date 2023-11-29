@@ -3,9 +3,9 @@ import sys
 import unittest
 
 import pytest
-from direnv_project import DirenvProject
-from procs import run
 
+from .direnv_project import DirenvProject
+from .procs import run
 
 def common_test(direnv_project: DirenvProject) -> None:
     run(["nix-collect-garbage"])
