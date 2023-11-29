@@ -13,14 +13,14 @@ from .procs import run
 def direnv_exec(
     direnv_project: DirenvProject, cmd: str, env: Optional[dict[str, str]] = None
 ) -> None:
-    args = ["direnv", "exec", str(direnv_project.dir), "sh", "-c", cmd]
+    args = ["direnv", "exec", str(direnv_project.directory), "sh", "-c", cmd]
     print("$ " + " ".join(args))
     out = run(
         args,
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
         check=False,
-        cwd=direnv_project.dir,
+        cwd=direnv_project.directory,
         env=env,
     )
     sys.stdout.write(out.stdout)
@@ -58,7 +58,7 @@ def test_no_files(direnv_project: DirenvProject, strict_env: bool) -> None:
         stderr=subprocess.PIPE,
         stdout=subprocess.PIPE,
         check=False,
-        cwd=direnv_project.dir,
+        cwd=direnv_project.directory,
     )
     assert out.returncode == 0
     assert 'Loaded watch: "."' not in out.stdout
