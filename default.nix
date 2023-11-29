@@ -6,7 +6,7 @@ stdenv.mkDerivation {
   src = ./.;
 
   postPatch = ''
-    sed -i "2iNIX_BIN_PREFIX=${nix}/bin/" direnvrc
+    sed -i "2iNIX_BIN_PREFIX=${nix}/bin" direnvrc
   '';
 
   installPhase = ''
