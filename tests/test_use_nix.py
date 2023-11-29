@@ -2,7 +2,6 @@ import os
 import subprocess
 import sys
 import unittest
-from typing import Optional
 
 import pytest
 
@@ -11,7 +10,7 @@ from .procs import run
 
 
 def direnv_exec(
-    direnv_project: DirenvProject, cmd: str, env: Optional[dict[str, str]] = None
+    direnv_project: DirenvProject, cmd: str, env: dict[str, str] | None = None
 ) -> None:
     args = ["direnv", "exec", str(direnv_project.directory), "sh", "-c", cmd]
     print("$ " + " ".join(args))
