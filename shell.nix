@@ -1,8 +1,8 @@
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs ? import <nixpkgs> { }, packages ? [ ] }:
 
 with pkgs;
 mkShell {
-  nativeBuildInputs = [
+  packages = packages ++ [
     python3.pkgs.pytest
     python3.pkgs.mypy
     ruff
