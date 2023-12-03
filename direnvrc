@@ -1,6 +1,11 @@
 # shellcheck shell=bash
 
-REQUIRED_DIRENV_VERSION="2.21.3"
+NIX_DIRENV_VERSION=2.5.1
+
+# min required versions
+BASH_MIN_VERSION=5.2
+DIRENV_MIN_VERSION=2.21.3
+NIX_MIN_VERSION=2.4
 
 _NIX_DIRENV_LOG_PREFIX="nix-direnv: "
 
@@ -31,28 +36,38 @@ _nix() {
   nix --extra-experimental-features "nix-command flakes" "$@"
 }
 
+_require_version() {
+  local cmd=$1 version=$2 required=$3
+  if ! printf "%s\n" "$required" "$version" | sort --check=quiet --version-sort; then
+    _nix_direnv_fatal "minimum required $cmd version is $required (installed: $version)"
+  fi
+}
+
+_require_cmd_version() {
+  local cmd=$1 required=$2 version
+  if ! has "$cmd"; then
+    _nix_direnv_fatal "command not found: $cmd"
+  fi
+  version=$($cmd --version)
+  [[ $version =~ ([0-9]+\.[0-9]+\.[0-9]+) ]]
+  _require_version "$cmd" "${BASH_REMATCH[1]}" "$required"
+}
+
 _nix_direnv_preflight () {
   if [[ -z "$direnv" ]]; then
     _nix_direnv_fatal "\$direnv environment variable was not defined. Was this script run inside direnv?"
-  fi
-
-  if ! has direnv_version || ! direnv_version "$REQUIRED_DIRENV_VERSION" 2>/dev/null; then
-    _nix_direnv_fatal "base direnv version is older than the required v$REQUIRED_DIRENV_VERSION."
   fi
 
   if [[ -n ${NIX_BIN_PREFIX:-} ]]; then
     PATH_add "$NIX_BIN_PREFIX"
   fi
 
-  if ! has nix; then
-    _nix_direnv_fatal "command not found: nix"
-  fi
-
-  nixversion=$(nix --version)
-  [[ "$nixversion" =~ ([0-9]+)[^0-9]*([0-9]+)[^0-9]*([0-9]+)? ]]
-  if [[ ${BASH_REMATCH[1]} -lt 2 || ${BASH_REMATCH[1]} -eq 2 && ${BASH_REMATCH[2]} -lt 4 ]]; then
-    _nix_direnv_fatal "nix version ${BASH_REMATCH[0]} is older than the required 2.4."
-  fi
+  # check command min versions, bash check uses $BASH_VERSION with _require_version
+  # instead of _require_cmd_version because _require_cmd_version uses =~ operator which
+  # would be a syntax error on bash < 3
+  _require_version bash "$BASH_VERSION" "$BASH_MIN_VERSION"
+  _require_cmd_version direnv "$DIRENV_MIN_VERSION"
+  _require_cmd_version nix "$NIX_MIN_VERSION"
 
   local layout_dir
   layout_dir=$(direnv_layout_dir)
@@ -99,31 +114,7 @@ EOF
 #
 # Checks that the nix-direnv version is at least as old as <version_at_least>.
 nix_direnv_version() {
-  declare major='2' minor='5' patch='1' # UPDATE(nix-direnv version)
-
-  [[ $1 =~ ^([^+-.]*)(\.?)([^+-.]*)(\.?)([^+-]*)(-?)([^+]*)(\+?)(.*)$ ]]
-  declare -a ver; ver=("${BASH_REMATCH[@]:1}")
-
-  req_major=${ver[0]}
-  req_minor=${ver[2]:=0}
-  req_patch=${ver[4]:=0}
-
-  if [[ ( ${ver[0]} != +([0-9]) ) \
-    || ( ${ver[1]} == '.' && ${ver[2]} != +([0-9]) ) \
-    || ( ${ver[3]} == '.' && ${ver[4]} != +([0-9]) ) \
-    || ( ${ver[5]} == '-' && ${ver[6]} != +([0-9A-Za-z-])*(.+([0-9A-Za-z-])) ) \
-    || ( ${ver[7]} == '+' && ${ver[8]} != +([0-9A-Za-z-])*(.+([0-9A-Za-z-])) ) \
-    || ( ( -n ${ver[5]} || -n ${ver[7]} ) && ( -z ${ver[2]} || -z ${ver[4]} ) ) \
-  ]]; then
-    _nix_direnv_fatal "error v$1 is not a valid semver version"
-  fi
-
-  if [[ ($req_major -gt $major) \
-     || ($req_major -eq $major && $req_minor -gt $minor) \
-     || ($req_major -eq $major && $req_minor -eq $minor && $req_patch -gt $patch)
-  ]]; then
-    _nix_direnv_fatal "error current version v$major.$minor.$patch is older than the desired version v$1"
-  fi
+  _require_version nix-direnv $NIX_DIRENV_VERSION "$1"
 }
 
 _nix_export_or_unset() {
