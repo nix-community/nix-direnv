@@ -4,7 +4,7 @@ NIX_DIRENV_VERSION=2.5.1
 
 # min required versions
 BASH_MIN_VERSION=5.2
-DIRENV_MIN_VERSION=2.21.3
+DIRENV_MIN_VERSION=2.33.0
 NIX_MIN_VERSION=2.4
 
 _NIX_DIRENV_LOG_PREFIX="nix-direnv: "
@@ -210,19 +210,13 @@ _nix_direnv_watches() {
   if [[ -z "${DIRENV_WATCHES-}" ]]; then
     return
   fi
-  while IFS= read -r line; do
-    local regex='"[Pp]ath": "(.+)"$'
-    if [[ "$line" =~ $regex ]]; then
-      local path="${BASH_REMATCH[1]}"
-      if [[ "$path" == "${XDG_DATA_HOME:-${HOME:-/var/empty}/.local/share}/direnv/allow/"* ]]; then
-        continue
-      fi
-      # expand new lines and other json escapes
-      # shellcheck disable=2059
-      path=$(printf "$path")
-      _watches+=("$path")
+  local allow_dir="${XDG_DATA_HOME:-${HOME:-/var/empty}/.local/share}/direnv/allow/"
+  while IFS= read -r -d '' line; do
+    if [[ "$line" == "$allow_dir"* ]]; then
+      continue
     fi
-  done < <(direnv show_dump "${DIRENV_WATCHES}")
+    _watches+=("$line")
+  done < <(direnv watch-print --null)
 }
 
 _nix_direnv_manual_reload=0
