@@ -39,9 +39,6 @@ def direnv_project(test_root: Path, project_root: Path) -> Iterator[DirenvProjec
     with TemporaryDirectory() as _dir:
         directory = Path(_dir) / "proj"
         shutil.copytree(test_root / "testenv", directory)
-        shutil.copyfile(project_root / "flake.nix", directory / "flake.nix")
-        shutil.copyfile(project_root / "flake.lock", directory / "flake.lock")
-        shutil.copyfile(project_root / "treefmt.nix", directory / "treefmt.nix")
         nix_direnv = project_root / "direnvrc"
 
         c = DirenvProject(Path(directory), nix_direnv)
