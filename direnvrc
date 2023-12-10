@@ -1,6 +1,6 @@
 # shellcheck shell=bash
 
-NIX_DIRENV_VERSION=2.5.1
+NIX_DIRENV_VERSION=3.0.0
 
 # min required versions
 BASH_MIN_VERSION=5.2
