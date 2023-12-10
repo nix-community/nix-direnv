@@ -71,7 +71,7 @@ Put the following lines in your `.envrc`:
 
 ```bash
 if ! has nix_direnv_version || ! nix_direnv_version 3.0.0; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.0.0/direnvrc" "sha256-puRzug17Ed4JFS2wbpqa3k764QV6xPP6O3A/ez/JpOM="
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.0.0/direnvrc" "sha256-21TMnI2xWX7HkSTjFFri2UaohXVj854mgvWapWrxRXg="
 fi
 ```
 
