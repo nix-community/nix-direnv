@@ -1,10 +1,16 @@
 {
   description = "A faster, persistent implementation of `direnv`'s `use_nix`, to replace the built-in one.";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
-  inputs.flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
-  inputs.treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
   outputs = inputs @ { flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; }
