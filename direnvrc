@@ -59,10 +59,6 @@ _nix_direnv_preflight() {
     _nix_direnv_fatal '$direnv environment variable was not defined. Was this script run inside direnv?'
   fi
 
-  if [[ -n ${NIX_BIN_PREFIX:-} ]]; then
-    PATH_add "$NIX_BIN_PREFIX"
-  fi
-
   # check command min versions, bash check uses $BASH_VERSION with _require_version
   # instead of _require_cmd_version because _require_cmd_version uses =~ operator which
   # would be a syntax error on bash < 3
