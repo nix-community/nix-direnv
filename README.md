@@ -34,7 +34,7 @@ to perpetual high CPU load).
 
 Note that while the home-manager integration is recommended, some use cases
 require the use of features only present in some versions of nix-direnv. It is
-much harder to control the version of nix-direnv installedwith this method. If
+much harder to control the version of nix-direnv installed with this method. If
 you require such specific control, please use another method of installing
 nix-direnv.
 
@@ -197,7 +197,7 @@ $ echo "use nix foo.nix" >> .envrc
 ## Flakes support
 
 nix-direnv also comes with an alternative `use_flake` implementation. The code
-is tested and does work but the upstream flake api is not finalized, so we we
+is tested and does work but the upstream flake api is not finalized, so we
 cannot guarantee stability after a nix upgrade.
 
 Like `use_nix`, our `use_flake` will prevent garbage collection of downloaded
@@ -256,7 +256,7 @@ reasons, the argument parsing emulates `nix shell`.
 This leads to some limitations in what we can reasonably parse.
 
 Currently, all single-word arguments and some well-known double arguments will
-be interpeted or passed along.
+be interpreted or passed along.
 
 #### Manual reload of the nix environment
 
@@ -294,7 +294,7 @@ nix invocation.
 
 #### Tracked files
 
-`nix-direnv` makes a performance tradeoff and only considers changes in a
+`nix-direnv` makes a performance trade-off and only considers changes in a
 limited number of files when deciding to update its cache.
 
 - for `use nix` this is:
