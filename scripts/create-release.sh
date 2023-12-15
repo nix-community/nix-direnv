@@ -16,6 +16,7 @@ if [[ "$(git symbolic-ref --short HEAD)" != "master" ]]; then
   exit 1
 fi
 
+sed -Ei "s!(version = ).*!\1\"$version\";!" default.nix
 sed -Ei "s!(NIX_DIRENV_VERSION=).*!\1$version!" direnvrc
 
 sed -i README.md templates/flake/.envrc \
