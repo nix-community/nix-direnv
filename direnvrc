@@ -53,9 +53,10 @@ _require_cmd_version() {
   _require_version "$cmd" "${BASH_REMATCH[1]}" "$required"
 }
 
-_nix_direnv_preflight () {
-  if [[ -z "$direnv" ]]; then
-    _nix_direnv_fatal "\$direnv environment variable was not defined. Was this script run inside direnv?"
+_nix_direnv_preflight() {
+  if [[ -z $direnv ]]; then
+    # shellcheck disable=2016
+    _nix_direnv_fatal '$direnv environment variable was not defined. Was this script run inside direnv?'
   fi
 
   if [[ -n ${NIX_BIN_PREFIX:-} ]]; then
@@ -81,7 +82,7 @@ _nix_direnv_preflight () {
   # Because direnv_layout_dir is user controlled,
   # we can't assume to be able to reverse it to get the source dir
   # So there's little to be done about this.
-  cat > "${layout_dir}/bin/nix-direnv-reload" <<-EOF
+  cat >"${layout_dir}/bin/nix-direnv-reload" <<-EOF
 #!/usr/bin/env bash
 set -e
 if [[ ! -d "$PWD" ]]; then
@@ -119,7 +120,7 @@ nix_direnv_version() {
 
 _nix_export_or_unset() {
   local key=$1 value=$2
-  if [[ "$value" == __UNSET__ ]]; then
+  if [[ $value == __UNSET__ ]]; then
     unset "$key"
   else
     export "$key=$value"
@@ -137,17 +138,17 @@ _nix_import_env() {
   local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
 
   # On the first run in manual mode, the profile_rc does not exist.
-  if [[ ! -e "$profile_rc" ]]; then
+  if [[ ! -e $profile_rc ]]; then
     return
   fi
 
-  eval "$(< "$profile_rc")"
+  eval "$(<"$profile_rc")"
   # `nix print-dev-env` will create a temporary directory and use it as TMPDIR
   # We cannot rely on this directory being available at all times,
   # as it may be garbage collected.
   # Instead - just remove it immediately.
   # Use recursive & force as it may not be empty.
-  if [[ -n "${NIX_BUILD_TOP+x}" && "$NIX_BUILD_TOP" == */nix-shell.* && -d "$NIX_BUILD_TOP" ]]; then
+  if [[ -n ${NIX_BUILD_TOP+x} && $NIX_BUILD_TOP == */nix-shell.* && -d $NIX_BUILD_TOP ]]; then
     rm -rf "$NIX_BUILD_TOP"
   fi
 
@@ -161,7 +162,7 @@ _nix_import_env() {
   local IFS=:
   for dir in $new_xdg_data_dirs${old_xdg_data_dirs:+:}$old_xdg_data_dirs; do
     dir="${dir%/}" # remove trailing slashes
-    if [[ :$XDG_DATA_DIRS: = *:$dir:* ]]; then
+    if [[ :$XDG_DATA_DIRS: == *:$dir:* ]]; then
       continue # already present, skip
     fi
     XDG_DATA_DIRS="$XDG_DATA_DIRS${XDG_DATA_DIRS:+:}$dir"
@@ -186,14 +187,14 @@ _nix_argsum_suffix() {
   if [ -n "$1" ]; then
 
     if has sha1sum; then
-      out=$(sha1sum <<< "$1")
+      out=$(sha1sum <<<"$1")
     elif has shasum; then
-      out=$(shasum <<< "$1")
+      out=$(shasum <<<"$1")
     else
       # degrade gracefully both tools are not present
       return
     fi
-    read -r checksum _ <<< "$out"
+    read -r checksum _ <<<"$out"
     echo "-$checksum"
   fi
 }
@@ -206,14 +207,14 @@ nix_direnv_watch_file() {
 
 _nix_direnv_watches() {
   local -n _watches=$1
-  if [[ -z "${DIRENV_WATCHES-}" ]]; then
+  if [[ -z ${DIRENV_WATCHES-} ]]; then
     return
   fi
   while IFS= read -r line; do
     local regex='"[Pp]ath": "(.+)"$'
-    if [[ "$line" =~ $regex ]]; then
+    if [[ $line =~ $regex ]]; then
       local path="${BASH_REMATCH[1]}"
-      if [[ "$path" == "${XDG_DATA_HOME:-${HOME:-/var/empty}/.local/share}/direnv/allow/"* ]]; then
+      if [[ $path == "${XDG_DATA_HOME:-${HOME:-/var/empty}/.local/share}/direnv/allow/"* ]]; then
         continue
       fi
       # expand new lines and other json escapes
@@ -230,10 +231,10 @@ nix_direnv_manual_reload() {
 }
 
 _nix_direnv_warn_manual_reload() {
-  if [[ -e "$1" ]]; then
-    _nix_direnv_warning "cache is out of date. use \"nix-direnv-reload\" to reload"
+  if [[ -e $1 ]]; then
+    _nix_direnv_warning 'cache is out of date. use "nix-direnv-reload" to reload'
   else
-    _nix_direnv_warning "cache does not exist. use \"nix-direnv-reload\" to create it"
+    _nix_direnv_warning 'cache does not exist. use "nix-direnv-reload" to create it'
   fi
 }
 
@@ -244,9 +245,9 @@ use_flake() {
   flake_dir="${flake_expr%#*}"
   flake_dir=${flake_dir#"path:"}
 
-  if [[ "$flake_expr" = -* ]]; then
+  if [[ $flake_expr == -* ]]; then
     local message="the first argument must be a flake expression"
-    if [[ -n "$2" ]]; then
+    if [[ -n $2 ]]; then
       _nix_direnv_fatal "$message"
     else
       _nix_direnv_fatal "$message. did you mean 'use flake . $1'?"
@@ -256,7 +257,7 @@ use_flake() {
   local files_to_watch
   files_to_watch=("$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc")
 
-  if [[ -d "$flake_dir" ]]; then
+  if [[ -d $flake_dir ]]; then
     files_to_watch+=("$flake_dir/flake.nix" "$flake_dir/flake.lock" "$flake_dir/devshell.toml")
   fi
 
@@ -273,19 +274,17 @@ use_flake() {
   _nix_direnv_watches watches
   local file=
   for file in "${watches[@]}"; do
-    if [[ "$file" -nt "$profile_rc" ]]; then
+    if [[ $file -nt $profile_rc ]]; then
       need_update=1
       break
     fi
   done
 
-
-  if [[ ! -e "$profile"
-     || ! -e "$profile_rc"
-     || $need_update -eq 1
-     ]];
-  then
-    if [[ $_nix_direnv_manual_reload -eq 1 && -z "${_nix_direnv_force_reload-}" ]]; then
+  if [[ ! -e $profile ||
+    ! -e $profile_rc ||
+    $need_update -eq 1 ]] \
+    ; then
+    if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
 
     else
@@ -295,7 +294,7 @@ use_flake() {
         _nix_clean_old_gcroots "$layout_dir"
 
         # We need to update our cache
-        echo "$tmp_profile_rc" > "$profile_rc"
+        echo "$tmp_profile_rc" >"$profile_rc"
         _nix_add_gcroot "$tmp_profile" "$profile"
         rm -f "$tmp_profile" "$tmp_profile"*
 
@@ -306,7 +305,7 @@ use_flake() {
           --json --no-write-lock-file \
           "$flake_dir")
 
-        while [[ "$flake_input_paths" =~ /nix/store/[^\"]+ ]]; do
+        while [[ $flake_input_paths =~ /nix/store/[^\"]+ ]]; do
           local store_path="${BASH_REMATCH[0]}"
           _nix_add_gcroot "${store_path}" "${flake_inputs}/${store_path##*/}"
           flake_input_paths="${flake_input_paths/${store_path}/}"
@@ -316,7 +315,7 @@ use_flake() {
       fi
     fi
   else
-    if [[ -e "${profile_rc}" ]]; then
+    if [[ -e ${profile_rc} ]]; then
       # Our cache is valid, use that
       _nix_direnv_info "using cached dev shell"
     else
@@ -335,20 +334,23 @@ use_nix() {
   layout_dir=$(direnv_layout_dir)
   if path=$(_nix eval --impure --expr "<nixpkgs>" 2>/dev/null); then
     if [[ -f "${path}/.version-suffix" ]]; then
-      version=$(< "${path}/.version-suffix")
+      version=$(<"${path}/.version-suffix")
     elif [[ -f "${path}/.git/HEAD" ]]; then
       local head
-      read -r head < "${path}/.git/HEAD"
+      read -r head <"${path}/.git/HEAD"
       local regex="ref: (.*)"
-      if [[ "$head" =~  $regex ]]; then
-        read -r version < "${path}/.git/${BASH_REMATCH[1]}"
+      if [[ $head =~ $regex ]]; then
+        read -r version <"${path}/.git/${BASH_REMATCH[1]}"
       else
         version="$head"
       fi
-    elif [[ -f "${path}/.version" && "${path}" == "/nix/store/"* ]]; then
+    elif [[ -f "${path}/.version" && ${path} == "/nix/store/"* ]]; then
       # borrow some bits from the store path
       local version_prefix
-      read -r version_prefix < <(cat "${path}/.version" ; echo)
+      read -r version_prefix < <(
+        cat "${path}/.version"
+        echo
+      )
       version="${version_prefix}-${path:11:16}"
     fi
   fi
@@ -369,48 +371,48 @@ use_nix() {
     nixfile="./default.nix"
   fi
 
-  while [[ "$#" -gt 0 ]]; do
+  while [[ $# -gt 0 ]]; do
     i="$1"
     shift
 
     case $i in
-      -p|--packages)
-        in_packages=1
-        ;;
-      --command|--run|--exclude)
-        # These commands are unsupported
-        # ignore them
-        shift
-        ;;
-      --pure|-i|--keep)
-        # These commands are unsupported (but take no argument)
-        # ignore them
-        ;;
-      --include|-I)
-        extra_args+=("$i" "$1")
-        shift
-        ;;
-      --attr|-A)
-        attribute="$1"
-        shift
-        ;;
-      --option|-o|--arg|--argstr)
-        extra_args+=("$i" "$1" "$2")
-        shift
-        shift
-        ;;
-      -*)
-        # Other arguments are assumed to be of a single arg form
-        # (--foo=bar or -j4)
-        extra_args+=("$i")
-        ;;
-      *)
-        if [[ $in_packages -eq 1 ]]; then
-          packages+=" $i"
-        else
-          nixfile=$i
-        fi
-        ;;
+    -p | --packages)
+      in_packages=1
+      ;;
+    --command | --run | --exclude)
+      # These commands are unsupported
+      # ignore them
+      shift
+      ;;
+    --pure | -i | --keep)
+      # These commands are unsupported (but take no argument)
+      # ignore them
+      ;;
+    --include | -I)
+      extra_args+=("$i" "$1")
+      shift
+      ;;
+    --attr | -A)
+      attribute="$1"
+      shift
+      ;;
+    --option | -o | --arg | --argstr)
+      extra_args+=("$i" "$1" "$2")
+      shift
+      shift
+      ;;
+    -*)
+      # Other arguments are assumed to be of a single arg form
+      # (--foo=bar or -j4)
+      extra_args+=("$i")
+      ;;
+    *)
+      if [[ $in_packages -eq 1 ]]; then
+        packages+=" $i"
+      else
+        nixfile=$i
+      fi
+      ;;
     esac
   done
 
@@ -421,50 +423,47 @@ use_nix() {
   _nix_direnv_watches watches
   local file=
   for file in "${watches[@]}"; do
-    if [[ "$file" -nt "$profile_rc" ]]; then
+    if [[ $file -nt $profile_rc ]]; then
       need_update=1
       break
     fi
   done
 
-  if [[ ! -e "$profile"
-     || ! -e "$profile_rc"
-     || $need_update -eq 1
-     ]];
-  then
-    if [[ $_nix_direnv_manual_reload -eq 1 && -z "${_nix_direnv_force_reload-}" ]]; then
+  if [[ ! -e $profile ||
+    ! -e $profile_rc ||
+    $need_update -eq 1 ]] \
+    ; then
+    if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
     else
       local tmp_profile="${layout_dir}/nix-tmp-profile.$$"
       local tmp_profile_rc
-      if [[ -n "$packages" ]]; then
+      if [[ -n $packages ]]; then
         extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
       else
         # figure out what attribute we should build
-        if [[ -z "$attribute" ]]; then
+        if [[ -z $attribute ]]; then
           extra_args+=("--file" "$nixfile")
         else
           extra_args+=("--expr" "(import ${nixfile} {}).${attribute}")
         fi
       fi
 
-
       if tmp_profile_rc=$(_nix \
-                       print-dev-env \
-                       --profile "$tmp_profile" \
-                       --impure \
-                       "${extra_args[@]}"); then
+        print-dev-env \
+        --profile "$tmp_profile" \
+        --impure \
+        "${extra_args[@]}"); then
         _nix_clean_old_gcroots "$layout_dir"
 
-
-        echo "$tmp_profile_rc" > "$profile_rc"
+        echo "$tmp_profile_rc" >"$profile_rc"
         _nix_add_gcroot "$tmp_profile" "$profile"
         rm -f "$tmp_profile" "$tmp_profile"*
         _nix_direnv_info "renewed cache"
       fi
     fi
   else
-    if [[ -e "${profile_rc}" ]]; then
+    if [[ -e ${profile_rc} ]]; then
       _nix_direnv_info "using cached dev shell"
     else
       _nix_direnv_fatal "use_nix failed - Is your nix shell working?"
