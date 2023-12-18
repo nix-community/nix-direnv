@@ -63,7 +63,8 @@ _nix_direnv_preflight() {
   # instead of _require_cmd_version because _require_cmd_version uses =~ operator which
   # would be a syntax error on bash < 3
   _require_version bash "$BASH_VERSION" "$BASH_MIN_VERSION"
-  _require_cmd_version direnv "$DIRENV_MIN_VERSION"
+  # direnv stdlib defines $direnv
+  _require_cmd_version "$direnv" "$DIRENV_MIN_VERSION"
   _require_cmd_version nix "$NIX_MIN_VERSION"
 
   local layout_dir
