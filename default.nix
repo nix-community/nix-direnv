@@ -4,7 +4,7 @@
 # https://github.com/abathur/resholve/issues/107
 resholve.mkDerivation rec {
   pname = "nix-direnv";
-  version = "3.0.0";
+  version = "3.0.1";
 
   src = builtins.path {
     path = ./.;
