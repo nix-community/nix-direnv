@@ -39,7 +39,8 @@ _nix() {
 _require_version() {
   local cmd=$1 version=$2 required=$3
   if ! printf "%s\n" "$required" "$version" | sort --check=quiet --version-sort; then
-    _nix_direnv_fatal "minimum required $cmd version is $required (installed: $version)"
+    _nix_direnv_fatal \
+      "minimum required $(basename "$cmd") version is $required (installed: $version)"
   fi
 }
 
@@ -219,7 +220,7 @@ _nix_direnv_watches() {
       path=$(printf "$path")
       _watches+=("$path")
     fi
-  done < <(direnv show_dump "${DIRENV_WATCHES}")
+  done < <($direnv show_dump "${DIRENV_WATCHES}")
 }
 
 _nix_direnv_manual_reload=0

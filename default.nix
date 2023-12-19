@@ -24,7 +24,7 @@ resholve.mkDerivation rec {
     default = {
       scripts = [ "share/${pname}/direnvrc" ];
       interpreter = "none";
-      inputs = [ coreutils direnv nix ];
+      inputs = [ coreutils nix ];
       fake = {
         builtin = [
           "PATH_add"
@@ -40,7 +40,10 @@ resholve.mkDerivation rec {
           "shasum"
         ];
       };
-      keep."$cmd" = true;
+      keep = {
+        "$cmd" = true;
+        "$direnv" = true;
+      };
       execer = [
         "cannot:${direnv}/bin/direnv"
         "cannot:${nix}/bin/nix"
