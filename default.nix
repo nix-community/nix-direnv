@@ -11,9 +11,9 @@ resholve.mkDerivation rec {
     name = pname;
   };
 
-  # drop min version checks which are redundant when built with nix
+  # skip min version checks which are redundant when built with nix
   postPatch = ''
-    sed -i "/_require_version bash/,+2d" direnvrc
+    sed -i 1iNIX_DIRENV_SKIP_VERSION_CHECK=1 direnvrc
   '';
 
   installPhase = ''
