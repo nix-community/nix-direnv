@@ -39,7 +39,8 @@ _nix() {
 _require_version() {
   local cmd=$1 version=$2 required=$3
   if ! printf "%s\n" "$required" "$version" | sort --check=quiet --version-sort; then
-    _nix_direnv_fatal "minimum required $cmd version is $required (installed: $version)"
+    _nix_direnv_fatal \
+      "minimum required $(basename "$cmd") version is $required (installed: $version)"
   fi
 }
 
@@ -59,13 +60,16 @@ _nix_direnv_preflight() {
     _nix_direnv_fatal '$direnv environment variable was not defined. Was this script run inside direnv?'
   fi
 
-  # check command min versions, bash check uses $BASH_VERSION with _require_version
-  # instead of _require_cmd_version because _require_cmd_version uses =~ operator which
-  # would be a syntax error on bash < 3
-  _require_version bash "$BASH_VERSION" "$BASH_MIN_VERSION"
-  # direnv stdlib defines $direnv
-  _require_cmd_version "$direnv" "$DIRENV_MIN_VERSION"
-  _require_cmd_version nix "$NIX_MIN_VERSION"
+  # check command min versions
+  if [[ -z ${NIX_DIRENV_SKIP_VERSION_CHECK:-} ]]; then
+    # bash check uses $BASH_VERSION with _require_version instead of
+    # _require_cmd_version because _require_cmd_version uses =~ operator which would be
+    # a syntax error on bash < 3
+    _require_version bash "$BASH_VERSION" "$BASH_MIN_VERSION"
+    # direnv stdlib defines $direnv
+    _require_cmd_version "$direnv" "$DIRENV_MIN_VERSION"
+    _require_cmd_version nix "$NIX_MIN_VERSION"
+  fi
 
   local layout_dir
   layout_dir=$(direnv_layout_dir)
@@ -219,7 +223,7 @@ _nix_direnv_watches() {
       path=$(printf "$path")
       _watches+=("$path")
     fi
-  done < <(direnv show_dump "${DIRENV_WATCHES}")
+  done < <($direnv show_dump "${DIRENV_WATCHES}")
 }
 
 _nix_direnv_manual_reload=0
