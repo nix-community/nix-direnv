@@ -1,5 +1,9 @@
 {
   description = "A faster, persistent implementation of `direnv`'s `use_nix`, to replace the built-in one.";
+
+  nixConfig.extra-substituters = [ "https://cache.thalheim.io" ];
+  nixConfig.extra-trusted-public-keys = [ "cache.thalheim.io-1:R7msbosLEZKrxk/lKxf9BTjOOH7Ax3H0Qj0/6wiHOgc=" ];
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-parts = {
@@ -33,21 +37,32 @@
             test-runner-unstable = pkgs.callPackage ./test-runner.nix {
               nixVersion = "unstable";
             };
-          };
-          devShells.default = pkgs.callPackage ./shell.nix {
-            packages = [ config.treefmt.build.wrapper ];
-          };
-          apps.test-runner = {
-            type = "app";
-            program = "${config.packages.test-runner}";
-          };
+            bash4 = pkgs.bash.overrideAttrs (_old: {
+              name = "bash-4.4";
+              src = pkgs.fetchurl {
+                url = "https://ftp.gnu.org/gnu/bash/bash-4.4.tar.gz";
+                hash = "sha256-2GszksEgLo/1pCOzAuYoTbf49DXqnzm1sbIP06w238s=";
+              };
+              patches = [ ];
+            });
+            direnv-bash4 = pkgs.direnv.override {
+              bash = config.packages.bash4;
+            };
+            test-runner-bash4 = pkgs.callPackage ./test-runner.nix {
+              nixVersion = "stable";
+              direnv = config.packages.direnv-bash4;
+            };
+            devShells.default = pkgs.callPackage ./shell.nix {
+              packages = [ config.treefmt.build.wrapper ];
+            };
 
-          checks =
-            let
-              packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
-              devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
-            in
-            packages // devShells;
+            checks =
+              let
+                packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
+                devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
+              in
+              packages // devShells;
+          };
         };
         flake = {
           overlays.default = final: _prev: {

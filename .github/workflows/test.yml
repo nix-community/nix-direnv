@@ -13,7 +13,7 @@ jobs:
         os: [ ubuntu-latest ]
         # FIXME macos garbage currently collect also nix-shell that runs the test
         #os: [ ubuntu-latest, macos-latest ]
-        nix: [ stable, unstable ]
+        variants: [ stable, unstable, bash4 ]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -23,4 +23,4 @@ jobs:
         extra_nix_config: |
           experimental-features = nix-command flakes
     - run:
-        "nix run --accept-flake-config .#test-runner-${{ matrix.nix }}"
+        "nix run --accept-flake-config .#test-runner-${{ matrix.variants }}"
