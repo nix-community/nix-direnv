@@ -38,7 +38,7 @@ _nix() {
 
 _require_version() {
   local cmd=$1 version=$2 required=$3
-  if ! printf "%s\n" "$required" "$version" | sort --check=quiet --version-sort; then
+  if ! printf "%s\n" "$required" "$version" | LC_ALL=C sort -c -V 2>/dev/null; then
     _nix_direnv_fatal \
       "minimum required $(basename "$cmd") version is $required (installed: $version)"
   fi
