@@ -19,7 +19,10 @@
   outputs = inputs @ { flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; }
       ({ lib, ... }: {
-        imports = [ ./treefmt.nix ];
+        imports = [
+          ./treefmt.nix
+          ./pkgs/bash4/flake-module.nix
+        ];
         systems = [
           "aarch64-linux"
           "x86_64-linux"
@@ -36,21 +39,6 @@
             };
             test-runner-unstable = pkgs.callPackage ./test-runner.nix {
               nixVersion = "unstable";
-            };
-            bash4 = pkgs.bash.overrideAttrs (_old: {
-              name = "bash-4.4";
-              src = pkgs.fetchurl {
-                url = "https://ftp.gnu.org/gnu/bash/bash-4.4.tar.gz";
-                hash = "sha256-2GszksEgLo/1pCOzAuYoTbf49DXqnzm1sbIP06w238s=";
-              };
-              patches = [ ];
-            });
-            direnv-bash4 = pkgs.direnv.override {
-              bash = config.packages.bash4;
-            };
-            test-runner-bash4 = pkgs.callPackage ./test-runner.nix {
-              nixVersion = "stable";
-              direnv = config.packages.direnv-bash4;
             };
           };
 
