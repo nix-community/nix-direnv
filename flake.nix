@@ -52,17 +52,18 @@
               nixVersion = "stable";
               direnv = config.packages.direnv-bash4;
             };
-            devShells.default = pkgs.callPackage ./shell.nix {
-              packages = [ config.treefmt.build.wrapper ];
-            };
-
-            checks =
-              let
-                packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
-                devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
-              in
-              packages // devShells;
           };
+
+          devShells.default = pkgs.callPackage ./shell.nix {
+            packages = [ config.treefmt.build.wrapper ];
+          };
+
+          checks =
+            let
+              packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
+              devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
+            in
+            packages // devShells;
         };
         flake = {
           overlays.default = final: _prev: {
