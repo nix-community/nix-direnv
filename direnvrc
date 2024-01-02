@@ -26,11 +26,7 @@ _nix_direnv_warning() {
   fi
 }
 
-_nix_direnv_fatal() {
-  log_error "${_NIX_DIRENV_LOG_PREFIX}$*"
-  # exit 1 rather than return 1 since we may not be running in strict mode
-  exit 1
-}
+_nix_direnv_error() { log_error "${_NIX_DIRENV_LOG_PREFIX}$*"; }
 
 _nix() {
   nix --extra-experimental-features "nix-command flakes" "$@"
@@ -39,15 +35,17 @@ _nix() {
 _require_version() {
   local cmd=$1 version=$2 required=$3
   if ! printf "%s\n" "$required" "$version" | LC_ALL=C sort -c -V 2>/dev/null; then
-    _nix_direnv_fatal \
+    _nix_direnv_error \
       "minimum required $(basename "$cmd") version is $required (installed: $version)"
+    return 1
   fi
 }
 
 _require_cmd_version() {
   local cmd=$1 required=$2 version
   if ! has "$cmd"; then
-    _nix_direnv_fatal "command not found: $cmd"
+    _nix_direnv_error "command not found: $cmd"
+    return 1
   fi
   version=$($cmd --version)
   [[ $version =~ ([0-9]+\.[0-9]+\.[0-9]+) ]]
@@ -57,7 +55,8 @@ _require_cmd_version() {
 _nix_direnv_preflight() {
   if [[ -z $direnv ]]; then
     # shellcheck disable=2016
-    _nix_direnv_fatal '$direnv environment variable was not defined. Was this script run inside direnv?'
+    _nix_direnv_error '$direnv environment variable was not defined. Was this script run inside direnv?'
+    return 1
   fi
 
   # check command min versions
@@ -65,10 +64,11 @@ _nix_direnv_preflight() {
     # bash check uses $BASH_VERSION with _require_version instead of
     # _require_cmd_version because _require_cmd_version uses =~ operator which would be
     # a syntax error on bash < 3
-    _require_version bash "$BASH_VERSION" "$BASH_MIN_VERSION"
-    # direnv stdlib defines $direnv
-    _require_cmd_version "$direnv" "$DIRENV_MIN_VERSION"
-    _require_cmd_version nix "$NIX_MIN_VERSION"
+    if ! _require_version bash "$BASH_VERSION" "$BASH_MIN_VERSION" ||
+      ! _require_cmd_version "$direnv" "$DIRENV_MIN_VERSION" || # direnv stdlib defines $direnv
+      ! _require_cmd_version nix "$NIX_MIN_VERSION"; then
+      return 1
+    fi
   fi
 
   local layout_dir
@@ -240,7 +240,9 @@ _nix_direnv_warn_manual_reload() {
 }
 
 use_flake() {
-  _nix_direnv_preflight
+  if ! _nix_direnv_preflight; then
+    return 1
+  fi
 
   flake_expr="${1:-.}"
   flake_dir="${flake_expr%#*}"
@@ -249,9 +251,11 @@ use_flake() {
   if [[ $flake_expr == -* ]]; then
     local message="the first argument must be a flake expression"
     if [[ -n $2 ]]; then
-      _nix_direnv_fatal "$message"
+      _nix_direnv_error "$message"
+      return 1
     else
-      _nix_direnv_fatal "$message. did you mean 'use flake . $1'?"
+      _nix_direnv_error "$message. did you mean 'use flake . $1'?"
+      return 1
     fi
   fi
 
@@ -321,7 +325,8 @@ use_flake() {
       _nix_direnv_info "using cached dev shell"
     else
       # We don't have a profile_rc to use!
-      _nix_direnv_fatal "use_flake failed - Is your flake's devShell working?"
+      _nix_direnv_error "use_flake failed - Is your flake's devShell working?"
+      return 1
     fi
   fi
 
@@ -329,7 +334,9 @@ use_flake() {
 }
 
 use_nix() {
-  _nix_direnv_preflight
+  if ! _nix_direnv_preflight; then
+    return 1
+  fi
 
   local layout_dir path version
   layout_dir=$(direnv_layout_dir)
@@ -467,7 +474,8 @@ use_nix() {
     if [[ -e ${profile_rc} ]]; then
       _nix_direnv_info "using cached dev shell"
     else
-      _nix_direnv_fatal "use_nix failed - Is your nix shell working?"
+      _nix_direnv_error "use_nix failed - Is your nix shell working?"
+      return 1
     fi
   fi
 
