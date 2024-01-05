@@ -131,11 +131,14 @@ _nix_export_or_unset() {
 _nix_import_env() {
   local profile_rc=$1
 
-  local old_nix_build_top=${NIX_BUILD_TOP:-__UNSET__}
-  local old_tmp=${TMP:-__UNSET__}
-  local old_tmpdir=${TMPDIR:-__UNSET__}
-  local old_temp=${TEMP:-__UNSET__}
-  local old_tempdir=${TEMPDIR:-__UNSET__}
+  local -A values_to_restore=(
+    ["NIX_BUILD_TOP"]=${NIX_BUILD_TOP:-__UNSET__}
+    ["TMP"]=${TMP:-__UNSET__}
+    ["TMPDIR"]=${TMPDIR:-__UNSET__}
+    ["TEMP"]=${TEMP:-__UNSET__}
+    ["TEMPDIR"]=${TEMPDIR:-__UNSET__}
+    ["terminfo"]=${terminfo:-__UNSET__}
+  )
   local old_xdg_data_dirs=${XDG_DATA_DIRS:-}
 
   # On the first run in manual mode, the profile_rc does not exist.
@@ -153,11 +156,10 @@ _nix_import_env() {
     rm -rf "$NIX_BUILD_TOP"
   fi
 
-  _nix_export_or_unset NIX_BUILD_TOP "$old_nix_build_top"
-  _nix_export_or_unset TMP "$old_tmp"
-  _nix_export_or_unset TMPDIR "$old_tmpdir"
-  _nix_export_or_unset TEMP "$old_temp"
-  _nix_export_or_unset TEMPDIR "$old_tempdir"
+  for key in "${!values_to_restore[@]}"; do
+    _nix_export_or_unset "$key" "${values_to_restore[${key}]}"
+  done
+
   local new_xdg_data_dirs=${XDG_DATA_DIRS:-}
   export XDG_DATA_DIRS=
   local IFS=:
