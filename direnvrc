@@ -247,8 +247,8 @@ use_flake() {
   fi
 
   flake_expr="${1:-.}"
-  flake_dir="${flake_expr%#*}"
-  flake_dir=${flake_dir#"path:"}
+  flake_uri="${flake_expr%#*}"
+  flake_dir=${flake_uri#"path:"}
 
   if [[ $flake_expr == -* ]]; then
     local message="the first argument must be a flake expression"
@@ -310,7 +310,7 @@ use_flake() {
         mkdir -p "$flake_inputs"
         flake_input_paths=$(_nix flake archive \
           --json --no-write-lock-file \
-          "$flake_dir")
+          -- "$flake_uri")
 
         while [[ $flake_input_paths =~ /nix/store/[^\"]+ ]]; do
           local store_path="${BASH_REMATCH[0]}"
