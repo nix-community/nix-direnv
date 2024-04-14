@@ -49,6 +49,12 @@ In `$HOME/.config/nixpkgs/home.nix` add
       enable = true;
       enableBashIntegration = true; # see note on other shells below
       nix-direnv.enable = true;
+      config = {
+        global = {
+          # Hides the rather large block of text that is usually printed when entering the environment.
+          hide_env_diff = true; 
+        };
+      };
     };
 
     bash.enable = true; # see note on other shells below
