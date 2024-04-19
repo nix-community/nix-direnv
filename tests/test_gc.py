@@ -24,7 +24,7 @@ def common_test(direnv_project: DirenvProject) -> None:
     )
     sys.stderr.write(out1.stderr)
     assert out1.returncode == 0
-    assert "renewed cache" in out1.stderr
+    assert "Renewed cache" in out1.stderr
     assert "Executing shellHook." in out1.stderr
 
     run(["nix-collect-garbage"])
@@ -37,7 +37,7 @@ def common_test(direnv_project: DirenvProject) -> None:
     )
     sys.stderr.write(out2.stderr)
     assert out2.returncode == 0
-    assert "using cached dev shell" in out2.stderr
+    assert "Using cached dev shell" in out2.stderr
     assert "Executing shellHook." in out2.stderr
 
 

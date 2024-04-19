@@ -485,7 +485,7 @@ use_nix() {
     fi
   else
     if [[ -e ${profile_rc} ]]; then
-      _nix_direnv_info "using cached dev shell"
+      _nix_direnv_info "Using cached dev shell"
     else
       _nix_direnv_error "use_nix failed - Is your nix shell working?"
       return 1
