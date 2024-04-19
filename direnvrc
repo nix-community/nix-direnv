@@ -326,6 +326,7 @@ use_flake() {
         # which is probably more useful than nothing.
         # Fallback to use that (which means just leaving profile_rc alone!)
         _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
+        export NIX_DIRENV_DID_FALLBACK=1
       fi
     fi
   else
@@ -479,6 +480,7 @@ use_nix() {
         _nix_direnv_info "Renewed cache"
       else
         _nix_direnv_warning "Evaluating current nix shell failed. Falling back to previous environment!"
+        export NIX_DIRENV_DID_FALLBACK=1
       fi
     fi
   else
