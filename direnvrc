@@ -298,6 +298,7 @@ use_flake() {
       local tmp_profile_rc
       local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
       if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
+        # If we've gotten here, the user's current devShell is valid and we should cache it
         _nix_clean_old_gcroots "$layout_dir"
 
         # We need to update our cache
@@ -318,13 +319,19 @@ use_flake() {
           flake_input_paths="${flake_input_paths/${store_path}/}"
         done
 
-        _nix_direnv_info "renewed cache"
+        _nix_direnv_info "Renewed cache"
+      else
+        # The user's current flake failed to evaluate,
+        # but there is already a prior profile_rc,
+        # which is probably more useful than nothing.
+        # Fallback to use that (which means just leaving profile_rc alone!)
+        _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
       fi
     fi
   else
     if [[ -e ${profile_rc} ]]; then
       # Our cache is valid, use that
-      _nix_direnv_info "using cached dev shell"
+      _nix_direnv_info "Using cached dev shell"
     else
       # We don't have a profile_rc to use!
       _nix_direnv_error "use_flake failed - Is your flake's devShell working?"
@@ -469,7 +476,9 @@ use_nix() {
         echo "$tmp_profile_rc" >"$profile_rc"
         _nix_add_gcroot "$tmp_profile" "$profile"
         rm -f "$tmp_profile" "$tmp_profile"*
-        _nix_direnv_info "renewed cache"
+        _nix_direnv_info "Renewed cache"
+      else
+        _nix_direnv_warning "Evaluating current nix shell failed. Falling back to previous environment!"
       fi
     fi
   else
