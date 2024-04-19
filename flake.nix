@@ -43,7 +43,7 @@
           };
 
           devShells.default = pkgs.callPackage ./shell.nix {
-            packages = [ config.treefmt.build.wrapper ];
+            packages = [ config.treefmt.build.wrapper pkgs.shellcheck ];
           };
 
           checks =
