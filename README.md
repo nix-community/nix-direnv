@@ -110,25 +110,6 @@ other available options are:
 </details>
 
 <details>
-  <summary>With `nix-env`</summary>
-
-### With `nix-env`
-
-As **non-root** user do the following:
-
-```shell
-nix-env -f '<nixpkgs>' -iA nix-direnv
-```
-
-Then add nix-direnv to `$HOME/.config/direnv/direnvrc`:
-
-```bash
-source $HOME/.nix-profile/share/nix-direnv/direnvrc
-```
-
-</details>
-
-<details>
   <summary>With `nix profile`</summary>
 
 ### With `nix profile`
