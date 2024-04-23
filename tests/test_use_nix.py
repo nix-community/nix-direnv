@@ -30,7 +30,7 @@ def direnv_exec(
     sys.stderr.write(out.stderr)
     assert out.returncode == 0
     assert out.stdout == "OK\n"
-    assert "renewed cache" in out.stderr
+    assert "Renewed cache" in out.stderr
 
 
 @pytest.mark.parametrize("strict_env", [False, True])

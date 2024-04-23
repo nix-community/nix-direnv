@@ -275,20 +275,21 @@ nix invocation.
 
 #### Tracked files
 
-`nix-direnv` makes a performance trade-off and only considers changes in a
-limited number of files when deciding to update its cache.
+As a convenience, `nix-direnv` adds common files to direnv's watched file list
+automatically.
 
-- for `use nix` this is:
+The list of additionally tracked files is as follows:
 
+- for `use nix`:
   - `~/.direnvrc`
   - `~/.config/direnv/direnvrc`
   - `.envrc`,
   - A single nix file. In order of preference:
     - The file argument to `use nix`
-    - `shell.nix` if it exists
     - `default.nix` if it exists
+    - `shell.nix` if it exists
 
-- for `use flake` this is:
+- for `use flake`:
   - `~/.direnvrc`
   - `~/.config/direnv/direnvrc`
   - `.envrc`
@@ -296,30 +297,30 @@ limited number of files when deciding to update its cache.
   - `flake.lock`
   - `devshell.toml` if it exists
 
-To add more files to be checked use `watch_file` like this
+Users are free to use direnv's builtin `watch_file` function to track additional
+files. `watch_file` must be invoked before either `use flake` or `use nix` to
+take effect.
 
-```shell
-watch_file your-file.nix
-use nix # or use flake
-```
+#### Environment Variables
 
-Or - if you don't mind the overhead (runtime and conceptual) of watching all
-nix-files:
+nix-direnv sets the following environment variables for user consumption. All
+other environment variables are either a product of the underlying nix
+invocation or are purely incidental and should not be relied upon.
 
-```shell
-watch_file $(find . -name "*.nix" -printf '"%p" ')
-```
-
-Note that this will re-execute direnv for any nix change, regardless of whether
-that change is meaningful for the devShell in use.
-
-`watch_file` must be invoked before either `use flake` or `use nix` to take
-effect.
+- `NIX_DIRENV_DID_FALLBACK`: Set when the current revision of your nix shell or
+  flake's devShell are invalid and nix-direnv has loaded the last known working
+  shell.
 
 ## General direnv tips
 
-- [Changing where direnv stores its cache](https://github.com/direnv/direnv/wiki/Customizing-cache-location)
-- [Quickly setting up direnv in a new nix project](https://github.com/nix-community/nix-direnv/wiki/Shell-integration)
+- [Changing where direnv stores its cache][cache_location]
+- [Quickly setting up direnv in a new nix project][new_project]
+- [Disable the diff notice (requires direnv 2.34+)][hide_diff_notice]: Note that
+  this goes into direnv's TOML configuration!
+
+[cache_location]: https://github.com/direnv/direnv/wiki/Customizing-cache-location
+[new_project]: https://github.com/nix-community/nix-direnv/wiki/Shell-integration
+[hide_diff_notice]: https://direnv.net/man/direnv.toml.1.html#codehideenvdiffcode
 
 ## Other projects in the field
 
