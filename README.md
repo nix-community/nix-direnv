@@ -38,7 +38,7 @@ much harder to control the version of nix-direnv installed with this method. If
 you require such specific control, please use another method of installing
 nix-direnv.
 
-In `$HOME/.config/nixpkgs/home.nix` add
+In `$HOME/.config/home-manager/home.nix` add
 
 ```Nix
 {
