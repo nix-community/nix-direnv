@@ -37,8 +37,8 @@
             test-runner-stable = pkgs.callPackage ./test-runner.nix {
               nixVersion = "stable";
             };
-            test-runner-unstable = pkgs.callPackage ./test-runner.nix {
-              nixVersion = "unstable";
+            test-runner-latest = pkgs.callPackage ./test-runner.nix {
+              nixVersion = "latest";
             };
           };
 
