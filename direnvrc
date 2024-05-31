@@ -467,6 +467,11 @@ use_nix() {
         fi
       fi
 
+      # Some builtin nix tooling depends on this variable being set BEFORE their invocation to change their behavior
+      # (notably haskellPackages.developPackage returns an env if this is set)
+      # This allows us to more closely mimic nix-shell.
+      export IN_NIX_SHELL="impure"
+
       if tmp_profile_rc=$(_nix \
         print-dev-env \
         --profile "$tmp_profile" \
