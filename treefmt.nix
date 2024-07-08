@@ -3,10 +3,10 @@
     inputs.treefmt-nix.flakeModule
   ];
 
-  perSystem = _: {
+  perSystem = {
     treefmt = {
       # Used to find the project root
-      projectRootFile = "flake.lock";
+      projectRootFile = ".git/config";
 
       programs = {
         deadnix.enable = true;
@@ -20,10 +20,14 @@
         statix.enable = true;
       };
 
-      settings.formatter = {
-        shellcheck.includes = [ "*.sh" "direnvrc" ];
-        shfmt.includes = [ "*.sh" "direnvrc" ];
-      };
+      settings.formatter =
+        let
+          shellIncludes = [ "*.sh" "direnvrc" ];
+        in
+        {
+          shellcheck.includes = shellIncludes;
+          shfmt.includes = shellIncludes;
+        };
     };
   };
 }
