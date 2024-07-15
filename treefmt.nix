@@ -18,16 +18,13 @@
         shellcheck.enable = true;
         shfmt.enable = true;
         statix.enable = true;
+        yamlfmt.enable = true;
       };
 
-      settings.formatter =
-        let
-          shellIncludes = [ "*.sh" "direnvrc" ];
-        in
-        {
-          shellcheck.includes = shellIncludes;
-          shfmt.includes = shellIncludes;
-        };
+      settings.formatter = {
+        shellcheck.includes = [ "direnvrc" ];
+        shfmt.includes = [ "direnvrc" ];
+      };
     };
   };
 }
