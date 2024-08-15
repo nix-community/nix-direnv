@@ -8,8 +8,11 @@ bash.overrideAttrs (_old: {
   };
 
   # generated with update-patch-set.sh from nixpkgs/pkgs/shells/bash
-  patches = import ./bash-4.4-patches.nix (nr: sha256: fetchurl {
-    url = "mirror://gnu/bash/bash-4.4-patches/bash44-${nr}";
-    inherit sha256;
-  });
+  patches = import ./bash-4.4-patches.nix (
+    nr: sha256:
+    fetchurl {
+      url = "mirror://gnu/bash/bash-4.4-patches/bash44-${nr}";
+      inherit sha256;
+    }
+  );
 })

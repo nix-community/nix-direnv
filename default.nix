@@ -1,4 +1,10 @@
-{ resholve, lib, coreutils, direnv, nix }:
+{
+  resholve,
+  lib,
+  coreutils,
+  direnv,
+  nix,
+}:
 
 # resholve does not yet support `finalAttrs` call pattern hence `rec`
 # https://github.com/abathur/resholve/issues/107
@@ -24,7 +30,10 @@ resholve.mkDerivation rec {
     default = {
       scripts = [ "share/${pname}/direnvrc" ];
       interpreter = "none";
-      inputs = [ coreutils nix ];
+      inputs = [
+        coreutils
+        nix
+      ];
       fake = {
         builtin = [
           "PATH_add"
