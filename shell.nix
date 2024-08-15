@@ -1,4 +1,7 @@
-{ pkgs ? import <nixpkgs> { }, packages ? [ ] }:
+{
+  pkgs ? import <nixpkgs> { },
+  packages ? [ ],
+}:
 
 with pkgs;
 mkShell {

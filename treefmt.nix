@@ -1,33 +1,32 @@
-{ inputs, ... }: {
-  imports = [
-    inputs.treefmt-nix.flakeModule
-  ];
+{ inputs, ... }:
+{
+  imports = [ inputs.treefmt-nix.flakeModule ];
 
-  perSystem = {
-    treefmt = {
-      # Used to find the project root
-      projectRootFile = ".git/config";
+  perSystem =
+    { pkgs, ... }:
+    {
+      treefmt = {
+        # Used to find the project root
+        projectRootFile = ".git/config";
 
-      programs = {
-        deadnix.enable = true;
-        deno.enable = true;
-        mypy.enable = true;
-        ruff.check = true;
-        ruff.format = true;
-        nixpkgs-fmt.enable = true;
-        shellcheck.enable = true;
-        shfmt.enable = true;
-        statix.enable = true;
-      };
-
-      settings.formatter =
-        let
-          shellIncludes = [ "*.sh" "direnvrc" ];
-        in
-        {
-          shellcheck.includes = shellIncludes;
-          shfmt.includes = shellIncludes;
+        programs = {
+          deadnix.enable = true;
+          deno.enable = true;
+          mypy.enable = true;
+          ruff.check = true;
+          ruff.format = true;
+          nixfmt.enable = true;
+          nixfmt.package = pkgs.nixfmt-rfc-style;
+          shellcheck.enable = true;
+          shfmt.enable = true;
+          statix.enable = true;
+          yamlfmt.enable = true;
         };
+
+        settings.formatter = {
+          shellcheck.includes = [ "direnvrc" ];
+          shfmt.includes = [ "direnvrc" ];
+        };
+      };
     };
-  };
 }

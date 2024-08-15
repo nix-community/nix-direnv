@@ -4,10 +4,9 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   # deadnix: skip
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs =
+    { nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system: {
-      devShell = import ./shell.nix {
-        pkgs = nixpkgs.legacyPackages.${system};
-      };
+      devShell = import ./shell.nix { pkgs = nixpkgs.legacyPackages.${system}; };
     });
 }
