@@ -253,7 +253,7 @@ use_flake() {
 
   if [[ $flake_expr == -* ]]; then
     local message="the first argument must be a flake expression"
-    if [[ -n $2 ]]; then
+    if [[ -n ${2:-} ]]; then
       _nix_direnv_error "$message"
       return 1
     else
@@ -408,15 +408,15 @@ use_nix() {
       # ignore them
       ;;
     --include | -I)
-      extra_args+=("$i" "$1")
+      extra_args+=("$i" "${1:-}")
       shift
       ;;
     --attr | -A)
-      attribute="$1"
+      attribute="${1:-}"
       shift
       ;;
     --option | -o | --arg | --argstr)
-      extra_args+=("$i" "$1" "$2")
+      extra_args+=("$i" "${1:-}" "${2:-}")
       shift
       shift
       ;;
