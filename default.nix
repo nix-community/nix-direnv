@@ -2,8 +2,8 @@
   resholve,
   lib,
   coreutils,
-  direnv,
   nix,
+  writeText,
 }:
 
 # resholve does not yet support `finalAttrs` call pattern hence `rec`
@@ -17,11 +17,6 @@ resholve.mkDerivation rec {
     name = pname;
   };
 
-  # skip min version checks which are redundant when built with nix
-  postPatch = ''
-    sed -i 1iNIX_DIRENV_SKIP_VERSION_CHECK=1 direnvrc
-  '';
-
   installPhase = ''
     install -m400 -D direnvrc $out/share/${pname}/direnvrc
   '';
@@ -30,10 +25,7 @@ resholve.mkDerivation rec {
     default = {
       scripts = [ "share/${pname}/direnvrc" ];
       interpreter = "none";
-      inputs = [
-        coreutils
-        nix
-      ];
+      inputs = [ coreutils ];
       fake = {
         builtin = [
           "PATH_add"
@@ -48,15 +40,26 @@ resholve.mkDerivation rec {
           # cannot be reached when built with nix
           "shasum"
         ];
+        external = [
+          # We want to reference the ambient Nix when possible, and have custom logic
+          # for the fallback
+          "nix"
+        ];
       };
       keep = {
         "$cmd" = true;
         "$direnv" = true;
+
+        # Nix fallback implementation
+        "$_nix_direnv_nix" = true;
+        "$ambient_nix" = true;
+        "$NIX_DIRENV_FALLBACK_NIX" = true;
       };
-      execer = [
-        "cannot:${direnv}/bin/direnv"
-        "cannot:${nix}/bin/nix"
-      ];
+      prologue =
+        (writeText "prologue.sh" ''
+          NIX_DIRENV_SKIP_VERSION_CHECK=1
+          NIX_DIRENV_FALLBACK_NIX=''${NIX_DIRENV_FALLBACK_NIX:-${lib.getExe nix}}
+        '').outPath;
     };
   };
 
