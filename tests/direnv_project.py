@@ -31,7 +31,7 @@ class DirenvProject:
         run(["direnv", "allow"], cwd=self.directory)
 
 
-@pytest.fixture()
+@pytest.fixture
 def direnv_project(test_root: Path, project_root: Path) -> Iterator[DirenvProject]:
     """
     Setups a direnv test project
