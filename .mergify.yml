@@ -3,7 +3,7 @@ queue_rules:
     merge_conditions:
       - check-success=buildbot/nix-eval
       - check-success=tests (ubuntu-latest, stable)
-      - check-success=tests (ubuntu-latest, unstable)
+      - check-success=tests (ubuntu-latest, latest)
       - check-success=tests (ubuntu-latest, bash4)
     batch_size: 5
     merge_method: rebase
