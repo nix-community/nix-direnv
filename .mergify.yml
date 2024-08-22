@@ -4,10 +4,9 @@ queue_rules:
       - check-success=buildbot/nix-eval
       - check-success=tests (ubuntu-latest, stable)
       - check-success=tests (ubuntu-latest, unstable)
-defaults:
-  actions:
-    queue:
-      allow_merging_configuration_change: true
+      - check-success=tests (ubuntu-latest, bash4)
+    batch_size: 5
+    merge_method: rebase
 pull_request_rules:
   - name: merge using the merge queue
     conditions:
