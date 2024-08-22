@@ -311,6 +311,14 @@ invocation or are purely incidental and should not be relied upon.
   flake's devShell are invalid and nix-direnv has loaded the last known working
   shell.
 
+nix-direnv also respects the following environment variables for configuration.
+
+- `NIX_DIRENV_FALLBACK_NIX`: Can be set to a fallback Nix binary location, to be
+  used when a compatible one isn't available in `PATH`. Defaults to
+  `config.nix.package` if installed via the NixOS module, otherwise needs to be
+  set manually. Leave unset or empty to fail immediately when a Nix
+  implementation can't be found on `PATH`.
+
 ## General direnv tips
 
 - [Changing where direnv stores its cache][cache_location]
