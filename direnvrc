@@ -263,7 +263,7 @@ _nix_direnv_watches() {
   done < <($direnv show_dump "${DIRENV_WATCHES}")
 }
 
-_nix_direnv_manual_reload=0
+: "${_nix_direnv_manual_reload:=0}"
 nix_direnv_manual_reload() {
   _nix_direnv_manual_reload=1
 }
