@@ -140,9 +140,7 @@ touch "$PWD/.envrc"
 touch -r "$PWD/.envrc" "${layout_dir}"/*.rc
 EOF
 
-  if [[ ! -x "${layout_dir}/bin/nix-direnv-reload" ]]; then
-    chmod +x "${layout_dir}/bin/nix-direnv-reload"
-  fi
+  chmod +x "${layout_dir}/bin/nix-direnv-reload"
 
   PATH_add "${layout_dir}/bin"
 }
