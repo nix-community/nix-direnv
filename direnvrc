@@ -32,7 +32,7 @@ _nix_direnv_error() { log_error "${_NIX_DIRENV_LOG_PREFIX}$*"; }
 _nix_direnv_nix=""
 
 _nix() {
-  ${_nix_direnv_nix} --extra-experimental-features "nix-command flakes" "$@"
+  ${_nix_direnv_nix} --no-warn-dirty --extra-experimental-features "nix-command flakes" "$@"
 }
 
 _require_version() {
