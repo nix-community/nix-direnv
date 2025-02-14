@@ -492,11 +492,9 @@ use_nix() {
       if [[ -n $packages ]]; then
         extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
       else
-        # figure out what attribute we should build
-        if [[ -z $attribute ]]; then
-          extra_args+=("--file" "$nixfile")
-        else
-          extra_args+=("--expr" "(import ${nixfile} {}).${attribute}")
+        extra_args+=("--file" "$nixfile")
+        if [[ -n $attribute ]]; then
+          extra_args+=("$attribute")
         fi
       fi
 
