@@ -16,9 +16,9 @@ Prominent features:
 ## Why not use `lorri` instead?
 
 Compared to [lorri](https://github.com/nix-community/lorri), nix-direnv is
-simpler (and requires no external daemon) and supports flakes. Additionally,
-lorri can sometimes re-evaluate the entirety of nixpkgs on every change (leading
-to perpetual high CPU load).
+simpler (and requires no external daemon). Additionally, lorri can sometimes
+re-evaluate the entirety of nixpkgs on every change (leading to perpetual high
+CPU load).
 
 ## Installation
 
