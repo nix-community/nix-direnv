@@ -218,6 +218,49 @@ _nix_clean_old_gcroots() {
   rm -f "$layout_dir"/{nix,flake}-profile*
 }
 
+_update_flake_profile() {
+  local layout_dir=$1
+  local profile=$2
+  local profile_rc=$3
+  local flake_uri=$4
+  shift 4
+
+  local flake_inputs="${layout_dir}/flake-inputs/"
+  local tmp_profile_rc
+  local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
+  if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
+    # If we've gotten here, the user's current devShell is valid and we should cache it
+    _nix_clean_old_gcroots "$layout_dir"
+
+    # We need to update our cache
+    echo "$tmp_profile_rc" >"$profile_rc"
+    _nix_add_gcroot "$tmp_profile" "$profile"
+    rm -f "$tmp_profile" "$tmp_profile"*
+
+    # also add garbage collection root for source
+    local flake_input_paths
+    mkdir -p "$flake_inputs"
+    flake_input_paths=$(_nix flake archive \
+      --json --no-write-lock-file \
+      -- "$flake_uri")
+
+    while [[ $flake_input_paths =~ /nix/store/[^\"]+ ]]; do
+      local store_path="${BASH_REMATCH[0]}"
+      _nix_add_gcroot "${store_path}" "${flake_inputs}/${store_path##*/}"
+      flake_input_paths="${flake_input_paths/${store_path}/}"
+    done
+
+    _nix_direnv_info "Renewed cache"
+  else
+    # The user's current flake failed to evaluate,
+    # but there is already a prior profile_rc,
+    # which is probably more useful than nothing.
+    # Fallback to use that (which means just leaving profile_rc alone!)
+    _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
+    export NIX_DIRENV_DID_FALLBACK=1
+  fi
+}
+
 _nix_argsum_suffix() {
   local out checksum
   if [ -n "$1" ]; then
@@ -307,7 +350,6 @@ use_flake() {
   layout_dir=$(direnv_layout_dir)
   profile="${layout_dir}/flake-profile$(_nix_argsum_suffix "$flake_expr")"
   local profile_rc="${profile}.rc"
-  local flake_inputs="${layout_dir}/flake-inputs/"
 
   local need_update=0
   local watches
@@ -328,39 +370,7 @@ use_flake() {
       _nix_direnv_warn_manual_reload "$profile_rc"
 
     else
-      local tmp_profile_rc
-      local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
-      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
-        # If we've gotten here, the user's current devShell is valid and we should cache it
-        _nix_clean_old_gcroots "$layout_dir"
-
-        # We need to update our cache
-        echo "$tmp_profile_rc" >"$profile_rc"
-        _nix_add_gcroot "$tmp_profile" "$profile"
-        rm -f "$tmp_profile" "$tmp_profile"*
-
-        # also add garbage collection root for source
-        local flake_input_paths
-        mkdir -p "$flake_inputs"
-        flake_input_paths=$(_nix flake archive \
-          --json --no-write-lock-file \
-          -- "$flake_uri")
-
-        while [[ $flake_input_paths =~ /nix/store/[^\"]+ ]]; do
-          local store_path="${BASH_REMATCH[0]}"
-          _nix_add_gcroot "${store_path}" "${flake_inputs}/${store_path##*/}"
-          flake_input_paths="${flake_input_paths/${store_path}/}"
-        done
-
-        _nix_direnv_info "Renewed cache"
-      else
-        # The user's current flake failed to evaluate,
-        # but there is already a prior profile_rc,
-        # which is probably more useful than nothing.
-        # Fallback to use that (which means just leaving profile_rc alone!)
-        _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
-        export NIX_DIRENV_DID_FALLBACK=1
-      fi
+      _update_flake_profile "$layout_dir" "$profile" "$profile_rc" "$flake_uri" "$@"
     fi
   else
     if [[ -e ${profile_rc} ]]; then
