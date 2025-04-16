@@ -15,16 +15,18 @@ _nix_direnv_info() {
 }
 
 _nix_direnv_warning() {
-  if [[ -n $DIRENV_LOG_FORMAT ]]; then
-    local msg=$* color_normal='' color_warning=''
-    if [[ -t 2 ]]; then
-      color_normal="\e[m"
-      color_warning="\e[33m"
-    fi
-    # shellcheck disable=SC2059
-    printf "${color_warning}${DIRENV_LOG_FORMAT}${color_normal}\n" \
-      "${_NIX_DIRENV_LOG_PREFIX}${msg}" >&2
+  local msg=$*
+  local color_normal=""
+  local color_warning=""
+
+  if [[ -t 2 ]]; then
+    color_normal="\e[m"
+    color_warning="\e[33m"
   fi
+
+  printf "%b" "$color_warning"
+  log_status "${_NIX_DIRENV_LOG_PREFIX}${msg}"
+  printf "%b" "$color_normal"
 }
 
 _nix_direnv_error() { log_error "${_NIX_DIRENV_LOG_PREFIX}$*"; }
