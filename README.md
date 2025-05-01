@@ -159,7 +159,7 @@ pkgs.mkShell {
 Then add the line `use nix` to your envrc:
 
 ```console
-$ echo "use nix" >> .envrc
+$ echo "if has nix; then use nix; fi" >> .envrc
 $ direnv allow
 ```
 
@@ -199,7 +199,7 @@ $ nix flake new -t github:nix-community/nix-direnv <desired output path>
 ### Integrating with a existing flake
 
 ```console
-$ echo "use flake" >> .envrc && direnv allow
+$ echo "if has nix; then use flake; fi" >> .envrc && direnv allow
 ```
 
 The `use flake` line also takes an additional arbitrary flake parameter, so you
