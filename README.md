@@ -158,9 +158,9 @@ pkgs.mkShell {
 
 Then add the line `use nix` to your envrc:
 
-```console
-$ echo "use nix" >> .envrc
-$ direnv allow
+```shell
+echo "use nix" >> .envrc
+direnv allow
 ```
 
 If you haven't used direnv before, make sure to
@@ -171,8 +171,8 @@ If you haven't used direnv before, make sure to
 You may use a different file name than `shell.nix` or `default.nix` by passing
 the file name in `.envrc`, e.g.:
 
-```console
-$ echo "use nix foo.nix" >> .envrc
+```shell
+echo "use nix foo.nix" >> .envrc
 ```
 
 ## Flakes support
@@ -192,14 +192,14 @@ which provides a basic flake with devShell integration and a basic `.envrc`.
 
 To make use of this template, you may issue the following command:
 
-```console
-$ nix flake new -t github:nix-community/nix-direnv <desired output path>
+```shell
+nix flake new -t github:nix-community/nix-direnv <desired output path>
 ```
 
 ### Integrating with a existing flake
 
-```console
-$ echo "use flake" >> .envrc && direnv allow
+```shell
+echo "use flake" >> .envrc && direnv allow
 ```
 
 The `use flake` line also takes an additional arbitrary flake parameter, so you
@@ -224,9 +224,9 @@ that the environment of the calling shell is passed in.
 
 You can do that as follows:
 
-```console
-$ echo "use flake . --impure" > .envrc
-$ direnv allow
+```shell
+echo "use flake . --impure" > .envrc
+direnv allow
 ```
 
 #### use nix
@@ -256,8 +256,8 @@ use nix # or use flake
 
 To reload your nix environment, use the `nix-direnv-reload` command:
 
-```console
-$ nix-direnv-reload
+```shell
+nix-direnv-reload
 ```
 
 ##### Known arguments
