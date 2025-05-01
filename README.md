@@ -114,17 +114,26 @@ other available options are:
 
 ### With `nix profile`
 
-As **non-root** user do the following:
+1. Instal a regular direnv _(skip this step if direnv is already installed)_:
 
-```shell
-nix profile install nixpkgs#nix-direnv
-```
+   ```shell
+   nix profile install nixpkgs#direnv
+   ```
 
-Then add nix-direnv to `$HOME/.config/direnv/direnvrc`:
+2. Add direnv hook for your shell — <https://direnv.net/docs/hook.html>
+   _(skip this step if direnv is already installed)_.
 
-```bash
-source $HOME/.nix-profile/share/nix-direnv/direnvrc
-```
+3. As **non-root** user, install nix-direnv:
+
+   ```shell
+   nix profile install nixpkgs#nix-direnv
+   ```
+
+4. Now add nix-direnv to `$HOME/.config/direnv/direnvrc`:
+
+   ```bash
+   source $HOME/.nix-profile/share/nix-direnv/direnvrc
+   ```
 
 </details>
 
