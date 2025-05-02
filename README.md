@@ -22,10 +22,15 @@ CPU load).
 
 ## Installation
 
-> **Heads up**: nix-direnv requires a modern Bash. MacOS ships with bash 3.2
-> from 2007. As a work-around we suggest that macOS users install `direnv` via
-> Nix or Homebrew. There are different ways to install nix-direnv, pick your
-> favourite:
+> [!WARNING]\
+> We assume that [direnv](https://direnv.net/) is installed properly because
+> nix-direnv IS NOT a replacement for regular direnv _(only some of its
+> functionality)_.
+
+> [!NOTE]\
+> nix-direnv requires a modern Bash. MacOS ships with bash 3.2 from 2007. As a
+> work-around we suggest that macOS users install `direnv` via Nix or Homebrew.
+> There are different ways to install nix-direnv, pick your favourite:
 
 <details>
   <summary> Via home-manager (Recommended)</summary>
