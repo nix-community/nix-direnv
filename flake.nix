@@ -23,10 +23,7 @@
     flake-parts.lib.mkFlake { inherit inputs; } (
       { lib, ... }:
       {
-        imports = [
-          ./treefmt.nix
-          ./pkgs/bash4/flake-module.nix
-        ];
+        imports = [ ./treefmt.nix ];
         systems = [
           "aarch64-linux"
           "x86_64-linux"
