@@ -22,7 +22,7 @@ class DirenvProject:
     def setup_envrc(self, content: str, strict_env: bool) -> None:
         text = textwrap.dedent(
             f"""
-        {'strict_env' if strict_env else ''}
+        {"strict_env" if strict_env else ""}
         source {self.nix_direnv}
         {content}
         """
