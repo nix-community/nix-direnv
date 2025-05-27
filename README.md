@@ -22,6 +22,12 @@ CPU load).
 
 ## Installation
 
+Requirements:
+
+- bash 4.4
+- nix 2.4 or newer
+- direnv 2.21.3 or newer
+
 > [!WARNING]\
 > We assume that [direnv](https://direnv.net/) is installed properly because
 > nix-direnv IS NOT a replacement for regular direnv _(only some of its
