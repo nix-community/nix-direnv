@@ -1,7 +1,7 @@
 # -*- mode: sh -*-
 # shellcheck shell=bash
 
-NIX_DIRENV_VERSION=3.0.7
+NIX_DIRENV_VERSION=3.1.0
 
 # min required versions
 BASH_MIN_VERSION=4.4
