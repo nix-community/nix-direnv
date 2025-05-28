@@ -81,8 +81,8 @@ for integration with shells other than Bash. Be sure to also allow
 Put the following lines in your `.envrc`:
 
 ```bash
-if ! has nix_direnv_version || ! nix_direnv_version 3.0.7; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.0.7/direnvrc" "sha256-bn8WANE5a91RusFmRI7kS751ApelG02nMcwRekC/qzc="
+if ! has nix_direnv_version || ! nix_direnv_version 3.1.0; then
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.1.0/direnvrc" "sha256-bn8WANE5a91RusFmRI7kS751ApelG02nMcwRekC/qzc="
 fi
 ```
 
