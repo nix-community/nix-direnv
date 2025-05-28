@@ -6,7 +6,6 @@ NIX_DIRENV_VERSION=3.0.7
 # min required versions
 BASH_MIN_VERSION=4.4
 DIRENV_MIN_VERSION=2.21.3
-NIX_MIN_VERSION=2.4
 
 _NIX_DIRENV_LOG_PREFIX="nix-direnv: "
 
@@ -57,34 +56,6 @@ _require_cmd_version() {
   _require_version "$cmd" "${BASH_REMATCH[1]}" "$required"
 }
 
-_nix_direnv_resolve_nix() {
-  local ambient_nix
-
-  if ambient_nix=$(command -v nix); then
-    if _require_cmd_version "${ambient_nix}" "${NIX_MIN_VERSION}"; then
-      echo "${ambient_nix}"
-      return 0
-    else
-      _nix_direnv_warning "Nix version in PATH is too old, wanted ${NIX_MIN_VERSION}+, got $(${ambient_nix} --version), will attempt fallback"
-    fi
-  else
-    _nix_direnv_warning "Could not find Nix in PATH, will attempt fallback"
-  fi
-
-  if [ -n "${NIX_DIRENV_FALLBACK_NIX}" ]; then
-    if _require_cmd_version "${NIX_DIRENV_FALLBACK_NIX}" "${NIX_MIN_VERSION}"; then
-      echo "${NIX_DIRENV_FALLBACK_NIX}"
-      return 0
-    else
-      _nix_direnv_error "Fallback Nix version is too old, wanted ${NIX_MIN_VERSION}+, got $(${NIX_DIRENV_FALLBACK_NIX} --version)"
-      return 1
-    fi
-  else
-    _nix_direnv_error "Could not find fallback Nix binary, please add Nix to PATH or set NIX_DIRENV_FALLBACK_NIX"
-    return 1
-  fi
-}
-
 _nix_direnv_preflight() {
   if [[ -z $direnv ]]; then
     # shellcheck disable=2016
@@ -104,7 +75,12 @@ _nix_direnv_preflight() {
     fi
   fi
 
-  if ! _nix_direnv_nix=$(_nix_direnv_resolve_nix); then
+  if command -v nix >/dev/null 2>&1; then
+    _nix_direnv_nix=$(command -v nix)
+  elif [[ -n ${NIX_DIRENV_FALLBACK_NIX:-} ]]; then
+    _nix_direnv_nix="${NIX_DIRENV_FALLBACK_NIX}"
+  else
+    _nix_direnv_error "Could not find Nix binary, please add Nix to PATH or set NIX_DIRENV_FALLBACK_NIX"
     return 1
   fi
 
