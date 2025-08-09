@@ -33,25 +33,18 @@
             self',
             ...
           }:
+          let
+            nix-direnv = pkgs.callPackage ./default.nix { };
+            test_pkgs = pkgs.lib.callPackagesWith pkgs ./tests { inherit nix-direnv; };
+          in
           {
-            packages = rec {
-              nix-direnv = pkgs.callPackage ./default.nix { };
-              default = config.packages.nix-direnv;
-              test-runner-stable = pkgs.callPackage ./test-runner.nix {
-                nixVersion = "stable";
-                inherit nix-direnv;
-              };
-              test-runner-latest = pkgs.callPackage ./test-runner.nix {
-                nixVersion = "latest";
-                inherit nix-direnv;
-              };
+            packages = test_pkgs // {
+              inherit nix-direnv;
+              default = nix-direnv;
             };
 
             devShells.default = pkgs.callPackage ./shell.nix {
-              packages = [
-                config.treefmt.build.wrapper
-                pkgs.shellcheck
-              ];
+              treefmt = config.treefmt.build.wrapper;
             };
 
             checks =
