@@ -11,4 +11,11 @@ jobs:
       group: "auto-merge:${{ github.head_ref }}"
       cancel-in-progress: true
     steps:
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
       - uses: Mic92/auto-merge@main
+        with:
+          repo-token: ${{ steps.app-token.outputs.token }}
