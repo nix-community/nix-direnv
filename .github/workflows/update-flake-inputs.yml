@@ -1,0 +1,29 @@
+name: Update Flake Inputs
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+jobs:
+  update-flake-inputs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Setup Nix
+        uses: cachix/install-nix-action@v31
+      - name: Update flake inputs
+        uses: mic92/update-flake-inputs@main
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          auto-merge: true
