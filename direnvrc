@@ -37,10 +37,10 @@ _nix() {
 }
 
 _require_version() {
-  local cmd=$1 version=$2 required=$3
+  local cmd=$1 raw_version=$2 version=${2%%[^0-9.]*} required=$3
   if ! printf "%s\n" "$required" "$version" | LC_ALL=C sort -c -V 2>/dev/null; then
     _nix_direnv_error \
-      "minimum required $(basename "$cmd") version is $required (installed: $version)"
+      "minimum required $(basename "$cmd") version is $required (installed: $raw_version)"
     return 1
   fi
 }
@@ -52,7 +52,7 @@ _require_cmd_version() {
     return 1
   fi
   version=$($cmd --version)
-  [[ $version =~ ([0-9]+\.[0-9]+\.[0-9]+) ]]
+  [[ $version =~ ([0-9]+\.[0-9]+(\.[0-9]+)?) ]]
   _require_version "$cmd" "${BASH_REMATCH[1]}" "$required"
 }
 

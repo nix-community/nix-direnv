@@ -1,14 +1,30 @@
 {
   pkgs ? import <nixpkgs> { },
-  packages ? [ ],
+  treefmt ? null,
+  nix-direnv ? (pkgs.callPackage ./default.nix { }),
+  test_pkgs ? (pkgs.lib.callPackagesWith pkgs ./tests { inherit nix-direnv; }),
 }:
-
-with pkgs;
-mkShell {
-  packages = packages ++ [
-    python3.pkgs.pytest
-    python3.pkgs.mypy
-    ruff
-    direnv
-  ];
+let
+  inherit (pkgs) lib;
+in
+pkgs.mkShell {
+  DIRENV_STDLIB = "${test_pkgs.direnv-stdlib}";
+  DIRENVRC = "${nix-direnv}/share/nix-direnv/direnvrc";
+  BATS_LIB_PATH = lib.strings.makeSearchPath "" (
+    with test_pkgs;
+    [
+      bats-support
+      bats-assert
+    ]
+  );
+  packages =
+    (builtins.attrValues {
+      inherit (pkgs)
+        bats
+        direnv
+        shellcheck
+        ;
+    })
+    ++ (builtins.attrValues (lib.attrsets.filterAttrs (name: _val: name != "direnv-stdlib") test_pkgs))
+    ++ lib.optionals (treefmt != null) [ treefmt ];
 }
