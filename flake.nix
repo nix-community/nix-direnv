@@ -34,11 +34,17 @@
             ...
           }:
           {
-            packages = {
+            packages = rec {
               nix-direnv = pkgs.callPackage ./default.nix { };
               default = config.packages.nix-direnv;
-              test-runner-stable = pkgs.callPackage ./test-runner.nix { nixVersion = "stable"; };
-              test-runner-latest = pkgs.callPackage ./test-runner.nix { nixVersion = "latest"; };
+              test-runner-stable = pkgs.callPackage ./test-runner.nix {
+                nixVersion = "stable";
+                inherit nix-direnv;
+              };
+              test-runner-latest = pkgs.callPackage ./test-runner.nix {
+                nixVersion = "latest";
+                inherit nix-direnv;
+              };
             };
 
             devShells.default = pkgs.callPackage ./shell.nix {
