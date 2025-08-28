@@ -7,6 +7,7 @@
   fetchurl,
   findutils,
   gnugrep,
+  gnused,
   lib,
   nix-direnv,
   nixVersions,
@@ -31,6 +32,7 @@ let
           coreutils
           findutils
           gnugrep
+          gnused
         ]
       }
       export DIRENV_STDLIB=${direnv-stdlib}

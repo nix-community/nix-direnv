@@ -244,6 +244,12 @@ nix_direnv_manual_reload() {
   _nix_direnv_manual_reload=1
 }
 
+: "${_nix_direnv_allow_fallback:=1}"
+nix_direnv_disallow_fallback() {
+  _nix_direnv_info "Fallback disallowed"
+  _nix_direnv_allow_fallback=0
+}
+
 _nix_direnv_warn_manual_reload() {
   if [[ -e $1 ]]; then
     _nix_direnv_warning 'cache is out of date. use "nix-direnv-reload" to reload'
@@ -336,8 +342,12 @@ use_flake() {
         # but there is already a prior profile_rc,
         # which is probably more useful than nothing.
         # Fallback to use that (which means just leaving profile_rc alone!)
-        _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
-        export NIX_DIRENV_DID_FALLBACK=1
+        if [[ $_nix_direnv_allow_fallback -eq 1 ]]; then
+          _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
+          export NIX_DIRENV_DID_FALLBACK=1
+        else
+          return 1
+        fi
       fi
     fi
   else
@@ -493,8 +503,13 @@ use_nix() {
         rm -f "$tmp_profile" "$tmp_profile"*
         _nix_direnv_info "Renewed cache"
       else
-        _nix_direnv_warning "Evaluating current nix shell failed. Falling back to previous environment!"
-        export NIX_DIRENV_DID_FALLBACK=1
+        if [[ $_nix_direnv_allow_fallback -eq 1 ]]; then
+          _nix_direnv_warning "Evaluating current nix shell failed. Falling back to previous environment!"
+          export NIX_DIRENV_DID_FALLBACK=1
+        else
+          unset IN_NIX_SHELL
+          return 1
+        fi
       fi
     fi
   else
@@ -502,6 +517,7 @@ use_nix() {
       _nix_direnv_info "Using cached dev shell"
     else
       _nix_direnv_error "use_nix failed - Is your nix shell working?"
+      unset IN_NIX_SHELL
       return 1
     fi
   fi
