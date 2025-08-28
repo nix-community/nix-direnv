@@ -12,9 +12,6 @@
         programs = {
           deadnix.enable = true;
           deno.enable = true;
-          mypy.enable = true;
-          ruff.check = true;
-          ruff.format = true;
           nixfmt.enable = true;
           nixfmt.package = pkgs.nixfmt-rfc-style;
           shellcheck.enable = true;
@@ -24,8 +21,16 @@
         };
 
         settings.formatter = {
-          shellcheck.includes = [ "direnvrc" ];
-          shfmt.includes = [ "direnvrc" ];
+          shellcheck.includes = [
+            "direnvrc"
+            "tests/*.bash"
+            "tests/*.bats"
+          ];
+          shfmt.includes = [
+            "direnvrc"
+            "tests/*.bash"
+            "tests/*.bats"
+          ];
         };
       };
     };
