@@ -9,7 +9,6 @@ let
 in
 pkgs.mkShell {
   DIRENV_STDLIB = "${test_pkgs.direnv-stdlib}";
-  DIRENVRC = "${nix-direnv}/share/nix-direnv/direnvrc";
   BATS_LIB_PATH = lib.strings.makeSearchPath "" (
     with test_pkgs;
     [

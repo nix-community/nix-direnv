@@ -250,7 +250,20 @@ This leads to some limitations in what we can reasonably parse.
 Currently, all single-word arguments and some well-known double arguments will
 be interpreted or passed along.
 
-#### Manual reload of the nix environment
+#### Fine-grained behavior control
+
+##### Disabling devShell fallback
+
+By default, nix-direnv will reload a previously working devShell if it discovers
+that a new verison does not evaluate. This can be disabled by calling
+`nix_direnv_disallow_fallback` in `.envrc`, like so:
+
+```shell
+nix_direnv_disallow_fallback
+use nix # or use flake
+```
+
+##### Manual reload of the nix environment
 
 To avoid delays and time consuming rebuilds at unexpected times, you can use
 nix-direnv in the "manual reload" mode. nix-direnv will then tell you when the

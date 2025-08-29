@@ -7,6 +7,7 @@
   fetchurl,
   findutils,
   gnugrep,
+  gnused,
   lib,
   nix-direnv,
   nixVersions,
@@ -31,6 +32,7 @@ let
           coreutils
           findutils
           gnugrep
+          gnused
         ]
       }
       export DIRENV_STDLIB=${direnv-stdlib}
@@ -38,7 +40,7 @@ let
       export BATS_LIB_PATH="${bats-support}:${bats-assert}"
 
       echo run unittest
-      ${lib.getExe' bats "bats"} -x --verbose-run tests/
+      ${lib.getExe' bats "bats"} tests/
     '';
   test-runner-stable = mkTestRunner "stable";
   test-runner-latest = mkTestRunner "latest";
