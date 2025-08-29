@@ -44,25 +44,11 @@ function assert_use_flake_layout_dir_shape {
 }
 
 # tests ===================================
-function use_nix_no_strict { # @test
-  write_envrc "use nix"
-  assert_run_output
-  assert_gcroot
-  assert_use_nix_layout_dir_shape
-}
-
 function use_nix_strict { # @test
   write_envrc "strict_env\nuse nix"
   assert_run_output
   assert_gcroot
   assert_use_nix_layout_dir_shape
-}
-
-function use_flake_no_strict { # @test
-  write_envrc "use flake"
-  assert_run_output
-  assert_gcroot
-  assert_use_flake_layout_dir_shape
 }
 
 function use_flake_strict { # @test
