@@ -255,7 +255,7 @@ be interpreted or passed along.
 ##### Disabling devShell fallback
 
 By default, nix-direnv will reload a previously working devShell if it discovers
-that a new verison does not evaluate. This can be disabled by calling
+that a new version does not evaluate. This can be disabled by calling
 `nix_direnv_disallow_fallback` in `.envrc`, like so:
 
 ```shell
