@@ -354,6 +354,14 @@ nix-direnv also respects the following environment variables for configuration.
 [new_project]: https://github.com/nix-community/nix-direnv/wiki/Shell-integration
 [hide_diff_notice]: https://direnv.net/man/direnv.toml.1.html#codehideenvdiffcode
 
+## Recommended integration
+
+- [direnv-instant](https://github.com/Mic92/direnv-instant) - A non-blocking
+  daemon that makes direnv truly instant by running it asynchronously in the
+  background. When combined with nix-direnv's caching, it provides immediate
+  shell access while environment loading happens in the background, with
+  automatic notifications when the environment is ready.
+
 ## Other projects in the field
 
 - [lorri](https://github.com/nix-community/lorri)
