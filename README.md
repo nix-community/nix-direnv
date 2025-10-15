@@ -368,3 +368,8 @@ nix-direnv also respects the following environment variables for configuration.
 - [sorri](https://github.com/nmattia/sorri)
 - [nixify](https://github.com/kalbasit/nur-packages/blob/master/pkgs/nixify/envrc)
 - [lorelei](https://github.com/shajra/direnv-nix-lorelei)
+
+## Need commercial support or customization?
+
+For commercial support, please contact [Mic92](https://github.com/Mic92/) at
+joerg@thalheim.io or reach out to [Numtide](https://numtide.com/contact/).
