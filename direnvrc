@@ -293,21 +293,38 @@ use_flake() {
   local profile_rc="${profile}.rc"
   local flake_inputs="${layout_dir}/flake-inputs/"
 
-  local need_update=0
   local watches
   _nix_direnv_watches watches
+
+  local profile_missing=0
+  if [[ ! -e $profile ]]; then
+    _nix_direnv_info "cache invalidated: profile ($profile) does not exist"
+    profile_missing=1
+  fi
+
+  local profile_rc_missing=0
+  if [[ ! -e $profile_rc ]]; then
+    _nix_direnv_info "cache invalidated: profile_rc ($profile_rc) does not exist"
+    profile_rc_missing=1
+  fi
+
+  local file_nt_profilerc=0
   local file=
+  local newer_files
   for file in "${watches[@]}"; do
     if [[ $file -nt $profile_rc ]]; then
-      need_update=1
-      break
+      newer_files+=("$file")
+      file_nt_profilerc=1
     fi
   done
 
-  if [[ ! -e $profile ||
-    ! -e $profile_rc ||
-    $need_update -eq 1 ]] \
-    ; then
+  if [[ $file_nt_profilerc -eq 1 ]]; then
+    _nix_direnv_info "cache invalidated: files newer than cache:"
+    echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
+    printf "%s\n" "${newer_files[@]}" >/dev/stderr
+  fi
+
+  if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || $file_nt_profilerc -eq 1 ]]; then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
 
@@ -457,21 +474,38 @@ use_nix() {
 
   watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" "shell.nix" "default.nix"
 
-  local need_update=0
   local watches
   _nix_direnv_watches watches
+
+  local profile_missing=0
+  if [[ ! -e $profile ]]; then
+    _nix_direnv_info "cache invalidated: profile ($profile) does not exist"
+    profile_missing=1
+  fi
+
+  local profile_rc_missing=0
+  if [[ ! -e $profile_rc ]]; then
+    _nix_direnv_info "cache invalidated: profile_rc ($profile_rc) does not exist"
+    profile_rc_missing=1
+  fi
+
+  local file_nt_profilerc=0
   local file=
+  local newer_files
   for file in "${watches[@]}"; do
     if [[ $file -nt $profile_rc ]]; then
-      need_update=1
-      break
+      newer_files+=("$file")
+      file_nt_profilerc=1
     fi
   done
 
-  if [[ ! -e $profile ||
-    ! -e $profile_rc ||
-    $need_update -eq 1 ]] \
-    ; then
+  if [[ $file_nt_profilerc -eq 1 ]]; then
+    _nix_direnv_info "cache invalidated: files newer than cache:"
+    echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
+    printf "%s\n" "${newer_files[@]}" >/dev/stderr
+  fi
+
+  if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || $file_nt_profilerc -eq 1 ]]; then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
     else
