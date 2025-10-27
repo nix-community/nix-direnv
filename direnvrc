@@ -189,6 +189,46 @@ _nix_add_gcroot() {
   _nix build --out-link "$symlink" "$storepath"
 }
 
+_nix_refresh_gcroot() {
+  local symlink=$1
+  local storepath
+  storepath=$(readlink -f "$symlink")
+  if [[ $storepath == /nix/store/* ]]; then
+    _nix_add_gcroot "$storepath" "$symlink"
+  fi
+}
+
+_nix_refresh_gcroots() {
+  # Updating the all symlinks’ mtime prevents nh from GC’ing the frequently used direnv environment.
+  local layout_dir
+  layout_dir=$(direnv_layout_dir)
+
+  for profile_path in "${layout_dir}"/flake-profile*; do
+    # Re-add flake profile gcroot
+    if [[ -L $profile_path ]]; then
+      _nix_refresh_gcroot "$profile_path"
+    fi
+  done
+
+  # Re-add flake inputs gcroots
+  local flake_inputs
+  flake_inputs="${layout_dir}/flake-inputs/"
+  if [[ -d $flake_inputs ]]; then
+    for input_path in "${flake_inputs}"/*; do
+      if [[ -L $input_path ]]; then
+        _nix_refresh_gcroot "$input_path"
+      fi
+    done
+  fi
+
+  for profile_path in "${layout_dir}"/nix-profile*; do
+    # Re-add nix profile gcroot
+    if [[ -L $profile_path ]]; then
+      _nix_refresh_gcroot "$profile_path"
+    fi
+  done
+}
+
 _nix_clean_old_gcroots() {
   local layout_dir=$1
 
@@ -354,6 +394,7 @@ use_flake() {
     if [[ -e ${profile_rc} ]]; then
       # Our cache is valid, use that
       _nix_direnv_info "Using cached dev shell"
+      _nix_refresh_gcroots
     else
       # We don't have a profile_rc to use!
       _nix_direnv_error "use_flake failed - Is your flake's devShell working?"
@@ -515,6 +556,7 @@ use_nix() {
   else
     if [[ -e ${profile_rc} ]]; then
       _nix_direnv_info "Using cached dev shell"
+      _nix_refresh_gcroots
     else
       _nix_direnv_error "use_nix failed - Is your nix shell working?"
       unset IN_NIX_SHELL
