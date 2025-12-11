@@ -96,7 +96,10 @@ _nix_direnv_preflight() {
   # Because direnv_layout_dir is user controlled,
   # we can't assume to be able to reverse it to get the source dir
   # So there's little to be done about this.
-  cat >"${layout_dir}/bin/nix-direnv-reload" <<-EOF
+  # Use install -m instead of cat + chmod to atomically create the file with
+  # correct permissions. This works even when an existing file is owned by
+  # another user, as install unlinks and recreates the file.
+  install -m 755 /dev/stdin "${layout_dir}/bin/nix-direnv-reload" <<-EOF
 #!/usr/bin/env bash
 set -e
 if [[ ! -d "$PWD" ]]; then
@@ -117,8 +120,6 @@ touch "$PWD/.envrc"
 # This makes sure that we know we are up to date.
 touch -r "$PWD/.envrc" "${layout_dir}"/*.rc
 EOF
-
-  chmod +x "${layout_dir}/bin/nix-direnv-reload"
 
   PATH_add "${layout_dir}/bin"
 }
