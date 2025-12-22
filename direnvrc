@@ -90,6 +90,10 @@ _nix_direnv_preflight() {
   if [[ ! -d "$layout_dir/bin" ]]; then
     mkdir -p "$layout_dir/bin"
   fi
+
+  if [[ ! -f "$layout_dir/.gitignore" ]]; then
+    echo '*' > "$layout_dir/.gitignore"
+  fi
   # N.B. This script relies on variable expansion in *this* shell.
   # (i.e. The written out file will have the variables expanded)
   # If the source path changes, the script becomes broken.
