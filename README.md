@@ -68,7 +68,7 @@ In `$HOME/.config/home-manager/home.nix` add
 ```
 
 Check the current
-[Home Manager Options](https://mipmip.github.io/home-manager-option-search/?query=direnv)
+[Home Manager Options](https://home-manager-options.extranix.com/?query=direnv)
 for integration with shells other than Bash. Be sure to also allow
 `home-manager` to manage your shell with `programs.<your_shell>.enable = true`.
 
