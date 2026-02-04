@@ -525,7 +525,7 @@ use_nix() {
       if [[ -n $packages ]]; then
         extra_args+=("--expr" "with import <nixpkgs> {}; mkShell { buildInputs = [ $packages ]; }")
       else
-        extra_args+=("--file" "$nixfile")
+        extra_args+=("--file" "$nixfile" --arg inNixShell true)
         if [[ -n $attribute ]]; then
           extra_args+=("$attribute")
         fi
