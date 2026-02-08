@@ -3,7 +3,7 @@
   imports = [ inputs.treefmt-nix.flakeModule ];
 
   perSystem =
-    { pkgs, ... }:
+    _:
     {
       treefmt = {
         # Used to find the project root
@@ -13,7 +13,6 @@
           deadnix.enable = true;
           deno.enable = true;
           nixfmt.enable = true;
-          nixfmt.package = pkgs.nixfmt-rfc-style;
           shellcheck.enable = true;
           shfmt.enable = true;
           statix.enable = true;
