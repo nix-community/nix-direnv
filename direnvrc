@@ -110,14 +110,6 @@ fi
 
 # rebuild the cache forcefully
 _nix_direnv_force_reload=1 direnv exec "$PWD" true
-
-# Update the mtime for .envrc.
-# This will cause direnv to reload again - but without re-building.
-touch "$PWD/.envrc"
-
-# Also update the timestamp of whatever profile_rc we have.
-# This makes sure that we know we are up to date.
-touch -r "$PWD/.envrc" "${layout_dir}"/*.rc
 EOF
   chmod +x "${layout_dir}/bin/nix-direnv-reload"
 
@@ -388,7 +380,10 @@ use_flake() {
       return 1
     fi
   fi
-
+  # Watch the profile_rc file so that manual cache refreshes take effect. We
+  # watch this at the end of the function, not the beginning, so that the cache
+  # isn't compared to itself for the up-to-date check.
+  watch_file "$profile_rc"
   _nix_import_env "$profile_rc"
 }
 
@@ -568,6 +563,9 @@ use_nix() {
     fi
   fi
 
+  # Watch the profile_rc file so that manual cache refreshes take effect. We
+  # watch this at the end of the function, not the beginning, so that the cache
+  # isn't compared to itself for the up-to-date check.
+  watch_file "$profile_rc"
   _nix_import_env "$profile_rc"
-
 }
