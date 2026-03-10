@@ -190,6 +190,34 @@ _nix_add_gcroot() {
   _nix build --out-link "$symlink" "$storepath"
 }
 
+_nix_stderr_filter() {
+  if command -v nom >/dev/null 2>&1; then
+    nom >&2
+  else
+    cat >&2
+  fi
+}
+
+_nix_print_dev_env() {
+  local tmp_profile=$1
+  shift
+
+  local fifo
+  fifo=$(mktemp -u)
+  mkfifo "$fifo"
+
+  _nix_stderr_filter < "$fifo" &
+  local filter_pid=$!
+
+  local rc=0
+  _nix print-dev-env --profile "$tmp_profile" "$@" 2>"$fifo" || rc=$?
+
+  wait "$filter_pid"
+  rm -f "$fifo"
+
+  return "$rc"
+}
+
 _nix_refresh_gcroots() {
   # Use touch to update all symlinks' timestamps to prevent nh
   # from garbage collecting the frequently used direnv environment.
@@ -341,7 +369,7 @@ use_flake() {
     else
       local tmp_profile_rc
       local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
-      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
+      if tmp_profile_rc=$(_nix_print_dev_env "$tmp_profile" "$@"); then
         # If we've gotten here, the user's current devShell is valid and we should cache it
         _nix_clean_old_gcroots "$layout_dir"
 
@@ -536,9 +564,7 @@ use_nix() {
       # This allows us to more closely mimic nix-shell.
       export IN_NIX_SHELL="impure"
 
-      if tmp_profile_rc=$(_nix \
-        print-dev-env \
-        --profile "$tmp_profile" \
+      if tmp_profile_rc=$(_nix_print_dev_env "$tmp_profile" \
         --impure \
         "${extra_args[@]}"); then
         _nix_clean_old_gcroots "$layout_dir"
