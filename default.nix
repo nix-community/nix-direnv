@@ -44,6 +44,8 @@ resholve.mkDerivation rec {
           # We want to reference the ambient Nix when possible, and have custom logic
           # for the fallback
           "nix"
+          # All calls to `nom` are gated behind runtime check for availability
+          "nom"
         ];
       };
       keep = {
