@@ -206,7 +206,7 @@ _nix_print_dev_env() {
   fifo=$(mktemp -u)
   mkfifo "$fifo"
 
-  _nix_stderr_filter < "$fifo" &
+  _nix_stderr_filter <"$fifo" &
   local filter_pid=$!
 
   local rc=0
