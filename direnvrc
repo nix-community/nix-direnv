@@ -483,7 +483,15 @@ use_nix() {
     esac
   done
 
-  watch_file "$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" "shell.nix" "default.nix"
+  local files_to_watch
+  files_to_watch=("$HOME/.direnvrc" "$HOME/.config/direnv/direnvrc" "shell.nix" "default.nix")
+  if [ -f "$nixfile" ]; then
+    files_to_watch+=("$nixfile")
+  elif [ -d "$nixfile" ]; then
+    files_to_watch+=("$nixfile/default.nix")
+  fi
+
+  watch_file files_to_watch
 
   local watches
   _nix_direnv_watches watches
