@@ -327,7 +327,7 @@ use_flake() {
   done
 
   if [[ ${#newer_files[@]} -gt 0 ]]; then
-    _nix_direnv_info "cache invalidated: ${#newer_files[@]} files newer than cache:"
+    _nix_direnv_info "cache invalidated: files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
     printf "%s\n" "${newer_files[@]:0:5}" >/dev/stderr
     [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" >/dev/stderr
@@ -516,7 +516,7 @@ use_nix() {
   done
 
   if [[ ${#newer_files[@]} -gt 0 ]]; then
-    _nix_direnv_info "cache invalidated: ${#newer_files[@]} files newer than cache:"
+    _nix_direnv_info "cache invalidated: files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
     printf "%s\n" "${newer_files[@]:0:5}" >/dev/stderr
     [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" >/dev/stderr
