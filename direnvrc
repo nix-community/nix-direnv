@@ -318,27 +318,22 @@ use_flake() {
     profile_rc_missing=1
   fi
 
-  local files_nt_profilerc=0
   local file=
   local newer_files
   for file in "${watches[@]}"; do
     if [[ $file -nt $profile_rc ]]; then
       newer_files+=("$file")
-      files_nt_profilerc=$((files_nt_profilerc + 1))
     fi
   done
 
-  if [[ $files_nt_profilerc -gt 5 ]]; then
-    _nix_direnv_info "cache invalidated: $files_nt_profilerc files newer than cache, including:"
+if [[ ${#newer_files[@]} -gt 0 ]]; then
+    _nix_direnv_info "cache invalidated: ${#newer_files[@]} files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
     printf "%s\n" "${newer_files[@]:0:5}" >/dev/stderr
-  elif [[ $files_nt_profilerc -gt 0 ]]; then
-    _nix_direnv_info "cache invalidated: files newer than cache:"
-    echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
-    printf "%s\n" "${newer_files[@]}" >/dev/stderr
-  fi
+    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" > /dev/stderr
+fi
 
-  if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || $files_nt_profilerc -gt 0 ]]; then
+  if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || ${#newer_files[@]} -gt 0 ]]; then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
 
@@ -512,27 +507,22 @@ use_nix() {
     profile_rc_missing=1
   fi
 
-  local files_nt_profilerc=0
   local file=
   local newer_files
   for file in "${watches[@]}"; do
     if [[ $file -nt $profile_rc ]]; then
       newer_files+=("$file")
-      files_nt_profilerc=$((files_nt_profilerc + 1))
     fi
   done
 
-  if [[ $files_nt_profilerc -gt 5 ]]; then
-    _nix_direnv_info "cache invalidated: $files_nt_profilerc files newer than cache, including:"
+if [[ ${#newer_files[@]} -gt 0 ]]; then
+    _nix_direnv_info "cache invalidated: ${#newer_files[@]} files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
     printf "%s\n" "${newer_files[@]:0:5}" >/dev/stderr
-  elif [[ $files_nt_profilerc -gt 0 ]]; then
-    _nix_direnv_info "cache invalidated: files newer than cache:"
-    echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
-    printf "%s\n" "${newer_files[@]}" >/dev/stderr
-  fi
+    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" > /dev/stderr
+fi
 
-  if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || $files_nt_profilerc -gt 0 ]]; then
+  if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || ${#newer_files[@]} -gt 0 ]]; then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
       _nix_direnv_warn_manual_reload "$profile_rc"
     else
