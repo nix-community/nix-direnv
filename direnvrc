@@ -326,12 +326,12 @@ use_flake() {
     fi
   done
 
-if [[ ${#newer_files[@]} -gt 0 ]]; then
+  if [[ ${#newer_files[@]} -gt 0 ]]; then
     _nix_direnv_info "cache invalidated: ${#newer_files[@]} files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
     printf "%s\n" "${newer_files[@]:0:5}" >/dev/stderr
-    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" > /dev/stderr
-fi
+    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" >/dev/stderr
+  fi
 
   if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || ${#newer_files[@]} -gt 0 ]]; then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
@@ -515,12 +515,12 @@ use_nix() {
     fi
   done
 
-if [[ ${#newer_files[@]} -gt 0 ]]; then
+  if [[ ${#newer_files[@]} -gt 0 ]]; then
     _nix_direnv_info "cache invalidated: ${#newer_files[@]} files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >/dev/stderr
     printf "%s\n" "${newer_files[@]:0:5}" >/dev/stderr
-    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" > /dev/stderr
-fi
+    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" >/dev/stderr
+  fi
 
   if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || ${#newer_files[@]} -gt 0 ]]; then
     if [[ $_nix_direnv_manual_reload -eq 1 && -z ${_nix_direnv_force_reload-} ]]; then
