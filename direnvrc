@@ -319,7 +319,7 @@ use_flake() {
   fi
 
   local file=
-  local newer_files
+  local newer_files=()
   for file in "${watches[@]}"; do
     if [[ $file -nt $profile_rc ]]; then
       newer_files+=("$file")
@@ -508,7 +508,7 @@ use_nix() {
   fi
 
   local file=
-  local newer_files
+  local newer_files=()
   for file in "${watches[@]}"; do
     if [[ $file -nt $profile_rc ]]; then
       newer_files+=("$file")
