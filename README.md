@@ -343,6 +343,9 @@ nix-direnv also respects the following environment variables for configuration.
   set manually. Leave unset or empty to fail immediately when a Nix
   implementation can't be found on `PATH`.
 
+- `NIX_DIRENV_LOG_REASON`: On reload, print the files that were changed, causing
+  the cache to be invalidated. Enabled by default - set to `1` to disable.
+
 ## General direnv tips
 
 - [Changing where direnv stores its cache][cache_location]
