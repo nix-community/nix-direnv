@@ -486,7 +486,7 @@ use_nix() {
     files_to_watch+=("$nixfile/default.nix")
   fi
 
-  watch_file files_to_watch
+  watch_file "${files_to_watch[@]}"
 
   local watches
   _nix_direnv_watches watches
