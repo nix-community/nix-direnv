@@ -56,6 +56,54 @@ _require_cmd_version() {
   _require_version "$cmd" "${BASH_REMATCH[1]}" "$required"
 }
 
+_nix_direnv_reload_script() {
+  cat <<-EOF
+#!/usr/bin/env bash
+set -e
+if [[ ! -d "$PWD" ]]; then
+  echo "Cannot find source directory; Did you move it?"
+  echo "(Looking for "$PWD")"
+  echo 'Cannot force reload with this script - use "direnv reload" manually and then try again'
+  exit 1
+fi
+
+# rebuild the cache forcefully
+_nix_direnv_force_reload=1 direnv exec "$PWD" true
+EOF
+}
+
+_nix_direnv_install_reload() {
+  local layout_dir=$1 reload tmp desired existing
+  reload="${layout_dir}/bin/nix-direnv-reload"
+  desired=$(_nix_direnv_reload_script)
+
+  if [[ -O $reload && -x $reload ]]; then
+    existing=$(<"$reload")
+    if [[ $existing == "$desired" ]]; then
+      return 0
+    fi
+  fi
+
+  tmp=$(mktemp "${layout_dir}/bin/.nix-direnv-reload.XXXXXX") || return
+
+  # Write to a temporary file first so the existing helper stays usable if
+  # writing the new script or marking it executable fails.
+  if ! printf "%s\n" "$desired" >"$tmp"; then
+    rm -f "$tmp"
+    return 1
+  fi
+
+  if ! chmod +x "$tmp"; then
+    rm -f "$tmp"
+    return 1
+  fi
+
+  if ! mv -f "$tmp" "$reload"; then
+    rm -f "$tmp"
+    return 1
+  fi
+}
+
 _nix_direnv_preflight() {
   if [[ -z $direnv ]]; then
     # shellcheck disable=2016
@@ -90,28 +138,9 @@ _nix_direnv_preflight() {
   if [[ ! -d "$layout_dir/bin" ]]; then
     mkdir -p "$layout_dir/bin"
   fi
-  # N.B. This script relies on variable expansion in *this* shell.
-  # (i.e. The written out file will have the variables expanded)
-  # If the source path changes, the script becomes broken.
-  # Because direnv_layout_dir is user controlled,
-  # we can't assume to be able to reverse it to get the source dir
-  # So there's little to be done about this.
-  # Remove first to handle case where file is owned by a different user
-  rm -f "${layout_dir}/bin/nix-direnv-reload"
-  cat >"${layout_dir}/bin/nix-direnv-reload" <<-EOF
-#!/usr/bin/env bash
-set -e
-if [[ ! -d "$PWD" ]]; then
-  echo "Cannot find source directory; Did you move it?"
-  echo "(Looking for "$PWD")"
-  echo 'Cannot force reload with this script - use "direnv reload" manually and then try again'
-  exit 1
-fi
-
-# rebuild the cache forcefully
-_nix_direnv_force_reload=1 direnv exec "$PWD" true
-EOF
-  chmod +x "${layout_dir}/bin/nix-direnv-reload"
+  if ! _nix_direnv_install_reload "$layout_dir"; then
+    return 1
+  fi
 
   PATH_add "${layout_dir}/bin"
 }
@@ -188,7 +217,9 @@ _nix_refresh_gcroots() {
   local layout_dir
   layout_dir=$(direnv_layout_dir)
 
-  touch -h "${layout_dir}"/flake-profile-* "${layout_dir}"/flake-inputs/* "${layout_dir}"/nix-profile-*
+  if ! touch -h "${layout_dir}"/flake-profile-* "${layout_dir}"/flake-inputs/* "${layout_dir}"/nix-profile-* 2>/dev/null; then
+    _nix_direnv_warning "could not refresh gcroots; layout directory may be read-only"
+  fi
 }
 
 _nix_clean_old_gcroots() {
