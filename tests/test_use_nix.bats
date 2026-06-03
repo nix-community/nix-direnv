@@ -11,7 +11,7 @@ function teardown {
 }
 
 function use_nix_attrs_strict { # @test
-  write_envrc "strict_env\nuse nix -A subshell"
+  write_envrc "use nix -A subshell"
   # shellcheck disable=SC2016
   run_in_direnv 'echo "subshell: $THIS_IS_A_SUBSHELL"'
   assert_output -e "subshell: OK$"
@@ -19,7 +19,7 @@ function use_nix_attrs_strict { # @test
 
 function use_nix_no_nix_path_strict { # @test
   unset NIX_PATH
-  write_envrc "strict_env\nuse nix --argstr someArg OK"
+  write_envrc "use nix --argstr someArg OK"
   # shellcheck disable=SC2016
   run_in_direnv 'echo "someArg: $SHOULD_BE_SET"'
   assert_output -e "someArg: OK$"

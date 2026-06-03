@@ -29,6 +29,7 @@ function _common_teardown {
 
 function write_envrc {
   echo "source $DIRENVRC" >"$TESTDIR/.envrc"
+  echo "strict_env" >>"$TESTDIR/.envrc"
   echo -e "\n$*" >>"$TESTDIR/.envrc"
   direnv allow "$TESTDIR"
 }
