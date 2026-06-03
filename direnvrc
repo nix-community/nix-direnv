@@ -7,10 +7,10 @@ NIX_DIRENV_VERSION=3.1.2
 BASH_MIN_VERSION=4.4
 DIRENV_MIN_VERSION=2.21.3
 
-_NIX_DIRENV_LOG_PREFIX="nix-direnv: "
+_NIX_DIRENV_LOG_PREFIX="nix-direnv"
 
 _nix_direnv_info() {
-  log_status "${_NIX_DIRENV_LOG_PREFIX}$*"
+  log_status "${_NIX_DIRENV_LOG_PREFIX}: $*"
 }
 
 _nix_direnv_warning() {
@@ -24,7 +24,7 @@ _nix_direnv_warning() {
   fi
 
   printf "%b" "$color_warning"
-  log_status "${_NIX_DIRENV_LOG_PREFIX}${msg}"
+  log_status "${_NIX_DIRENV_LOG_PREFIX}: ${msg}"
   printf "%b" "$color_normal"
 }
 
@@ -319,10 +319,14 @@ use_flake() {
   done
 
   if [[ ${#newer_files[@]} -gt 0 ]]; then
-    _nix_direnv_info "cache invalidated: files newer than cache:"
-    echo -n "$_NIX_DIRENV_LOG_PREFIX" >&2
-    printf "%s\n" "${newer_files[@]:0:5}" >&2
-    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" >&2
+    local new_file_list
+    new_file_list="$(printf "  %s\n" "${newer_files[@]:0:5}")"
+    local and_n_more=""
+    if [[ ${#newer_files[@]} -gt 5 ]]; then
+      and_n_more="\n  and $((${#newer_files[@]} - 5)) more"
+    fi
+
+    _nix_direnv_info "$(printf "cache invalidated: files newer than cache:\n%s%s" "$new_file_list" "$and_n_more")"
   fi
 
   if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || ${#newer_files[@]} -gt 0 ]]; then
@@ -512,10 +516,14 @@ use_nix() {
   done
 
   if [[ ${#newer_files[@]} -gt 0 ]]; then
-    _nix_direnv_info "cache invalidated: files newer than cache:"
-    echo -n "$_NIX_DIRENV_LOG_PREFIX" >&2
-    printf "%s\n" "${newer_files[@]:0:5}" >&2
-    [[ ${#newer_files[@]} -gt 5 ]] && echo "And $((${#newer_files[@]} - 5)) more" >&2
+    local new_file_list
+    new_file_list="$(printf "  %s\n" "${newer_files[@]:0:5}")"
+    local and_n_more=""
+    if [[ ${#newer_files[@]} -gt 5 ]]; then
+      and_n_more="And $((${#newer_files[@]} - 5)) more"
+    fi
+
+    _nix_direnv_info "$(printf "cache invalidated: files newer than cache:\n%s%s" "$new_file_list" "$and_n_more")"
   fi
 
   if [[ $profile_missing -eq 1 || $profile_rc_missing -eq 1 || ${#newer_files[@]} -gt 0 ]]; then
