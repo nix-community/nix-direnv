@@ -41,3 +41,7 @@ function run_in_direnv {
   assert_success
   assert_stderr -p "Renewed cache"
 }
+
+function silence_nix_direnv_logging {
+  echo -e "[global]\nlog_filter=\"^$\"\n" >"${DIRENV_CONFIG}/direnv.toml"
+}
