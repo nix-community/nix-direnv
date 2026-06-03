@@ -207,7 +207,7 @@ _nix_argsum_suffix() {
     elif has shasum; then
       out=$(shasum <<<"$1")
     else
-      # degrade gracefully both tools are not present
+      # degrade gracefully when both tools are not present
       return
     fi
     read -r checksum _ <<<"$out"
