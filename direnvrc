@@ -330,7 +330,7 @@ use_flake() {
     else
       local tmp_profile_rc
       local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
-      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@"); then
+      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@" 2>/dev/null); then
         # If we've gotten here, the user's current devShell is valid and we should cache it
         _nix_clean_old_gcroots "$layout_dir"
 
@@ -342,9 +342,12 @@ use_flake() {
         # also add garbage collection root for source
         local flake_input_paths
         mkdir -p "$flake_inputs"
-        flake_input_paths=$(_nix flake archive \
-          --json --no-write-lock-file \
-          -- "$flake_uri")
+        flake_input_paths=$(
+          _nix flake archive \
+            --json \
+            --no-write-lock-file \
+            -- "$flake_uri" 2>/dev/null
+        )
 
         while [[ $flake_input_paths =~ /nix/store/[^\"]+ ]]; do
           local store_path="${BASH_REMATCH[0]}"
@@ -544,7 +547,7 @@ use_nix() {
         print-dev-env \
         --profile "$tmp_profile" \
         --impure \
-        "${extra_args[@]}"); then
+        "${extra_args[@]}" 2>/dev/null); then
         _nix_clean_old_gcroots "$layout_dir"
 
         echo "$tmp_profile_rc" >"$profile_rc"
