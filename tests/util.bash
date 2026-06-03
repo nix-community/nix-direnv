@@ -7,7 +7,11 @@ function _common_setup {
   TESTDIR=
   TESTDIR=$(mktemp -d -t nix-direnv.XXXXXX)
   export TESTDIR
-  export DIRENV_LOG_FORMAT="direnv: %s"
+
+  # Direnv >= 2.36.0 requires a toml file to be present to parse some env values
+  # See https://github.com/direnv/direnv/issues/1418#issuecomment-2820125413
+  export DIRENV_CONFIG="$TESTDIR"
+  touch "${DIRENV_CONFIG}/direnv.toml"
 
   # Set up nix to be able to find your user's nix.conf if run locally
   export NIX_USER_CONF_FILES="$HOME/.config/nix/nix.conf"
