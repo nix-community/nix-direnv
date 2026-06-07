@@ -13,14 +13,15 @@ function teardown {
 
 # helpers =================================
 function assert_run_output {
-  run_in_direnv hello
-  assert_output -p "Hello, world"
-  assert_stderr -p "Executing shellHook"
+  run --separate-stderr direnv exec "$TESTDIR" sh -c hello
+  assert_success
+  assert_output "Hello, world!"
+  assert_stderr "Executing shellHook."
 }
 
 function assert_gcroot {
   profile_path=$(find "$TESTDIR/.direnv" -type l | head -n 1)
-  run bats_pipe find /nix/var/nix/gcroots/auto/ -type l -printf "%l\n" \| grep -q "$profile_path"
+  run bats_pipe find /nix/var/nix/gcroots/auto/ -type l -printf "%l\n" \| grep "$profile_path"
   assert_success
 }
 
@@ -44,15 +45,17 @@ function assert_use_flake_layout_dir_shape {
 }
 
 # tests ===================================
-function use_nix_strict { # @test
-  write_envrc "strict_env\nuse nix"
+function use_nix { # @test
+  silence_nix_direnv_logging
+  write_envrc "use nix"
   assert_run_output
   assert_gcroot
   assert_use_nix_layout_dir_shape
 }
 
-function use_flake_strict { # @test
-  write_envrc "strict_env\nuse flake"
+function use_flake { # @test
+  silence_nix_direnv_logging
+  write_envrc "use flake"
   assert_run_output
   assert_gcroot
   assert_use_flake_layout_dir_shape

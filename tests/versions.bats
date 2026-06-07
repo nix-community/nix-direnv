@@ -8,7 +8,7 @@ function setup {
   load "$DIRENVRC"
 }
 
-function _require_version_with_valid_versions { # @test
+function require_version_with_valid_versions { # @test
   # args: cmd version minimum_required
   run _require_version "test-cmd" "2.5" "2.4"
   assert_success
@@ -22,7 +22,7 @@ function _require_version_with_valid_versions { # @test
   assert_success
 }
 
-function _require_cmd_version_with_valid_versions { # @test
+function require_cmd_version_with_valid_versions { # @test
   run _require_cmd_version "bash" "1.0"
   assert_success
   run _require_cmd_version "bash" "100.0"

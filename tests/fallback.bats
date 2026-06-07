@@ -10,8 +10,8 @@ function teardown {
   _common_teardown
 }
 
-function test_fallback_allowed() { # @test
-  write_envrc "strict_env\nwatch_file shell.nix\nuse flake"
+function fallback_allowed() { # @test
+  write_envrc "watch_file shell.nix\nuse flake"
   run_in_direnv 'hello'
 
   sed -i.bk 's|inherit shellHook|inherit doesntExist|' "$TESTDIR/shell.nix"
@@ -21,8 +21,8 @@ function test_fallback_allowed() { # @test
 
 }
 
-function test_fallback_disallowed() { # @test
-  write_envrc "strict_env\nwatch_file shell.nix\nnix_direnv_disallow_fallback\nuse flake"
+function fallback_disallowed() { # @test
+  write_envrc "watch_file shell.nix\nnix_direnv_disallow_fallback\nuse flake"
   run_in_direnv 'hello'
 
   sed -i.bk 's|inherit shellHook|inherit doesntExist|' "$TESTDIR/shell.nix"
