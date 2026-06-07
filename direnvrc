@@ -32,6 +32,8 @@ _nix_direnv_error() { log_error "${_NIX_DIRENV_LOG_PREFIX}$*"; }
 
 _nix_direnv_nix=""
 
+_nix_direnv_log_reason=""
+
 _nix() {
   ${_nix_direnv_nix} --no-warn-dirty --extra-experimental-features "nix-command flakes" "$@"
 }
@@ -73,6 +75,10 @@ _nix_direnv_preflight() {
       ! _require_cmd_version "$direnv" "$DIRENV_MIN_VERSION"; then
       return 1
     fi
+  fi
+
+  if [[ -n ${NIX_DIRENV_LOG_REASON:-} ]]; then
+    _nix_direnv_log_reason="${NIX_DIRENV_LOG_REASON}"
   fi
 
   if command -v nix >/dev/null 2>&1; then
@@ -318,7 +324,7 @@ use_flake() {
     fi
   done
 
-  if [[ ${#newer_files[@]} -gt 0 ]]; then
+  if [[ ${#newer_files[@]} -gt 0 && $_nix_direnv_log_reason -ne 1 ]]; then
     _nix_direnv_info "cache invalidated: files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >&2
     printf "%s\n" "${newer_files[@]:0:5}" >&2
@@ -511,7 +517,7 @@ use_nix() {
     fi
   done
 
-  if [[ ${#newer_files[@]} -gt 0 ]]; then
+  if [[ ${#newer_files[@]} -gt 0 && $_nix_direnv_log_reason -ne 1 ]]; then
     _nix_direnv_info "cache invalidated: files newer than cache:"
     echo -n "$_NIX_DIRENV_LOG_PREFIX" >&2
     printf "%s\n" "${newer_files[@]:0:5}" >&2
