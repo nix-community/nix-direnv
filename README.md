@@ -82,7 +82,7 @@ Put the following lines in your `.envrc`:
 
 ```bash
 if ! has nix_direnv_version || ! nix_direnv_version 3.2.0; then
-  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.2.0/direnvrc" "sha256-Di03ad3a0ueGi6CGrfhrQzyGdQIg9APXIPCAMNQgWYM="
+  source_url "https://raw.githubusercontent.com/nix-community/nix-direnv/3.2.0/direnvrc" "sha256-hW6NC1JHue3IjZN3uDM6l6I2PMaauqd2D7hXYJ1Zfr4="
 fi
 ```
 
