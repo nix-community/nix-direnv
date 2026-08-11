@@ -11,9 +11,7 @@ jobs:
   tests:
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        # FIXME macos garbage currently collect also nix-shell that runs the test
-        #os: [ ubuntu-latest, macos-latest ]
+        os: [ubuntu-latest, macos-latest]
         variants: [stable, latest]
     runs-on: ${{ matrix.os }}
     steps:
