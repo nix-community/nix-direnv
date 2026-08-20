@@ -211,17 +211,6 @@ _nix_add_gcroot() {
   _nix build --out-link "$symlink" "$storepath"
 }
 
-_nix_refresh_gcroots() {
-  # Use touch to update all symlinks' timestamps to prevent nh
-  # from garbage collecting the frequently used direnv environment.
-  local layout_dir
-  layout_dir=$(direnv_layout_dir)
-
-  if ! touch -h "${layout_dir}"/flake-profile-* "${layout_dir}"/flake-inputs/* "${layout_dir}"/nix-profile-* 2>/dev/null; then
-    _nix_direnv_warning "could not refresh gcroots; layout directory may be read-only"
-  fi
-}
-
 _nix_clean_old_gcroots() {
   local layout_dir=$1
 
@@ -403,7 +392,6 @@ use_flake() {
     if [[ -e ${profile_rc} ]]; then
       # Our cache is valid, use that
       _nix_direnv_info "Using cached dev shell"
-      _nix_refresh_gcroots
     else
       # We don't have a profile_rc to use!
       _nix_direnv_error "use_flake failed - Is your flake's devShell working?"
@@ -593,7 +581,6 @@ use_nix() {
   else
     if [[ -e ${profile_rc} ]]; then
       _nix_direnv_info "Using cached dev shell"
-      _nix_refresh_gcroots
     else
       _nix_direnv_error "use_nix failed - Is your nix shell working?"
       unset IN_NIX_SHELL
