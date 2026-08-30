@@ -343,6 +343,23 @@ nix-direnv also respects the following environment variables for configuration.
   set manually. Leave unset or empty to fail immediately when a Nix
   implementation can't be found on `PATH`.
 
+#### Notes on nh integration
+
+`nh` is a modern nix helper utility that generally makes interacting with the
+nix tooling much better and more friendly. In the past, nix-direnv had some
+specific functionality to update gcroots whenever the environment was refreshed
+so that `nh` would consider those gcroots "fresh" and would not clean them up
+when `nh clean` was invoked.
+
+Modern versions of `nh` (4.4.0+) introduce a `--keep-one` argument to the
+`clean` subcommand, which specifically keeps one revision of every direnv's
+gcroots, which allows easily keeping the latest revision of every nix-direnv
+related gcroot so you're not redownloading the state unnecessarily.
+
+Because of this functionality (and because it interfered with other common
+usage), we have reverted our changes supporting this functionality. Please use
+`--keep-one` if you want a specific gcroot keps, regardless of age.
+
 ## General direnv tips
 
 - [Changing where direnv stores its cache][cache_location]
