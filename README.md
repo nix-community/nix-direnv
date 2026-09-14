@@ -351,14 +351,9 @@ specific functionality to update gcroots whenever the environment was refreshed
 so that `nh` would consider those gcroots "fresh" and would not clean them up
 when `nh clean` was invoked.
 
-Modern versions of `nh` (4.4.0+) introduce a `--keep-one` argument to the
-`clean` subcommand, which specifically keeps one revision of every direnv's
-gcroots, which allows easily keeping the latest revision of every nix-direnv
-related gcroot so you're not redownloading the state unnecessarily.
-
-Because of this functionality (and because it interfered with other common
-usage), we have reverted our changes supporting this functionality. Please use
-`--keep-one` if you want a specific gcroot keps, regardless of age.
+Modern versions of `nh` (4.4.0+) introduce a `--no-direnv` argument to the
+`clean` subcommand, which prevents direnv from being garbage collected. This 
+must be explicitly invoked in order to prevent garbage collection. 
 
 ## General direnv tips
 
