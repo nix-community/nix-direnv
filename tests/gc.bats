@@ -26,23 +26,48 @@ function assert_gcroot {
 }
 
 function assert_use_nix_layout_dir_shape {
-  paths=("$TESTDIR"/.direnv/*)
+  paths=("$TESTDIR"/.direnv/**)
   chomped_paths=("${paths[@]#$TESTDIR/.direnv/}")
-  assert_equal "${#chomped_paths[@]}" "4"
-  assert_regex "$(printf "%s " "${chomped_paths[@]}")" '^bin nix_output.log nix-profile.+ nix-profile-.+\.rc $'
+  assert_equal "${#chomped_paths[@]}" "6"
+  readarray -td '' sorted_paths < <(printf '%s\0' "${chomped_paths[@]}" | sort -z)
+  expected_patterns=(
+    "^$"
+    "^bin$"
+    "^bin/nix-direnv-reload$"
+    "^nix-output.log$"
+    "^nix-profile-.+$"
+    "^nix-profile-.+\.rc$"
+  )
+  for ((i = 0; i < ${#expected_patterns[@]}; i++)); do
+    path="${sorted_paths[$i]}"
+    pattern="${expected_patterns[$i]}"
+    assert_regex "$path" "$pattern"
+  done
 }
 
 function assert_use_flake_layout_dir_shape {
-  paths=("$TESTDIR"/.direnv/flake-inputs/*)
-  chomped_inputs_paths=("${paths[@]#$TESTDIR/.direnv/flake-inputs/}")
-  # four inputs, so four "...-source" outputs
-  assert_regex "$(printf "%s " "${chomped_inputs_paths[@]}")" "(.+-source[ ]?){4}"
-
-  paths=("$TESTDIR"/.direnv/*)
+  paths=("$TESTDIR"/.direnv/**)
   chomped_paths=("${paths[@]#$TESTDIR/.direnv/}")
-  assert_equal "${#chomped_paths[@]}" "5"
-  echo "${chomped_paths[@]}"
-  assert_regex "$(printf "%s " "${chomped_paths[@]}")" '^bin flake-inputs flake-profile-.+ flake-profile-.+\.rc nix_output.log $'
+  assert_equal "${#chomped_paths[@]}" "11"
+  readarray -td '' sorted_paths < <(printf '%s\0' "${chomped_paths[@]}" | sort -z)
+  expected_patterns=(
+    "^$"
+    "^bin$"
+    "^bin/nix-direnv-reload$"
+    "^flake-inputs$"
+    "^flake-inputs/.+-source$"
+    "^flake-inputs/.+-source$"
+    "^flake-inputs/.+-source$"
+    "^flake-inputs/.+-source$"
+    "^flake-profile-.+$"
+    "^flake-profile-.+\.rc$"
+    "^nix-output.log$"
+  )
+  for ((i = 0; i < ${#expected_patterns[@]}; i++)); do
+    path="${sorted_paths[$i]}"
+    pattern="${expected_patterns[$i]}"
+    assert_regex "$path" "$pattern"
+  done
 }
 
 # tests ===================================
