@@ -350,7 +350,7 @@ use_flake() {
     else
       local tmp_profile_rc
       local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
-      local log_path="${layout_dir}/nix_output.log"
+      local log_path="${layout_dir}/nix-output.log"
       _nix_direnv_info "Renewing cache"
       if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@" 2>"$log_path"); then
         # If we've gotten here, the user's current devShell is valid and we should cache it
@@ -415,7 +415,7 @@ use_nix() {
 
   local layout_dir path version
   layout_dir=$(direnv_layout_dir)
-  local log_path="${layout_dir}/nix_output.log"
+  local log_path="${layout_dir}/nix-output.log"
   # NB: macOS has realpath, but only supports -q
   if path=$(realpath "$(_nix eval --impure --expr "<nixpkgs>" 2>/dev/null)"); then
     if [[ -f "${path}/.version-suffix" ]]; then
