@@ -28,8 +28,8 @@ function assert_gcroot {
 function assert_use_nix_layout_dir_shape {
   paths=("$TESTDIR"/.direnv/*)
   chomped_paths=("${paths[@]#$TESTDIR/.direnv/}")
-  assert_equal "${#chomped_paths[@]}" "3"
-  assert_regex "$(printf "%s " "${chomped_paths[@]}")" "bin nix-profile.+ nix-profile-.+\.rc"
+  assert_equal "${#chomped_paths[@]}" "4"
+  assert_regex "$(printf "%s " "${chomped_paths[@]}")" '^bin nix_output.log nix-profile.+ nix-profile-.+\.rc $'
 }
 
 function assert_use_flake_layout_dir_shape {
@@ -40,8 +40,9 @@ function assert_use_flake_layout_dir_shape {
 
   paths=("$TESTDIR"/.direnv/*)
   chomped_paths=("${paths[@]#$TESTDIR/.direnv/}")
-  assert_equal "${#chomped_paths[@]}" "4"
-  assert_regex "$(printf "%s " "${chomped_paths[@]}")" "bin flake-inputs flake-profile-.+ flake-profile-.+\.rc"
+  assert_equal "${#chomped_paths[@]}" "5"
+  echo "${chomped_paths[@]}"
+  assert_regex "$(printf "%s " "${chomped_paths[@]}")" '^bin flake-inputs flake-profile-.+ flake-profile-.+\.rc nix_output.log $'
 }
 
 # tests ===================================
