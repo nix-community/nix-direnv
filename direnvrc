@@ -33,7 +33,7 @@ _nix_direnv_error() { log_error "${_NIX_DIRENV_LOG_PREFIX}$*"; }
 _nix_direnv_nix=""
 
 _nix() {
-  ${_nix_direnv_nix} --no-warn-dirty --extra-experimental-features "nix-command flakes" "$@"
+  ${_nix_direnv_nix} --verbose --no-warn-dirty --extra-experimental-features "nix-command flakes" "$@"
 }
 
 _require_version() {
@@ -350,7 +350,9 @@ use_flake() {
     else
       local tmp_profile_rc
       local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
-      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@" 2>/dev/null); then
+      local log_path="${layout_dir}/nix-output.log"
+      _nix_direnv_info "Renewing cache"
+      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@" 2>"$log_path"); then
         # If we've gotten here, the user's current devShell is valid and we should cache it
         _nix_clean_old_gcroots "$layout_dir"
 
@@ -378,26 +380,26 @@ use_flake() {
         _nix_direnv_info "Renewed cache"
       else
         # The user's current flake failed to evaluate,
-        # but there is already a prior profile_rc,
+        # but there may already be a prior profile_rc,
         # which is probably more useful than nothing.
         # Fallback to use that (which means just leaving profile_rc alone!)
         if [[ $_nix_direnv_allow_fallback -eq 1 ]]; then
-          _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment!"
-          export NIX_DIRENV_DID_FALLBACK=1
+          if [[ -e ${profile_rc} ]]; then
+            _nix_direnv_warning "Evaluating current devShell failed. Falling back to previous environment! (See ${log_path} for more information)"
+            export NIX_DIRENV_DID_FALLBACK=1
+          else
+            # We don't have a profile_rc to use!
+            _nix_direnv_error "use_flake failed - Is your flake's devShell working?"
+            return 1
+          fi
         else
+          _nix_direnv_error "use_flake failed and fallback is disabled; exiting..."
           return 1
         fi
       fi
     fi
   else
-    if [[ -e ${profile_rc} ]]; then
-      # Our cache is valid, use that
-      _nix_direnv_info "Using cached dev shell"
-    else
-      # We don't have a profile_rc to use!
-      _nix_direnv_error "use_flake failed - Is your flake's devShell working?"
-      return 1
-    fi
+    _nix_direnv_info "Using cached dev shell"
   fi
   # Watch the profile_rc file so that manual cache refreshes take effect. We
   # watch this at the end of the function, not the beginning, so that the cache
@@ -413,6 +415,7 @@ use_nix() {
 
   local layout_dir path version
   layout_dir=$(direnv_layout_dir)
+  local log_path="${layout_dir}/nix-output.log"
   # NB: macOS has realpath, but only supports -q
   if path=$(realpath "$(_nix eval --impure --expr "<nixpkgs>" 2>/dev/null)"); then
     if [[ -f "${path}/.version-suffix" ]]; then
@@ -561,12 +564,13 @@ use_nix() {
       # (notably haskellPackages.developPackage returns an env if this is set)
       # This allows us to more closely mimic nix-shell.
       export IN_NIX_SHELL="impure"
+      _nix_direnv_info "Renewing cache"
 
       if tmp_profile_rc=$(_nix \
         print-dev-env \
         --profile "$tmp_profile" \
         --impure \
-        "${extra_args[@]}" 2>/dev/null); then
+        "${extra_args[@]}" 2>"${log_path}"); then
         _nix_clean_old_gcroots "$layout_dir"
 
         echo "$tmp_profile_rc" >"$profile_rc"
@@ -575,22 +579,23 @@ use_nix() {
         _nix_direnv_info "Renewed cache"
       else
         if [[ $_nix_direnv_allow_fallback -eq 1 ]]; then
-          _nix_direnv_warning "Evaluating current nix shell failed. Falling back to previous environment!"
-          export NIX_DIRENV_DID_FALLBACK=1
+          if [[ -e ${profile_rc} ]]; then
+            _nix_direnv_warning "Evaluating current nix shell failed. Falling back to previous environment!"
+            export NIX_DIRENV_DID_FALLBACK=1
+          else
+            _nix_direnv_error "use_nix failed - Is your nix shell working?"
+            unset IN_NIX_SHELL
+            return 1
+          fi
         else
+          _nix_direnv_error "use_nix failed and fallback is disabled; exiting..."
           unset IN_NIX_SHELL
           return 1
         fi
       fi
     fi
   else
-    if [[ -e ${profile_rc} ]]; then
-      _nix_direnv_info "Using cached dev shell"
-    else
-      _nix_direnv_error "use_nix failed - Is your nix shell working?"
-      unset IN_NIX_SHELL
-      return 1
-    fi
+    _nix_direnv_info "Using cached dev shell"
   fi
 
   # Watch the profile_rc file so that manual cache refreshes take effect. We
