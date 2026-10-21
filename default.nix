@@ -44,11 +44,17 @@ resholve.mkDerivation rec {
           # We want to reference the ambient Nix when possible, and have custom logic
           # for the fallback
           "nix"
+          # nix_direnv_detach_builds talks to the host's own user manager and
+          # is skipped when these are absent.
+          "flock"
+          "systemctl"
+          "systemd-run"
         ];
       };
       keep = {
         "$cmd" = true;
         "$direnv" = true;
+        "$BASH" = true;
 
         # Nix fallback implementation
         "$_nix_direnv_nix" = true;

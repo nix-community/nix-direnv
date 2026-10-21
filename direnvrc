@@ -266,6 +266,77 @@ nix_direnv_disallow_fallback() {
   _nix_direnv_allow_fallback=0
 }
 
+: "${_nix_direnv_detach_builds:=0}"
+nix_direnv_detach_builds() {
+  _nix_direnv_detach_builds=1
+}
+
+_nix_direnv_can_detach() {
+  [[ $_nix_direnv_detach_builds -eq 1 ]] && has systemd-run && has flock &&
+    systemctl --user show --property=Version --value >/dev/null 2>&1
+}
+
+_nix_realize_id() {
+  local sum
+  sum=$(sha1sum <<<"$1")
+  echo "${sum:0:16}"
+}
+
+# Serialize renewals of one profile for the rest of this direnv run, so a
+# concurrent activation cannot remove this renewal's profile links. Called
+# outside the command substitution that runs _nix_print_dev_env. Never
+# unlinked: flock state belongs to the inode.
+declare -gA _nix_direnv_realize_locks=()
+_nix_realize_lock() {
+  local lock fd
+  lock="${1%/*}/.realize-$(_nix_realize_id "$1").lock"
+  [[ -v _nix_direnv_realize_locks["$lock"] ]] && return 0
+  if exec {fd}>>"$lock" && flock "$fd"; then
+    _nix_direnv_realize_locks["$lock"]=$fd
+  else
+    # Unserialized renewals still work, and failures still reach the fallback.
+    _nix_direnv_warning "could not lock ${lock}; concurrent renewals are not serialized"
+  fi
+}
+
+# With nix_direnv_detach_builds, realize the shell in a user unit so an
+# interrupted activation (Ctrl-C, editor or agent timeout) only stops waiting:
+# the build finishes once, and its --profile link roots the closure for the
+# next activation, which joins a still-running unit instead of restarting it.
+_nix_print_dev_env() {
+  local tmp_profile=$1 log_path=$2
+  shift 2
+  if ! _nix_direnv_can_detach; then
+    _nix print-dev-env --profile "$tmp_profile" "$@" 2>"$log_path"
+    return
+  fi
+  local unit
+  unit="nix-direnv-$(_nix_realize_id "$tmp_profile")"
+  if ! systemctl --user is-active --quiet "$unit"; then
+    rm -f "$tmp_profile.rc" "$tmp_profile.status"
+    local -a env=()
+    local name
+    for name in $(compgen -e); do
+      [[ $name == DIRENV_* ]] && continue
+      env+=("--setenv=$name")
+    done
+    # The inner script expands its own arguments inside the unit.
+    # shellcheck disable=SC2016
+    systemd-run --user --quiet --collect --same-dir --unit="$unit" "${env[@]}" -- \
+      "$BASH" -c 'log=$1; shift; "$@" >"$0.rc" 2>"$log"; echo $? >"$0.status"' "$tmp_profile" "$log_path" \
+      "$_nix_direnv_nix" --no-warn-dirty --extra-experimental-features "nix-command flakes" \
+      print-dev-env --profile "$tmp_profile" "$@" || return 1
+  fi
+  _nix_direnv_info "building in user unit $unit; interrupting only stops this wait"
+  while systemctl --user is-active --quiet "$unit"; do
+    sleep 1
+  done
+  local status=
+  [[ -s "$tmp_profile.status" ]] && read -r status <"$tmp_profile.status"
+  [[ $status == 0 ]] || return 1
+  cat "$tmp_profile.rc"
+}
+
 _nix_direnv_warn_manual_reload() {
   if [[ -e $1 ]]; then
     _nix_direnv_warning 'cache is out of date. use "nix-direnv-reload" to reload'
@@ -351,8 +422,12 @@ use_flake() {
       local tmp_profile_rc
       local tmp_profile="${layout_dir}/flake-tmp-profile.$$"
       local log_path="${layout_dir}/nix-output.log"
+      if _nix_direnv_can_detach; then
+        tmp_profile="${layout_dir}/flake-tmp-profile$(_nix_argsum_suffix "$flake_expr")"
+        _nix_realize_lock "$tmp_profile"
+      fi
       _nix_direnv_info "Renewing cache"
-      if tmp_profile_rc=$(_nix print-dev-env --profile "$tmp_profile" "$@" 2>"$log_path"); then
+      if tmp_profile_rc=$(_nix_print_dev_env "$tmp_profile" "$log_path" "$@"); then
         # If we've gotten here, the user's current devShell is valid and we should cache it
         _nix_clean_old_gcroots "$layout_dir"
 
@@ -564,13 +639,13 @@ use_nix() {
       # (notably haskellPackages.developPackage returns an env if this is set)
       # This allows us to more closely mimic nix-shell.
       export IN_NIX_SHELL="impure"
+      if _nix_direnv_can_detach; then
+        tmp_profile="${layout_dir}/nix-tmp-profile${profile#"${layout_dir}"/nix-profile}"
+        _nix_realize_lock "$tmp_profile"
+      fi
       _nix_direnv_info "Renewing cache"
 
-      if tmp_profile_rc=$(_nix \
-        print-dev-env \
-        --profile "$tmp_profile" \
-        --impure \
-        "${extra_args[@]}" 2>"${log_path}"); then
+      if tmp_profile_rc=$(_nix_print_dev_env "$tmp_profile" "$log_path" --impure "${extra_args[@]}"); then
         _nix_clean_old_gcroots "$layout_dir"
 
         echo "$tmp_profile_rc" >"$profile_rc"

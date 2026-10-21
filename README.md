@@ -284,6 +284,26 @@ To reload your nix environment, use the `nix-direnv-reload` command:
 nix-direnv-reload
 ```
 
+##### Builds that survive an interrupted activation
+
+Editors and agents often load direnv with a timeout, and a long build is easy to
+Ctrl-C. Normally that discards the work: nothing is rooted until the environment
+is cached, so garbage collection can remove what was already built.
+
+With `nix_direnv_detach_builds`, nix-direnv runs `nix print-dev-env` in a
+transient `systemd --user` unit. Interrupting the activation only stops waiting.
+The build finishes once, and its profile roots the result. The next activation
+joins a unit that is still running, or picks up the result without rebuilding.
+
+```shell
+nix_direnv_detach_builds
+use flake
+```
+
+Without a reachable user manager or `flock` (macOS, containers), the build stays
+inline. Follow a running build with `systemctl --user status 'nix-direnv-*'` or
+`.direnv/nix-output.log`.
+
 ##### Known arguments
 
 - `-p`: Starts a list of packages to install; consumes all remaining arguments
