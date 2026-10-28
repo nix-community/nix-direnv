@@ -417,7 +417,7 @@ use_nix() {
   layout_dir=$(direnv_layout_dir)
   local log_path="${layout_dir}/nix-output.log"
   # NB: macOS has realpath, but only supports -q
-  if path=$(realpath "$(_nix eval --impure --expr "<nixpkgs>" 2>/dev/null)"); then
+  if path=$(_nix eval --impure --expr "<nixpkgs>" 2>/dev/null) && path=$(realpath "$path" 2>/dev/null); then
     if [[ -f "${path}/.version-suffix" ]]; then
       version=$(<"${path}/.version-suffix")
     elif [[ -f "${path}/.git/HEAD" ]]; then
