@@ -86,13 +86,13 @@ function use_flake { # @test
   assert_use_flake_layout_dir_shape
 }
 
-function use_flake_does_not_materialize_unused_checkout() { # @test
+function use_flake_roots_remote_sources_without_materializing_checkout() { # @test
   local output
   git -C "$TESTDIR" init -q
   echo "$TESTDIR" >"$TESTDIR/marker"
   git -C "$TESTDIR" add flake.nix flake.lock shell.nix marker
   git -C "$TESTDIR" -c user.name=Test -c user.email=test@example.org -c commit.gpgsign=false commit -qm fixture
-  write_envrc "use flake"
+  write_envrc "direnv_layout_dir=.direnv\nuse flake"
 
   run nix print-dev-env "$TESTDIR"
   assert_success
@@ -113,6 +113,11 @@ function use_flake_does_not_materialize_unused_checkout() { # @test
   if [[ $checkout_was_present == 0 ]]; then
     refute test -e "$checkout_path"
   fi
+
+  write_envrc "use flake git+file://$TESTDIR"
+  run --separate-stderr direnv exec "$TESTDIR" hello
+  assert_success
+  assert test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
 }
 
 function use_flake_retains_unused_recursive_inputs() { # @test

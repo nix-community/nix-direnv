@@ -365,7 +365,10 @@ use_flake() {
         local flake_input_paths
         mkdir -p "$flake_inputs"
         local flake_metadata="${layout_dir}/flake-metadata.$$"
-        if ! flake_input_paths=$(
+        if [[ $flake_metadata != /* ]]; then
+          flake_metadata="$PWD/$flake_metadata"
+        fi
+        if [[ ! -d $flake_dir ]] || ! flake_input_paths=$(
           _nix flake metadata --json --no-write-lock-file -- "$flake_uri" >"$flake_metadata" 2>/dev/null &&
             NIX_DIRENV_FLAKE_METADATA="$flake_metadata" _nix eval --impure --json --expr '
               let
