@@ -86,7 +86,7 @@ function use_flake { # @test
   assert_use_flake_layout_dir_shape
 }
 
-function use_flake_roots_remote_sources_without_materializing_checkout() { # @test
+function use_flake_retains_sources_without_materializing_checkout() { # @test
   local output
   git -C "$TESTDIR" init -q
   echo "$TESTDIR" >"$TESTDIR/marker"
@@ -110,6 +110,8 @@ function use_flake_roots_remote_sources_without_materializing_checkout() { # @te
 
   run --separate-stderr direnv exec "$TESTDIR" hello
   assert_success
+  refute test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
+  # Older Nix versions already materialize the checkout in print-dev-env.
   if [[ $checkout_was_present == 0 ]]; then
     refute test -e "$checkout_path"
   fi
@@ -118,6 +120,14 @@ function use_flake_roots_remote_sources_without_materializing_checkout() { # @te
   run --separate-stderr direnv exec "$TESTDIR" hello
   assert_success
   assert test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
+
+  ln -s "${checkout_path%/*}" "$TESTDIR/store"
+  for source in "$checkout_path" "$TESTDIR/store/${checkout_path##*/}"; do
+    write_envrc "use flake path:$source"
+    run --separate-stderr direnv exec "$TESTDIR" hello
+    assert_success
+    assert test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
+  done
 }
 
 function use_flake_retains_unused_recursive_inputs() { # @test

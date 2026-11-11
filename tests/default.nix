@@ -6,9 +6,9 @@
   direnv,
   fetchurl,
   findutils,
+  git,
   gnugrep,
   gnused,
-  git,
   lib,
   nix-direnv,
   nixVersions,
@@ -46,9 +46,9 @@ let
           nixVersions.${nixVersion}
           coreutils
           findutils
+          git
           gnugrep
           gnused
-          git
         ]
       }
       export DIRENV_STDLIB=${direnv-stdlib}
