@@ -8,6 +8,7 @@
   findutils,
   gnugrep,
   gnused,
+  git,
   lib,
   nix-direnv,
   nixVersions,
@@ -47,6 +48,7 @@ let
           findutils
           gnugrep
           gnused
+          git
         ]
       }
       export DIRENV_STDLIB=${direnv-stdlib}
