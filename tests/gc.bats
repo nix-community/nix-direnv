@@ -121,13 +121,11 @@ function use_flake_retains_sources_without_materializing_checkout() { # @test
   assert_success
   assert test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
 
-  ln -s "${checkout_path%/*}" "$TESTDIR/store"
-  for source in "$checkout_path" "$TESTDIR/store/${checkout_path##*/}"; do
-    write_envrc "use flake path:$source"
-    run --separate-stderr direnv exec "$TESTDIR" hello
-    assert_success
-    assert test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
-  done
+  mkdir -p "$TESTDIR/cdpath/${checkout_path#/}"
+  write_envrc "direnv_layout_dir=$TESTDIR/.direnv\nexport CDPATH=$TESTDIR/cdpath\ncd /\nuse flake path:${checkout_path#/}"
+  run --separate-stderr direnv exec "$TESTDIR" hello
+  assert_success
+  assert test -e "$TESTDIR/.direnv/flake-inputs/${checkout_path##*/}"
 }
 
 function use_flake_retains_unused_recursive_inputs() { # @test
