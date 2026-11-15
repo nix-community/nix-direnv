@@ -6,6 +6,7 @@
   direnv,
   fetchurl,
   findutils,
+  git,
   gnugrep,
   gnused,
   lib,
@@ -45,6 +46,7 @@ let
           nixVersions.${nixVersion}
           coreutils
           findutils
+          git
           gnugrep
           gnused
         ]
