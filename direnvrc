@@ -361,10 +361,22 @@ use_flake() {
         _nix_add_gcroot "$tmp_profile" "$profile"
         rm -f "$tmp_profile" "$tmp_profile"*
 
-        # also add garbage collection root for source
-        local flake_input_paths
+        # Root the flake inputs. `nix flake archive` also copies the flake
+        # itself to the store, which Nix with lazy trees otherwise avoids, so
+        # archive a temporary copy of only flake.nix and flake.lock (they
+        # determine the inputs) and the flake itself only if that fails. Only
+        # for a path reference: a bare name is a registry id even if such a
+        # directory exists. `cd`, because `path:$dir` breaks on spaces.
+        local flake_input_paths="" flake_copy
         mkdir -p "$flake_inputs"
-        flake_input_paths=$(
+        if [[ $flake_dir == [./]* ]] && flake_copy=$(mktemp -d "${TMPDIR:-/tmp}/nix-direnv.XXXXXX"); then
+          flake_input_paths=$(
+            cp "$flake_dir"/flake.{nix,lock} "$flake_copy" 2>/dev/null && cd "$flake_copy" &&
+              _nix flake archive --json --no-write-lock-file -- path:. 2>/dev/null
+          ) || flake_input_paths=
+          rm -rf "$flake_copy"
+        fi
+        [[ -n $flake_input_paths ]] || flake_input_paths=$(
           _nix flake archive \
             --json \
             --no-write-lock-file \
