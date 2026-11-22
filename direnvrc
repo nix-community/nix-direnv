@@ -361,15 +361,34 @@ use_flake() {
         _nix_add_gcroot "$tmp_profile" "$profile"
         rm -f "$tmp_profile" "$tmp_profile"*
 
-        # also add garbage collection root for source
+        # Retain external sources without forcing the checkout into the store.
         local flake_input_paths
         mkdir -p "$flake_inputs"
-        flake_input_paths=$(
-          _nix flake archive \
-            --json \
-            --no-write-lock-file \
-            -- "$flake_uri" 2>/dev/null
-        )
+        local flake_metadata="${layout_dir}/flake-metadata.$$"
+        if [[ $flake_metadata != /* ]]; then
+          flake_metadata="$PWD/$flake_metadata"
+        fi
+        if [[ ! -d $flake_dir ]] ||
+          [[ $(CDPATH="" cd -- "$flake_dir" && pwd -P) == /nix/store/* ]] ||
+          ! flake_input_paths=$(
+            _nix flake metadata --json --no-write-lock-file -- "$flake_uri" >"$flake_metadata" 2>/dev/null &&
+              NIX_DIRENV_FLAKE_METADATA="$flake_metadata" _nix eval --impure --json --expr '
+              let
+                metadata = builtins.fromJSON (builtins.readFile (builtins.getEnv "NIX_DIRENV_FLAKE_METADATA"));
+                # Relative inputs share their parent source.
+                nodes = builtins.filter (node: node ? locked && !(node ? parent))
+                  (builtins.attrValues metadata.locks.nodes);
+              in map (node: (builtins.fetchTree (builtins.removeAttrs node.locked [ "dir" ])).outPath) nodes
+            ' 2>/dev/null
+          ); then
+          flake_input_paths=$(
+            _nix flake archive \
+              --json \
+              --no-write-lock-file \
+              -- "$flake_uri" 2>/dev/null
+          )
+        fi
+        rm -f "$flake_metadata"
 
         while [[ $flake_input_paths =~ /nix/store/[^\"]+ ]]; do
           local store_path="${BASH_REMATCH[0]}"
